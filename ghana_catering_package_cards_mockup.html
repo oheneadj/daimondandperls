@@ -1,0 +1,495 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+.wrap { padding: 1.5rem 0; }
+
+.section-label {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--color-text-tertiary);
+  margin-bottom: 6px;
+}
+
+.section-title {
+  font-size: 20px; font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+
+.section-sub {
+  font-size: 13px; color: var(--color-text-secondary);
+  margin-bottom: 20px;
+}
+
+.filter-bar {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.filter-btn {
+  font-size: 12px; font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 0.5px solid var(--color-border-secondary);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.filter-btn:hover { background: var(--color-background-secondary); }
+.filter-btn.active {
+  background: #1a1a1a;
+  color: #fff;
+  border-color: #1a1a1a;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.card {
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  position: relative;
+}
+
+.card:hover { border-color: var(--color-border-primary); }
+.card.selected { border: 2px solid #1D9E75; }
+
+.card-img {
+  width: 100%; height: 120px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 42px;
+  position: relative;
+}
+
+.card-badge {
+  position: absolute; top: 8px; left: 8px;
+  font-size: 10px; font-weight: 500;
+  padding: 3px 8px; border-radius: 20px;
+}
+
+.badge-popular { background: #EAF3DE; color: #27500A; }
+.badge-new { background: #E6F1FB; color: #0C447C; }
+.badge-value { background: #FAEEDA; color: #633806; }
+
+.selected-tick {
+  position: absolute; top: 8px; right: 8px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #1D9E75; color: #fff;
+  display: none; align-items: center; justify-content: center;
+}
+.card.selected .selected-tick { display: flex; }
+
+.card-body { padding: 12px 14px; }
+
+.card-name {
+  font-size: 14px; font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 3px;
+}
+
+.card-desc {
+  font-size: 11px; color: var(--color-text-secondary);
+  margin-bottom: 10px; line-height: 1.5;
+}
+
+.card-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px;
+}
+
+.card-price {
+  font-size: 15px; font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.card-price span {
+  font-size: 11px; font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.card-guests {
+  font-size: 11px; color: var(--color-text-secondary);
+  display: flex; align-items: center; gap: 4px;
+}
+
+.guest-icon {
+  width: 13px; height: 13px; opacity: 0.5;
+}
+
+.card-actions {
+  display: flex; gap: 6px;
+}
+
+.btn-details {
+  flex: 1; font-size: 12px; font-weight: 500;
+  padding: 7px 0;
+  border: 0.5px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s;
+}
+
+.btn-details:hover { background: var(--color-background-secondary); }
+
+.btn-add {
+  flex: 1; font-size: 12px; font-weight: 500;
+  padding: 7px 0;
+  border: 0.5px solid #1D9E75;
+  border-radius: var(--border-radius-md);
+  background: transparent;
+  color: #0F6E56;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s;
+}
+
+.btn-add:hover { background: #E1F5EE; }
+
+.card.selected .btn-add {
+  background: #1D9E75;
+  color: #fff;
+  border-color: #1D9E75;
+}
+
+.divider {
+  border: none; border-top: 0.5px solid var(--color-border-tertiary);
+  margin: 24px 0;
+}
+
+.booking-bar {
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-lg);
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 14px;
+  flex-wrap: wrap;
+}
+
+.booking-summary { flex: 1; }
+
+.booking-label {
+  font-size: 11px; color: var(--color-text-secondary); margin-bottom: 3px;
+}
+
+.booking-items {
+  font-size: 13px; font-weight: 500;
+  color: var(--color-text-primary);
+  min-height: 18px;
+}
+
+.booking-count {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #1D9E75; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 500;
+  flex-shrink: 0;
+}
+
+.btn-book {
+  font-size: 13px; font-weight: 500;
+  padding: 9px 20px;
+  border: none;
+  border-radius: var(--border-radius-md);
+  background: #1a1a1a;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.btn-book:hover { background: #333; }
+
+.btn-viewall {
+  width: 100%;
+  font-size: 13px; font-weight: 500;
+  padding: 10px 0;
+  border: 0.5px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 4px;
+}
+.btn-viewall:hover { background: var(--color-background-secondary); }
+
+.modal-overlay {
+  display: none;
+  background: rgba(0,0,0,0.45);
+  border-radius: var(--border-radius-lg);
+  padding: 24px;
+  margin-top: 16px;
+  align-items: flex-start;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-lg);
+  padding: 20px;
+  width: 100%; max-width: 380px;
+}
+
+.modal-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.modal-title { font-size: 16px; font-weight: 500; color: var(--color-text-primary); }
+.modal-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+
+.modal-close {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 0.5px solid var(--color-border-secondary);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.modal-img {
+  width: 100%; height: 140px;
+  background: #EAF3DE;
+  border-radius: var(--border-radius-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 52px;
+  margin-bottom: 14px;
+}
+
+.modal-section-title {
+  font-size: 11px; font-weight: 500; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--color-text-tertiary);
+  margin-bottom: 6px; margin-top: 14px;
+}
+
+.includes-list {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  margin-bottom: 4px;
+}
+
+.include-pill {
+  font-size: 11px; padding: 3px 9px;
+  border-radius: 20px;
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  color: var(--color-text-secondary);
+}
+
+.modal-price-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-top: 14px; padding-top: 12px;
+  border-top: 0.5px solid var(--color-border-tertiary);
+}
+
+.modal-price { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+.modal-price-label { font-size: 12px; color: var(--color-text-secondary); }
+
+.modal-btns { display: flex; gap: 8px; margin-top: 14px; }
+
+.modal-btn-secondary {
+  flex: 1; font-size: 12px; font-weight: 500;
+  padding: 9px 0;
+  border: 0.5px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer; font-family: inherit;
+}
+
+.modal-btn-primary {
+  flex: 2; font-size: 12px; font-weight: 500;
+  padding: 9px 0;
+  border: none;
+  border-radius: var(--border-radius-md);
+  background: #1D9E75; color: #fff;
+  cursor: pointer; font-family: inherit;
+}
+</style>
+
+<div class="wrap">
+
+  <div class="section-label">Our packages</div>
+  <div class="section-title">Choose your menu package</div>
+  <div class="section-sub">Select one or more packages for your event. Tap a card to add it to your booking.</div>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filter('all', this)">All packages</button>
+    <button class="filter-btn" onclick="filter('rice', this)">Rice dishes</button>
+    <button class="filter-btn" onclick="filter('banku', this)">Banku & fufu</button>
+    <button class="filter-btn" onclick="filter('grills', this)">Grills</button>
+    <button class="filter-btn" onclick="filter('soups', this)">Soups & stews</button>
+  </div>
+
+  <div class="grid" id="card-grid"></div>
+
+  <div id="booking-bar" class="booking-bar" style="display:none;">
+    <div class="booking-count" id="booking-count">0</div>
+    <div class="booking-summary">
+      <div class="booking-label">Added to booking</div>
+      <div class="booking-items" id="booking-items">None selected</div>
+    </div>
+    <button class="btn-book" onclick="proceedBook()">Proceed to book</button>
+  </div>
+
+  <button class="btn-viewall" onclick="viewAll()">View all packages on full menu page →</button>
+
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" id="modal-content"></div>
+  </div>
+
+</div>
+
+<script>
+const packages = [
+  { id: 1, name: "Jollof rice package", emoji: "🍚", cat: "rice", badge: "popular", badgeText: "Most popular", price: "GHS 85", unit: "per head", minGuests: 50, desc: "Perfectly spiced party jollof with chicken or beef", includes: ["Party jollof rice", "Grilled chicken or beef", "Fried plantain (kelewele)", "Garden salad", "Assorted drinks", "Serving staff"] },
+  { id: 2, name: "Banku & tilapia", emoji: "🐟", cat: "banku", badge: "value", badgeText: "Best value", price: "GHS 70", unit: "per head", minGuests: 50, desc: "Classic Ghanaian banku with whole grilled tilapia and pepper sauce", includes: ["Banku (corn & cassava)", "Whole grilled tilapia", "Pepper sauce (shito)", "Onions & tomatoes", "Kontomire stew", "Serving staff"] },
+  { id: 3, name: "Waakye special", emoji: "🫘", cat: "rice", badge: null, price: "GHS 65", unit: "per head", minGuests: 50, desc: "Traditional waakye with all the classic toppings", includes: ["Waakye (rice & beans)", "Wele (cow skin)", "Spaghetti", "Fried fish or chicken", "Shito & pepper sauce", "Hard boiled eggs"] },
+  { id: 4, name: "Fufu & soup package", emoji: "🍲", cat: "banku", badge: "new", badgeText: "New", price: "GHS 90", unit: "per head", minGuests: 80, desc: "Fufu served with your choice of light soup, palm nut or groundnut soup", includes: ["Fufu (cassava & plantain)", "Choice of 2 soups", "Goat meat or chicken", "Assorted fish", "Kontomire stew", "Serving staff"] },
+  { id: 5, name: "Grills & BBQ package", emoji: "🔥", cat: "grills", badge: null, price: "GHS 120", unit: "per head", minGuests: 100, desc: "Live grill station with assorted meats and sides", includes: ["Grilled whole tilapia", "BBQ chicken quarters", "Grilled lamb chops", "Kelewele & yam", "Pepper sauces", "Live grill station + chef"] },
+  { id: 6, name: "Kontomire stew pack", emoji: "🥬", cat: "soups", badge: null, price: "GHS 60", unit: "per head", minGuests: 50, desc: "Rich kontomire (cocoyam leaves) with boiled yam or rice", includes: ["Kontomire / palava sauce", "Boiled yam or rice", "Fried fish or egg", "Boiled plantain", "Shito on the side", "Serving staff"] },
+];
+
+let selected = new Set();
+let activeFilter = 'all';
+
+function render(filter) {
+  const grid = document.getElementById('card-grid');
+  const filtered = filter === 'all' ? packages : packages.filter(p => p.cat === filter);
+  grid.innerHTML = filtered.map(p => `
+    <div class="card ${selected.has(p.id) ? 'selected' : ''}" id="card-${p.id}">
+      <div class="card-img" style="background:${bgColor(p.cat)}">
+        <span style="font-size:42px">${p.emoji}</span>
+        ${p.badge ? `<div class="card-badge badge-${p.badge}">${p.badgeText}</div>` : ''}
+        <div class="selected-tick">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-name">${p.name}</div>
+        <div class="card-desc">${p.desc}</div>
+        <div class="card-meta">
+          <div class="card-price">${p.price} <span>${p.unit}</span></div>
+          <div class="card-guests">
+            <svg class="guest-icon" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 13c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="11" cy="5" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M12 9.2c1.8.3 3 1.5 3 3.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            Min ${p.minGuests}
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-details" onclick="openModal(${p.id}, event)">View details</button>
+          <button class="btn-add" onclick="toggleSelect(${p.id}, event)">${selected.has(p.id) ? 'Added' : 'Add to booking'}</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function bgColor(cat) {
+  return { rice: '#EAF3DE', banku: '#FAEEDA', grills: '#FAECE7', soups: '#E1F5EE' }[cat] || '#F1EFE8';
+}
+
+function filter(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render(cat);
+}
+
+function toggleSelect(id, e) {
+  e.stopPropagation();
+  if (selected.has(id)) selected.delete(id);
+  else selected.add(id);
+  render(activeFilter);
+  updateBookingBar();
+}
+
+function updateBookingBar() {
+  const bar = document.getElementById('booking-bar');
+  const count = document.getElementById('booking-count');
+  const items = document.getElementById('booking-items');
+  if (selected.size === 0) {
+    bar.style.display = 'none';
+  } else {
+    bar.style.display = 'flex';
+    count.textContent = selected.size;
+    const names = [...selected].map(id => packages.find(p => p.id === id)?.name.split(' ')[0]);
+    items.textContent = names.join(', ');
+  }
+}
+
+function openModal(id, e) {
+  e.stopPropagation();
+  const p = packages.find(x => x.id === id);
+  const overlay = document.getElementById('modal-overlay');
+  const content = document.getElementById('modal-content');
+  content.innerHTML = `
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">${p.name}</div>
+        <div class="modal-sub">${p.desc}</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-img" style="background:${bgColor(p.cat)}">
+      <span>${p.emoji}</span>
+    </div>
+    <div class="modal-section-title">What's included</div>
+    <div class="includes-list">
+      ${p.includes.map(i => `<span class="include-pill">${i}</span>`).join('')}
+    </div>
+    <div class="modal-section-title">Minimum guests</div>
+    <div style="font-size:13px;color:var(--color-text-secondary);">This package is available for events with at least <strong style="color:var(--color-text-primary);font-weight:500">${p.minGuests} guests</strong>.</div>
+    <div class="modal-price-row">
+      <div class="modal-price-label">Price</div>
+      <div class="modal-price">${p.price} <span style="font-size:13px;font-weight:400;color:var(--color-text-secondary)">${p.unit}</span></div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn-secondary" onclick="closeModal()">Close</button>
+      <button class="modal-btn-primary" onclick="addFromModal(${p.id})">${selected.has(p.id) ? 'Remove from booking' : 'Add to booking'}</button>
+    </div>
+  `;
+  overlay.classList.add('open');
+}
+
+function addFromModal(id) {
+  if (selected.has(id)) selected.delete(id);
+  else selected.add(id);
+  updateBookingBar();
+  render(activeFilter);
+  closeModal();
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function proceedBook() {
+  const names = [...selected].map(id => packages.find(p => p.id === id)?.name).join(', ');
+  sendPrompt(`I want to book these catering packages: ${names}. How should I design the booking confirmation flow and what info should I collect from the customer?`);
+}
+
+function viewAll() {
+  sendPrompt('How should I design the full "All Packages" page for this Ghana catering website?');
+}
+
+render('all');
+</script>

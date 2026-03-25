@@ -1,0 +1,59 @@
+@import "tailwindcss";
+@plugin "flyonui";
+
+@source "../views";
+@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
+
+@layer base {
+  :root {
+    /* ── MASTER CULINARY SPEC (DEFINITIVE) ── */
+    --color-primary: #F96015; /* Crisp Carrot - Vibrant Action */
+    --color-primary-content: #FFFFFF;
+    --color-success: #9ABC05; /* Kiwi - Positive / Completed */
+    --color-error:   #D52518; /* Tomato Burst - Urgent / Cancel */
+    --color-accent:  #FFC926; /* Sunshine - High Energy Highlight */
+    --color-neutral: #121212; /* Modern Black - Sidebar */
+
+    /* ── BRAND UTILITIES ── */
+    --text-authority: #18542A; /* Forest Green - High-Contrast Text */
+    --text-sunshine:  #FFC926; /* Sunshine Accent */
+
+    /* ── REFINED NEUTRALS (High Contrast Gray) ── */
+    --color-base-100: #FFFFFF; /* Pure White - Cards */
+    --color-base-200: #F4F4F6; /* Modern Gray - App Background & Top Bar */
+    --color-base-300: #E6E8EA; /* Subtle Borders */
+    --color-base-content: #1C1A18; /* Ink - Primary Text */
+  }
+
+  html {
+    font-family: 'Outfit', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* FilePond Refined Styles */
+.filepond-container-refined .filepond--panel-root {
+    background-color: oklch(var(--b2)); /* base-200 */
+    border: 1px dashed oklch(var(--bc) / 0.2);
+    border-radius: 12px;
+}
+
+.filepond-container-refined .filepond--drop-label {
+    color: oklch(var(--bc) / 0.6);
+}
+
+.filepond-container-refined .filepond--label-action {
+    color: oklch(var(--p));
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.filepond-container-refined .filepond--file-action-button {
+    background-color: oklch(var(--p));
+    color: oklch(var(--pc));
+}
+
+.filepond-container-refined .filepond--item-panel {
+    background-color: oklch(var(--p));
+}
