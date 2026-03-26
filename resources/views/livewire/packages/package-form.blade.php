@@ -56,7 +56,7 @@
 
                 <div class="border-t border-base-content/5"></div>
 
-                <!-- Group 2: Pricing -->
+                <!-- Group 2: Pricing & Guest Requirements -->
                 <div class="space-y-6">
                     <div class="flex items-center gap-2.5">
                         <div class="w-8 h-8 rounded-full bg-[#FFC926]/15 text-[#FFC926] flex items-center justify-center">
@@ -64,17 +64,28 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
-                        <h2 class="text-[11px] font-bold uppercase tracking-[0.2em] text-base-content">{{ __('Price & Order Quantity') }}</h2>
+                        <h2 class="text-[11px] font-bold uppercase tracking-[0.2em] text-base-content">{{ __('Price & Guest Requirements') }}</h2>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div class="space-y-2">
-                            <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Price') }} <span class="text-[#F96015]">*</span></label>
+                            <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Price per Head') }} <span class="text-[#F96015]">*</span></label>
                             <div class="relative group">
                                 <span class="absolute inset-y-0 left-4 flex items-center text-[12px] font-bold text-base-content/40 group-focus-within:text-[#F96015] transition-colors">GHS</span>
                                 <x-ui.input wire:model="price" type="number" step="0.01" min="0" placeholder="0.00" class="pl-14" />
                             </div>
                             @error('price') <p class="text-[11px] text-error font-bold mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Minimum Guests') }} <span class="text-[#F96015]">*</span></label>
+                            <div class="relative group">
+                                <span class="absolute inset-y-0 left-4 flex items-center text-base-content/20 group-focus-within:text-primary transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857m0 0c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                </span>
+                                <x-ui.input wire:model="min_guests" type="number" min="1" placeholder="e.g. 50" class="pl-11" />
+                            </div>
+                            @error('min_guests') <p class="text-[11px] text-error font-bold mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div class="space-y-2">
@@ -87,7 +98,49 @@
 
                 <div class="border-t border-base-content/5"></div>
 
-                <!-- Group 3: Description & Media -->
+                <!-- Group 3: Package Features -->
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <h2 class="text-[11px] font-bold uppercase tracking-[0.2em] text-base-content">{{ __('Package Features') }}</h2>
+                        </div>
+                        <x-ui.button type="button" wire:click="addFeature" variant="ghost" size="sm" class="text-primary hover:bg-primary/5">
+                            <x-slot:icon>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                            </x-slot:icon>
+                            {{ __('Add Feature') }}
+                        </x-ui.button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        @foreach($features as $index => $feature)
+                            <div class="flex items-center gap-3 group">
+                                <div class="flex-1 relative">
+                                    <x-ui.input wire:model="features.{{ $index }}" placeholder="e.g. Professional Waiters" class="pr-10" />
+                                    <button type="button" wire:click="removeFeature({{ $index }})" class="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/20 hover:text-error transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    @if(empty($features))
+                        <div class="p-8 border-2 border-dashed border-base-content/5 rounded-2xl text-center">
+                            <p class="text-[12px] text-base-content/30 font-medium italic">
+                                {{ __('No features added yet. Highlight what makes this package special.') }}
+                            </p>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="border-t border-base-content/5"></div>
+
+                <!-- Group 4: Description & Media -->
                 <div class="space-y-6">
                     <div class="flex items-center gap-2.5">
                         <div class="w-8 h-8 rounded-full bg-[#9ABC05]/10 text-[#9ABC05] flex items-center justify-center">
@@ -161,23 +214,45 @@
 
                 <div class="border-t border-base-content/5"></div>
 
-                <!-- Status Toggle -->
-                <div class="flex items-center justify-between p-5 bg-base-content/[0.02] border border-base-content/10 rounded-xl">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-success/10 text-success flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                <!-- Status Toggles -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Visibility Toggle -->
+                    <div class="flex items-center justify-between p-5 bg-base-content/[0.02] border border-base-content/10 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-success/10 text-success flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-[13px] font-bold text-base-content">{{ __('Active Status') }}</p>
+                                <p class="text-[11px] text-base-content/40">{{ __('Visible to customers.') }}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-[13px] font-bold text-base-content">{{ __('Package Availability') }}</p>
-                            <p class="text-[11px] text-base-content/40">{{ __('If deactivated, this package will not be visible to customers.') }}</p>
-                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input wire:model="is_active" type="checkbox" class="sr-only peer">
+                            <div class="w-14 h-7 bg-base-200 border border-base-content/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-1 after:left-1 after:bg-base-100 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-success shadow-sm"></div>
+                        </label>
                     </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input wire:model="is_active" type="checkbox" class="sr-only peer">
-                        <div class="w-14 h-7 border-base-content/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-1 after:left-1 after:bg-base-100 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-success shadow-sm"></div>
-                    </label>
+
+                    <!-- Popularity Toggle -->
+                    <div class="flex items-center justify-between p-5 bg-[#FFC926]/5 border border-[#FFC926]/20 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-[#FFC926]/20 text-[#FFC926] flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-[13px] font-bold text-base-content">{{ __('Popular Choice') }}</p>
+                                <p class="text-[11px] text-base-content/40">{{ __('Highlight as a top pick.') }}</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input wire:model="is_popular" type="checkbox" class="sr-only peer">
+                            <div class="w-14 h-7 bg-base-200 border border-[#FFC926]/20 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-1 after:left-1 after:bg-base-100 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#FFC926] shadow-sm"></div>
+                        </label>
+                    </div>
                 </div>
             </div>
         </x-ui.card>

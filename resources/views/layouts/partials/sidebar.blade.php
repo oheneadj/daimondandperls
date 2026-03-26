@@ -6,6 +6,7 @@
         'OPERATIONS' => [
             ['label' => 'Bookings', 'route' => 'admin.bookings.index', 'icon' => 'clipboard-document-list', 'badge' => auth()->user()->unreadBookingsCount() ?? 0],
             ['label' => 'Packages', 'route' => 'admin.manage-packages.index', 'icon' => 'cake'],
+            ['label' => 'Collections', 'route' => 'admin.categories.index', 'icon' => 'tag'],
             ['label' => 'Payments', 'route' => 'admin.payments.index', 'icon' => 'credit-card', 'badge' => auth()->user()->pendingPaymentsCount() ?? 0],
             ['label' => 'Customers', 'route' => 'admin.customers.index', 'icon' => 'user-group'],
         ],

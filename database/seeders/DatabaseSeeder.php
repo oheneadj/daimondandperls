@@ -23,9 +23,10 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             SettingsSeeder::class,
+            CateringPackageSeeder::class,
         ]);
 
-        \App\Models\Package::factory(5)->create();
+        // \App\Models\Package::factory(5)->create();
         \App\Models\Customer::factory(10)->create();
         \App\Models\Booking::factory(20)->create();
     }

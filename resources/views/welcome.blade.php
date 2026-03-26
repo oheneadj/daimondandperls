@@ -23,12 +23,12 @@
                 </p>
 
                 <div class="flex flex-col sm:flex-row items-center gap-4 mb-12">
-                    <a href="{{ route('packages.browse') }}" class="w-full sm:w-auto bg-primary text-white text-[15px] font-bold px-8 py-4 rounded-xl hover:bg-primary-hover hover:scale-105 transition-all shadow-md text-center">
-                        View Packages
-                    </a>
-                    <a href="#quote" class="w-full sm:w-auto bg-base-100 text-base-content border border-base-content/10 text-[15px] font-bold px-8 py-4 rounded-xl hover:bg-base-200 hover:scale-105 transition-all shadow-sm text-center">
-                        Get a Free Quote
-                    </a>
+                    <x-ui.button href="{{ route('packages.browse') }}" size="lg" class="w-full h-14  sm:w-auto bg-primary text-white text-[15px] font-bold px-8 py-4 !rounded-full hover:bg-primary-hover hover:scale-105 transition-all shadow-md text-center">
+                      Order Now
+                    </x-ui.button>
+                    <x-ui.button href="{{ route('booking.track') }}" variant="black" size="lg" class="w-full h-14  sm:w-auto bg-base-100 text-base-content border border-base-content/10 text-[15px] font-bold px-8 py-4 !rounded-full hover:bg-base-200 hover:scale-105 transition-all shadow-sm text-center">
+                      Track Your Booking
+                    </x-ui.button>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-8 md:gap-12 justify-center sm:justify-start pt-6 border-t border-base-content/10">
@@ -183,71 +183,20 @@
                     <svg class="absolute -right-12 -top-6 w-16 h-16 text-accent opacity-20 hidden md:block" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                 </div>
                 
-                <a href="{{ route('packages.browse') }}" class="inline-flex items-center gap-2 bg-base-200 border border-base-content/10 text-base-content text-[13px] font-bold px-6 py-3 rounded-xl hover:bg-base-300 transition-all shadow-sm">
+                <a href="{{ route('packages.browse') }}" class="inline-flex items-center gap-2 bg-black border border-base-content/10 text-white text-[13px] font-bold px-6 py-3 rounded-full hover:bg-black/80 transition-all shadow-sm">
                     View All {{ \App\Models\Package::count() }} Packages
                     <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                 </a>
             </div>
 
-            @php
-                $featuredPackages = \App\Models\Package::with('category')->where('is_active', true)->ordered()->take(3)->get();
-            @endphp
-            
-            @if($featuredPackages->count() > 0)
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-                @foreach($featuredPackages as $index => $package)
-                    <div class="relative bg-white border border-base-content/10 rounded-3xl p-8 hover:shadow-2xl transition-all duration-300 {{ $index === 1 ? 'md:-mt-4 ring-2 ring-primary shadow-xl scale-105' : 'shadow-sm hover:-translate-y-1' }}">
-                        @if($index === 1)
-                            <div class="absolute -top-4 inset-x-0 flex justify-center">
-                                <span class="bg-primary text-white text-[11px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full shadow-md">Most Popular</span>
-                            </div>
-                        @endif
-                        
-                        <div class="mb-8 border-b border-base-content/10 pb-6">
-                            <span class="text-[12px] font-bold text-base-content/40 uppercase tracking-widest block mb-2">{{ $package->category?->name ?? 'Standard' }}</span>
-                            <h3 class="text-2xl font-bold text-base-content mb-4 line-clamp-1" title="{{ $package->name }}">{{ $package->name }}</h3>
-                            <div class="flex items-end gap-1 mb-2">
-                                <span class="text-3xl font-bold text-primary tracking-tight">GH₵{{ number_format((float) $package->price, 0) }}</span>
-                                <span class="text-[13px] font-bold text-base-content/40 uppercase tracking-widest mb-1.5">/ head</span>
-                            </div>
-                            <p class="text-[13px] text-base-content/60 font-medium">Min. {{ $package->min_guests ?? 50 }} guests required.</p>
-                        </div>
-                        
-                        <ul class="space-y-4 mb-8 min-h-[160px]">
-                            <li class="flex items-start gap-3">
-                                <svg class="size-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                <span class="text-[13px] font-medium text-base-content/80">Full catering service</span>
-                            </li>
-                            <li class="flex items-start gap-3">
-                                <svg class="size-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                <span class="text-[13px] font-medium text-base-content/80">Chafing dishes included</span>
-                            </li>
-                            <li class="flex items-start gap-3">
-                                <svg class="size-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                <span class="text-[13px] font-medium text-base-content/80">Professional serving staff</span>
-                            </li>
-                            @if($package->description)
-                            <li class="flex items-start gap-3">
-                                <svg class="size-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                <span class="text-[13px] font-medium text-base-content/80 line-clamp-2">{{ $package->description }}</span>
-                            </li>
-                            @endif
-                        </ul>
+            <livewire:packages.featured-packages />
 
-                        <a href="{{ route('checkout', ['package' => $package->id]) }}" class="block w-full text-center py-4 rounded-xl text-[14px] font-bold transition-all {{ $index === 1 ? 'bg-primary text-white hover:bg-primary-hover shadow-md' : 'bg-base-200 text-base-content hover:bg-base-300' }}">
-                            Book This Package
-                        </a>
-                    </div>
-                @endforeach
-            </div>
-            @endif
-
-            <div class="mt-16 bg-primary-soft/30 border border-primary/20 rounded-2xl p-6 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+            <div class="mt-16 bg-primary border border-primary/20 rounded-2xl p-6 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
                 <div>
-                    <h4 class="text-xl font-bold text-base-content mb-2">Need a custom menu?</h4>
-                    <p class="text-[14px] text-base-content/60 font-medium">Don't see what you need? We can create a bespoke package tailored for your exact event size and budget.</p>
+                    <h4 class="text-xl font-bold text-white mb-2">Need a custom menu?</h4>
+                    <p class="text-[14px] text-white/60 font-medium">Don't see what you need? We can create a bespoke package tailored for your exact event size and budget.</p>
                 </div>
-                <a href="#quote" class="bg-primary text-white text-[14px] font-bold px-8 py-3.5 rounded-xl hover:bg-primary-hover transition-all shadow-sm shrink-0 whitespace-nowrap">
+                <a href="#quote" class="bg-accent text-black text-[14px] font-bold px-8 py-3.5 rounded-xl hover:bg-primary-hover transition-all shadow-sm shrink-0 whitespace-nowrap">
                     Request Custom Quote
                 </a>
             </div>

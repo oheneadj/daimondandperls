@@ -1,15 +1,14 @@
 @props(['package', 'selected' => false])
 
 @php
-    $categoryColors = [
-        'rice' => 'bg-[#EAF3DE]',
-        'banku' => 'bg-[#FAEEDA]',
-        'grills' => 'bg-[#FAECE7]',
-        'soups' => 'bg-[#E1F5EE]',
-    ];
-    $bgColor = $categoryColors[$package->category?->slug] ?? 'bg-base-200-mid';
+    $bgClass = match($package->category?->slug) {
+        'rice' => 'bg-cat-rice',
+        'banku' => 'bg-cat-banku',
+        'grills' => 'bg-cat-grills',
+        'soups' => 'bg-cat-soups',
+        default => 'bg-base-200',
+    };
     
-    // Fallback emoji if no image
     $emoji = match($package->category?->slug) {
         'rice' => '🍚',
         'banku' => '🍲',
@@ -17,73 +16,116 @@
         'soups' => '🥬',
         default => '🥘',
     };
+
+    $containerClasses = [
+        'package-card bg-white border overflow-hidden transition-all duration-500 relative flex flex-col',
+        'rounded-[24px]',
+        $selected ? 'border-primary ring-2 ring-primary/10' : 'border-base-content/10 shadow-sm hover:shadow-2xl hover:-translate-y-1',
+    ];
+    
+    // We detect Livewire context so we can use interactive buttons for the browse page
+    // and standard redirect links for the static welcome page, while keeping identical styling.
+    $isLivewireContext = isset($this); 
 @endphp
 
 <div 
-    wire:key="package-{{ $package->id }}"
-    class="card bg-base-100 border transition-all duration-300 {{ $selected ? 'border-primary ring-2 ring-primary/20' : 'border-base-content/10 hover:border-primary/50' }} rounded-[20px] overflow-hidden group cursor-pointer"
+    @if($isLivewireContext) wire:key="package-{{ $package->id }}" @endif
+    @class($containerClasses)
 >
-    <!-- Card Image/Icon Area -->
-    <div class="relative h-40 {{ $bgColor }} flex items-center justify-center overflow-hidden">
+    <!-- Card Image Area -->
+    <div class="relative flex items-center justify-center overflow-hidden border border-base-content/5 h-48 {{ $bgClass }}">
         @if($package->image_path)
-            <img src="{{ Storage::url($package->image_path) }}" alt="{{ $package->name }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-            <div class="absolute inset-0 bg-black/5"></div>
+            <img src="{{ Storage::url($package->image_path) }}" alt="{{ $package->name }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+        @elseif(isset($package->image_url))
+            <img src="{{ $package->image_url }}" alt="{{ $package->name }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
         @else
-            <span class="text-5xl transition-transform duration-500 group-hover:scale-110">{{ $emoji }}</span>
+            <span class="text-5xl translate-y-1 drop-shadow-sm">{{ $emoji }}</span>
         @endif
 
         @if($package->is_popular)
-            <div class="absolute top-3 left-3 bg-[#EAF3DE] text-[#27500A] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
+            <div class="absolute badge-popular text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm top-3 left-3">
                 {{ __('Most Popular') }}
             </div>
         @endif
 
-        @if($selected)
-            <div class="absolute top-3 right-3 w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center shadow-md animate-in zoom-in duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                </svg>
-            </div>
-        @endif
+        <div @class([
+            'absolute top-3 right-3 w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center shadow-md transition-all duration-300',
+            'opacity-100 scale-100' => $selected,
+            'opacity-0 scale-50' => !$selected,
+        ])>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+        </div>
     </div>
 
     <!-- Card Body -->
-    <div class="p-5 flex flex-col flex-1">
-        <h3 class="text-[17px] font-bold text-base-content mb-1.5 group-hover:text-primary transition-colors">
+    <div class="flex flex-col flex-1 p-5">
+        <h3 class="font-bold text-base-content leading-tight text-[16px] mb-1">
             {{ $package->name }}
         </h3>
         
-        <p class="text-[13px] text-base-content/60 leading-relaxed line-clamp-2 mb-4 italic font-medium">
-            {{ $package->description ?? __('A delicious selection of culinary delights prepared with love.') }}
-        </p>
-
-        <div class="flex items-center justify-between mt-auto pt-4 border-t border-base-content/5">
-            <div>
-                <div class="text-[18px] font-bold text-primary">GH₵{{ number_format($package->price, 0) }}</div>
-                <div class="text-[10px] font-bold text-base-content/40 uppercase tracking-widest">{{ __('per head') }}</div>
-            </div>
-            
-            <div class="flex items-center gap-1.5 text-[11px] font-bold text-base-content/60 bg-base-200 px-2 py-1 rounded-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                Min {{ $package->min_guests ?? 50 }}
-            </div>
+        <div class="flex items-baseline gap-1.5 mb-4">
+            <span class="font-black text-primary tracking-tight text-[18px]">
+                GH₵{{ number_format((float) $package->price, 0) }}
+            </span>
         </div>
 
-        <div class="grid grid-cols-2 gap-3 mt-5">
-            <button 
-                @click.stop="openDetails({{ json_encode($package) }})"
-                class="py-2.5 text-[12px] font-bold text-base-content/60 bg-base-200 hover:bg-base-300 rounded-xl transition-all border border-transparent"
-            >
-                {{ __('Details') }}
-            </button>
-            <button 
-                wire:click.stop="toggleSelection({{ $package->id }})"
-                class="py-2.5 text-[12px] font-bold transition-all rounded-xl {{ $selected ? 'bg-primary text-white shadow-md' : 'text-primary border border-primary/20 hover:bg-primary/5 bg-transparent' }}"
-            >
-                {{ $selected ? __('Added') : __('Add') }}
-            </button>
+        <div class="flex-1 mb-6">
+            <p class="text-[12px] text-base-content/60 leading-relaxed line-clamp-2">
+                {{ $package->description }}
+            </p>
+            
+            @php
+                $features = is_array($package->features) ? $package->features : (json_decode($package->features ?? '[]', true) ?: []);
+                if (empty($features)) {
+                    $features = ['Full catering service', 'Chafing dishes included', 'Professional serving staff'];
+                }
+            @endphp
+            <ul class="space-y-3 pt-4 mt-2 border-t border-base-content/5">
+                @foreach(array_slice($features, 0, 3) as $feature)
+                    <li class="flex items-start gap-3">
+                        <div class="size-4 bg-success/10 text-success rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                            <svg class="size-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <span class="text-[12px] font-medium leading-tight text-base-content/80">{{ $feature }}</span>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+
+        <div class="flex gap-2">
+            @if($isLivewireContext)
+                <button 
+                    @click.stop="openDetails({{ json_encode($package) }})"
+                    class="flex-1 py-2.5 text-[12px] font-bold text-base-content/70 bg-base-200 hover:bg-base-300 rounded-xl transition-all border border-base-content/5"
+                >
+                    {{ __('Details') }}
+                </button>
+                <button 
+                    wire:click.stop="toggleSelection({{ $package->id }})"
+                    @class([
+                        'flex-1 py-2.5 text-[12px] font-extrabold transition-all rounded-xl border',
+                        'bg-primary text-white border-primary shadow-sm' => $selected,
+                        'text-primary border-primary/20 hover:bg-primary/5 bg-transparent' => !$selected,
+                    ])
+                >
+                    {{ $selected ? __('Added') : __('Add to booking') }}
+                </button>
+            @else
+                <a 
+                    href="{{ route('packages.browse') }}"
+                    class="flex-1 py-2.5 text-[12px] font-bold text-center text-base-content/80 bg-base-200 hover:bg-base-300 rounded-xl transition-all border border-base-content/5 block"
+                >
+                    {{ __('Details') }}
+                </a>
+                <a 
+                    href="{{ route('packages.browse') }}"
+                    class="flex-1 py-2.5 text-[12px] font-extrabold text-center transition-all rounded-xl border text-primary border-primary/20 hover:bg-primary/5 bg-transparent block"
+                >
+                    {{ __('Add to booking') }}
+                </a>
+            @endif
         </div>
     </div>
 </div>

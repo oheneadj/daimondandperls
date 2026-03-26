@@ -9,8 +9,8 @@
                     </svg>
                 </div>
                 <h1 class=" text-3xl font-semibold text-base-content mb-2">Track Your Booking</h1>
-                <p class="text-base-content/60 text-[14px] font-medium leading-relaxed">
-                    Lost your way? Enter your reference and phone number to resume your booking or payment.
+                <p class="text-base-content/60 text-[14px] leading-relaxed">
+                    Enter your reference and phone number to track your booking or payment.
                 </p>
             </div>
 
@@ -28,18 +28,18 @@
                 <form wire:submit.prevent="track" class="space-y-6">
                     <div class="space-y-2">
                         <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Booking Reference</label>
-                        <input type="text" wire:model="reference" class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-dp-rose focus:ring-4 focus:ring-primary/20 rounded-2xl transition-all text-[15px] font-medium placeholder:text-dp-text-disabled" placeholder="e.g. CAT-2026-00001">
+                        <input type="text" wire:model="reference" class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-dp-rose focus:ring-4 focus:ring-primary/20 rounded-full transition-all text-[15px] font-medium placeholder:text-dp-text-disabled" placeholder="e.g. CAT-2026-00001">
                         @error('reference') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="space-y-2">
                         <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Phone Number</label>
-                        <input type="tel" wire:model="phone" class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-dp-rose focus:ring-4 focus:ring-primary/20 rounded-2xl transition-all text-[15px] font-medium placeholder:text-dp-text-disabled" placeholder="024 XXX XXXX">
+                        <input type="tel" wire:model="phone" class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-dp-rose focus:ring-4 focus:ring-primary/20 rounded-full transition-all text-[15px] font-medium placeholder:text-dp-text-disabled" placeholder="024 XXX XXXX">
                         @error('phone') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="pt-4">
-                        <x-ui.button type="submit" variant="primary" size="lg" class="w-full shadow-md py-5 rounded-2xl text-lg">
+                        <x-ui.button type="submit" variant="primary" class="w-full !rounded-full h-12">
                             {{ __('Resume Booking') }}
                         </x-ui.button>
                     </div>
@@ -47,14 +47,14 @@
 
                 <div class="pt-8 border-t border-base-content/10">
                     <p class="text-[12px] text-base-content/60 text-center font-medium">
-                        Need help? <a href="{{ route('contact') }}" class="text-primary font-bold hover:underline italic">Speak with our concierge</a>
+                        Need help? <a href="{{ route('contact') }}" class="text-primary font-bold hover:underline">Speak with support</a>
                     </p>
                 </div>
             </div>
         </div>
 
         {{-- Help Card --}}
-        <div class="mt-8 bg-primary/5 border border-dp-rose/10 rounded-2xl p-6 flex items-start gap-4">
+        <div class="mt-8 bg-primary/5 border border-primary rounded-2xl p-6 flex items-start gap-4">
             <div class="size-8 bg-primary text-white rounded-full flex items-center justify-center shrink-0 mt-0.5">
                 <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -62,8 +62,8 @@
             </div>
             <div>
                 <p class="text-[12px] font-bold text-primary uppercase tracking-widest mb-1">Where is my reference?</p>
-                <p class="text-[13px] text-base-content/60 font-medium leading-relaxed">
-                    Check your email (including spam) for a "Booking Received" message. Your unique reference is located at the top of the message.
+                <p class="text-[13px] text-primary font-medium leading-relaxed">
+                    Check your SMS inbox or email (including spam) for a "Booking Received" message. Your unique reference is located at the top of the message.
                 </p>
             </div>
         </div>

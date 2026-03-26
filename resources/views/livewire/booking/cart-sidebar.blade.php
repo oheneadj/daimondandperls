@@ -2,11 +2,11 @@
     <!-- Floating Cart Button -->
     @if($cartCount > 0 && !$isOpen)
     <div class="fixed bottom-6 right-6 sm:bottom-10 sm:right-10 z-50 animate-fade-in group">
-        <button wire:click="toggleSidebar" class="flex items-center justify-center size-16 bg-primary text-dp-white rounded-full shadow-dp-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-            <span class="absolute -top-1 -right-1 flex items-center justify-center size-6 bg-secondary text-dp-white text-[11px] font-black rounded-full ring-4 ring-dp-pearl shadow-inner">{{ $cartCount }}</span>
+        <button wire:click="toggleSidebar" class="flex items-center justify-center size-16 bg-primary text-dp-white rounded-full shadow-dp-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative shadow-xl border border-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+            <span class="absolute -top-1 -right-1 flex items-center justify-center size-6 bg-accent text-dp-white text-[11px] font-black rounded-full ring-4 ring-accent shadow-inner">{{ $cartCount }}</span>
             
-            <div class="absolute right-full mr-4 bg-base-100 px-4 py-2 rounded-lg shadow-md border border-dp-pearl-mid opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all pointer-events-none">
+            <div class="absolute right-full mr-4 bg-base-100 px-4 py-2 rounded-lg shadow-md border border-base-content/10 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all pointer-events-none">
                 <p class="whitespace-nowrap text-[12px] font-bold text-base-content uppercase tracking-widest">{{ __('View Selection') }}</p>
             </div>
         </button>
@@ -20,13 +20,13 @@
 
     <!-- Sidebar / Slide-over -->
     <div @class([
-        'fixed inset-y-0 right-0 z-[70] w-full max-w-[420px] bg-base-100 shadow-xl border-l border-dp-pearl-mid transform transition-transform duration-500 ease-out flex flex-col',
+        'fixed inset-y-0 right-0 z-[70] w-full max-w-[420px] bg-base-100 shadow-xl border-l border-white transform transition-transform duration-500 ease-out flex flex-col',
         'translate-x-0' => $isOpen,
         'translate-x-full' => !$isOpen,
     ])>
         
         <!-- Header -->
-        <div class="px-6 py-6 sm:px-8 sm:py-8 border-b border-dp-pearl-mid flex items-center justify-between bg-base-200/30">
+        <div class="px-6 py-6 sm:px-8 sm:py-8 border-b border-base-content/10 flex items-center justify-between bg-base-200/30">
             <div class="flex items-center gap-4">
                 <div class="size-10 rounded-xl bg-primary-soft flex items-center justify-center text-primary">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
@@ -57,7 +57,7 @@
                 </div>
             @else
                 @foreach($cartItems as $item)
-                    <div class="flex gap-4 sm:gap-6 animate-fade-in group">
+                    <div class="flex gap-4 sm:gap-6 animate-fade-in group pb-4 border-b border-base-content/10">
                         <!-- Image -->
                         <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-base-200-mid overflow-hidden shrink-0 shadow-sm border border-base-content/10 transition-transform group-hover:scale-105">
                             @if($item['package']->image_path)
@@ -96,19 +96,19 @@
 
         <!-- Footer -->
         @if($cartCount > 0)
-        <div class="p-6 sm:p-8 bg-base-100 border-t border-dp-pearl-mid space-y-8 shadow-xl relative">
+        <div class="p-6 sm:p-8 bg-base-100 border-t border-base-content/10 space-y-8 shadow-xl relative">
             <div class="flex justify-between items-end">
                 <div class="space-y-1">
-                   <span class="text-[10px] font-bold text-dp-text-disabled uppercase tracking-[0.2em]">{{ __('Estimate Total') }}</span>
-                   <p class="text-[10px] text-secondary font-bold uppercase tracking-widest">{{ __('Inclusive Presentation') }}</p>
+                   <span class="text-[10px] font-bold text-dp-text-disabled uppercase tracking-[0.2em]">{{ __('Menu Total') }}</span>
+                   <p class="text-[10px] text-secondary font-bold uppercase tracking-widest">{{ __('Food & Setup Included') }}</p>
                 </div>
                 <span class=" text-3xl sm:text-4xl font-bold text-primary tracking-tight"><span class="text-[18px] mr-1">GHS</span>{{ number_format($cartTotal, 2) }}</span>
             </div>
             <div class="space-y-4">
-                <x-ui.button :href="route('checkout')" class="w-full h-16 text-[15px] shadow-md" variant="primary" wire:navigate>
+                <x-ui.button :href="route('checkout')" class="w-full h-16 text-[15px] shadow-md !rounded-full" variant="primary" wire:navigate>
                     {{ __('Begin Secure Checkout') }}
                 </x-ui.button>
-                <p class="text-center text-[10px] text-dp-text-disabled font-bold uppercase tracking-[0.2em] italic">
+                <p class="text-center text-[10px] text-dp-text-disabled font-bold uppercase tracking-[0.2em]">
                     {{ __('Events & Logistics captured next') }}
                 </p>
             </div>

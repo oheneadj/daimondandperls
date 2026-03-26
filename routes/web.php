@@ -47,8 +47,6 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::get('manage-packages/create', \App\Livewire\Packages\PackageForm::class)->name('manage-packages.create');
         Route::get('manage-packages/{package:slug}/edit', \App\Livewire\Packages\PackageForm::class)->name('manage-packages.edit');
 
-
-
         // Admin Payments
         Route::get('payments', \App\Livewire\Admin\Payments\PaymentsOverview::class)->name('payments.index');
 
@@ -63,8 +61,6 @@ Route::middleware(['auth', 'verified', 'admin'])
 
         // Categories
         Route::get('categories', \App\Livewire\Categories\CategoryIndex::class)->name('categories.index');
-        Route::get('categories/create', \App\Livewire\Categories\CategoryForm::class)->name('categories.create');
-        Route::get('categories/{category:slug}/edit', \App\Livewire\Categories\CategoryForm::class)->name('categories.edit');
 
         // Admin Settings
         Route::get('settings', \App\Livewire\Admin\Settings\AdminSettings::class)->name('settings.index');
@@ -80,15 +76,17 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::get('impersonate/stop', function () {
             if (session()->has('impersonator_id')) {
                 \Illuminate\Support\Facades\Auth::loginUsingId(session()->pull('impersonator_id'));
+
                 return redirect()->route('admin.customers.index')->with('success', 'Impersonation terminated.');
             }
+
             return redirect()->home();
         })->name('impersonate.stop');
 
         // Design System
 
         Route::get('design-system', \App\Livewire\Admin\DesignSystem::class)->name('design-system');
-});
+    });
 
 // Public Invoices (Signed)
 Route::get('/invoice/{reference}/download', [\App\Http\Controllers\InvoiceController::class, 'download'])

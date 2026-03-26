@@ -1,33 +1,48 @@
-<x-layouts::auth :title="__('Email verification')">
-    <div class="flex flex-col gap-6">
-        <x-auth-header :title="__('Verify Email')" :description="__('Please verify your email address by clicking on the link we just emailed to you.')" />
+<x-layouts::auth :title="__('Email Verification')">
+    <div class="space-y-10">
+        <!-- Header -->
+        <div class="text-center space-y-3">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest mb-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                {{ __('Identity Verification') }}
+            </div>
+            <h1 class="text-4xl font-black tracking-tight text-base-content leading-tight">
+                {{ __('Verify Email') }}
+            </h1>
+            <p class="text-[14px] text-base-content/50 font-medium max-w-[280px] mx-auto leading-relaxed italic">
+                {{ __('Please verify your email address by clicking on the link we just emailed to you.') }}
+            </p>
+        </div>
 
         @if (session('status') == 'verification-link-sent')
-            <div class="alert alert-success shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span class="text-sm font-medium">
+            <div class="p-5 bg-[#9ABC05]/10 border border-[#9ABC05]/20 rounded-2xl flex items-start gap-4">
+                <div class="w-8 h-8 rounded-full bg-[#9ABC05]/20 flex items-center justify-center shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#9ABC05]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <p class="text-[13px] font-bold text-[#9ABC05] leading-relaxed">
                     {{ __('A new verification link has been sent to the email address you provided during registration.') }}
-                </span>
+                </p>
             </div>
         @endif
 
-        <div class="flex flex-col gap-4 mt-2">
+        <div class="space-y-6">
             <form method="POST" action="{{ route('verification.send') }}">
                 @csrf
-                <x-ui.button type="submit" variant="primary" size="lg" class="w-full">
-                    {{ __('Resend verification email') }}
-                </x-ui.button>
+                <button type="submit" class="w-full h-15 bg-[#121212] hover:bg-black text-white rounded-[20px] shadow-xl shadow-black/10 font-black text-[13px] uppercase tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 group">
+                    {{ __('Resend Verification Email') }}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 translate-x-0 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
             </form>
 
             <form method="POST" action="{{ route('logout') }}" class="text-center">
                 @csrf
-                <x-ui.button type="submit" variant="ghost" size="sm" class="text-base-content/60 hover:text-primary" data-test="logout-button">
+                <button type="submit" class="text-[12px] text-base-content/40 font-black uppercase tracking-widest hover:text-primary transition-colors">
                     {{ __('Log out') }}
-                </x-ui.button>
+                </button>
             </form>
         </div>
     </div>
