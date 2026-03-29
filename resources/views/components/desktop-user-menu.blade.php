@@ -6,7 +6,7 @@
             </div>
         </div>
         <div class="hidden sm:flex flex-col items-start gap-0.5 text-left leading-tight">
-            <span class="text-xs font-bold">{{ auth()->user()->name }}</span>
+            <span class="text-xs font-bold">{{ auth()->user()->displayName() }}</span>
             <span class="text-[10px] text-base-content/60">{{ auth()->user()->email }}</span>
         </div>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 opacity-50" viewBox="0 0 20 20" fill="currentColor">

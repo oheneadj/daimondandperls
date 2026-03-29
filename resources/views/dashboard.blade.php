@@ -1,21 +1,21 @@
 <div class="space-y-10 pb-10 ">
     {{-- Header Section --}}
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-            <h1 class=" text-[32px] font-semibold text-base-content leading-tight">
-                {{ __('Dashboard') }} <span class="text-[#FFC926] mx-1">Hello</span> <span class="text-primary">{{ auth()->user()->name }}</span>
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6">
+        <div class="min-w-0">
+            <h1 class="text-[24px] md:text-[32px] font-semibold text-base-content leading-tight">
+                {{ __('Dashboard') }} <span class="text-[#FFC926] mx-1">Hello</span> <span class="text-primary truncate">{{ auth()->user()->displayName() }}</span>
             </h1>
-            <p class=" text-[15px] text-base-content/60 mt-2">
+            <p class="text-[13px] md:text-[15px] text-base-content/60 mt-2">
                 {{ __('Your operations at a glance for') }} <span class="italic font-medium">Diamonds & Pearls</span>.
             </p>
         </div>
-        <div class="flex items-center gap-4">
-            <div class="flex items-center gap-2.5  text-[11px] font-bold text-white bg-neutral px-5 py-3 rounded-full border border-base-content/5 shadow-sm uppercase tracking-widest">
+        <div class="flex items-center gap-3 flex-shrink-0">
+            <div class="flex items-center gap-2.5 text-[10px] sm:text-[11px] font-bold text-white bg-neutral px-4 sm:px-5 py-2.5 sm:py-3 rounded-full border border-base-content/5 shadow-sm uppercase tracking-widest">
                 <span class="relative flex h-2 w-2">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
                 </span>
-                Date: {{ now()->format('d M Y') }}
+                {{ now()->format('d M Y') }}
             </div>
             <x-button variant="ghost" size="icon" wire:click="$refresh" wire:loading.class="animate-spin" wire:target="$refresh" class="rounded-full shadow-sm bg-white">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-40 hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -72,20 +72,20 @@
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {{-- Main Chart Area (3 cols) --}}
         <div class="lg:col-span-3 bg-white border border-base-content/5 rounded-xl shadow-sm overflow-hidden flex flex-col">
-            <div class="p-8 pb-4 flex items-center justify-between">
+            <div class="p-5 sm:p-8 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <p class=" text-[11px] font-bold uppercase tracking-widest text-base-content/60 mb-1">{{ __('Financial Intelligence') }}</p>
-                    <h2 class=" text-[24px] font-semibold text-base-content tracking-tight">{{ __('Business Performance') }}</h2>
+                    <p class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 mb-1">{{ __('Financial Intelligence') }}</p>
+                    <h2 class="text-[20px] sm:text-[24px] font-semibold text-base-content tracking-tight">{{ __('Business Performance') }}</h2>
                 </div>
-                <div class="flex gap-6">
-                    <div class="text-right">
-                        <p class=" text-[9px] font-bold uppercase tracking-widest text-base-content/60 opacity-60">{{ __('Booked (Actual)') }}</p>
-                        <p class=" text-[16px] font-bold text-success">GH₵{{ number_format($totalRevenue, 2) }}</p>
+                <div class="flex gap-4 sm:gap-6">
+                    <div class="sm:text-right">
+                        <p class="text-[9px] font-bold uppercase tracking-widest text-base-content/60 opacity-60">{{ __('Booked (Actual)') }}</p>
+                        <p class="text-[14px] sm:text-[16px] font-bold text-success">GH₵{{ number_format($totalRevenue, 2) }}</p>
                     </div>
                     <div class="h-8 w-px border-base-content/5 border-l"></div>
-                    <div class="text-right">
-                        <p class=" text-[9px] font-bold uppercase tracking-widest text-base-content/60 opacity-60">{{ __('Projected') }}</p>
-                        <p class=" text-[16px] font-bold text-[#18542A]">GH₵{{ number_format($projectedRevenue, 2) }}</p>
+                    <div class="sm:text-right">
+                        <p class="text-[9px] font-bold uppercase tracking-widest text-base-content/60 opacity-60">{{ __('Projected') }}</p>
+                        <p class="text-[14px] sm:text-[16px] font-bold text-[#18542A]">GH₵{{ number_format($projectedRevenue, 2) }}</p>
                     </div>
                 </div>
             </div>

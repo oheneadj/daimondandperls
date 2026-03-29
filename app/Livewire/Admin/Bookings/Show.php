@@ -41,13 +41,13 @@ class Show extends Component
 
     public function getCanBeVerifiedProperty(): bool
     {
-        return $this->booking->status === BookingStatus::Confirmed 
+        return $this->booking->status === BookingStatus::Confirmed
             && $this->booking->payment_status !== \App\Enums\PaymentStatus::Paid;
     }
 
     public function getCanBePreparedProperty(): bool
     {
-        return $this->booking->status === BookingStatus::Confirmed 
+        return $this->booking->status === BookingStatus::Confirmed
             && $this->booking->payment_status === \App\Enums\PaymentStatus::Paid;
     }
 
@@ -72,6 +72,8 @@ class Show extends Component
 
             // Refetch the relationships that might have been impacted
             $this->booking->refresh();
+
+            $this->dispatch('banner', style: 'success', message: 'Booking confirmed successfully.');
         }
     }
 
@@ -82,6 +84,7 @@ class Show extends Component
                 'status' => BookingStatus::InPreparation,
             ]);
             $this->booking->refresh();
+            $this->dispatch('banner', style: 'success', message: 'Booking preparation started successfully.');
         }
     }
 
@@ -99,6 +102,8 @@ class Show extends Component
             }
 
             $this->booking->refresh();
+
+            $this->dispatch('banner', style: 'success', message: 'Booking completed successfully.');
         }
     }
 
@@ -123,8 +128,10 @@ class Show extends Component
             ]);
             $this->booking->refresh();
             $this->closeCancelModal();
-            
+
             $this->redirectRoute('admin.bookings.show', ['booking' => $this->booking], navigate: true);
+
+            $this->dispatch('banner', style: 'success', message: 'Booking cancelled successfully.');
         }
     }
 
@@ -186,7 +193,7 @@ class Show extends Component
 
             $this->closeVerifyModal();
             $this->dispatch('notify', ['type' => 'success', 'message' => 'Payment verified successfully. Implementation unlocked.']);
-            
+
             $this->redirectRoute('admin.bookings.show', ['booking' => $this->booking], navigate: true);
         }
     }
@@ -202,7 +209,7 @@ class Show extends Component
         }
 
         $this->closeActionModal();
-        
+
         $this->redirectRoute('admin.bookings.show', ['booking' => $this->booking], navigate: true);
     }
 

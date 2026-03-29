@@ -1,24 +1,22 @@
 <div class="space-y-6 pb-10">
     {{-- Page Header --}}
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-            <h1 class="text-[28px] font-semibold text-base-content leading-tight">
-                {{ __('Application Settings') }}
-            </h1>
-            <p class="text-[14px] text-base-content/50 mt-1">{{ __('Configure your business identity, integration keys, and monitor system health.') }}</p>
-        </div>
+    <div>
+        <h1 class="text-[24px] md:text-[28px] font-semibold text-base-content leading-tight">
+            {{ __('Application Settings') }}
+        </h1>
+        <p class="text-[13px] md:text-[14px] text-base-content/50 mt-1">{{ __('Configure your business identity, integration keys, and monitor system health.') }}</p>
     </div>
 
     {{-- Tab Navigation --}}
-    <div class="flex items-center gap-2 bg-base-200 p-1.5 rounded-lg border border-base-content/5 w-fit shadow-sm">
+    <div class="flex items-center gap-2 bg-base-200 p-1.5 rounded-lg border border-base-content/5 w-full sm:w-fit shadow-sm overflow-x-auto">
         @foreach([
             'company' => ['label' => 'Company', 'icon' => '<path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'],
             'app' => ['label' => 'App & API', 'icon' => '<path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'],
             'system' => ['label' => 'System Overview', 'icon' => '<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>']
         ] as $key => $tabInfo)
-            <button wire:click="setTab('{{ $key }}')" 
-                    class="inline-flex items-center gap-2.5 px-5 py-2 text-[11px] font-bold uppercase tracking-[0.15em] rounded-md transition-all duration-200 {{ $tab === $key ? 'bg-white text-primary shadow-sm border border-base-content/5' : 'text-base-content/40 hover:text-base-content' }}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 {{ $tab === $key ? 'text-primary' : 'text-base-content/20' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button wire:click="setTab('{{ $key }}')"
+                    class="inline-flex items-center gap-2 sm:gap-2.5 px-3 sm:px-5 py-2 text-[11px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.15em] rounded-md transition-all duration-200 whitespace-nowrap {{ $tab === $key ? 'bg-white text-primary shadow-sm border border-base-content/5' : 'text-base-content/40 hover:text-base-content' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0 {{ $tab === $key ? 'text-primary' : 'text-base-content/20' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     {!! $tabInfo['icon'] !!}
                 </svg>
                 {{ __($tabInfo['label']) }}
@@ -126,16 +124,20 @@
                                 </div>
 
                             <div class="grid grid-cols-1 gap-5">
-                                <x-ui.input label="Official Business Name" wire:model="business_name" required placeholder="e.g. Diamonds & Pearls" />
+                                <x-ui.input label="Official Business Name" wire:model="business_name" required placeholder="e.g. Diamonds & Pearls" :error="$errors->first('business_name')" />
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <x-ui.input label="Contact Phone Number" wire:model="business_phone" required placeholder="+233 ..." />
-                                <x-ui.input label="Primary Email Address" wire:model="business_email" type="email" required placeholder="contact@example.com" />
+                                <x-ui.input label="Contact Phone Number" wire:model="business_phone" required placeholder="+233 ..." :error="$errors->first('business_phone')" />
+                                <x-ui.input label="WhatsApp Number" wire:model="business_whatsapp" placeholder="233244203181 (Optional)" :error="$errors->first('business_whatsapp')" />
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <x-ui.input label="Primary Email Address" wire:model="business_email" type="email" required placeholder="contact@example.com" :error="$errors->first('business_email')" />
                             </div>
 
                             <div class="grid grid-cols-1 gap-5">
-                                <x-ui.textarea label="Physical/Head Office Address" wire:model="business_address" rows="3" required placeholder="House No, Street, City" />
+                                <x-ui.textarea label="Physical/Head Office Address" wire:model="business_address" rows="3" required placeholder="House No, Street, City" :error="$errors->first('business_address')" />
                             </div>
 
                             <div class="pt-4 flex justify-end">
@@ -165,12 +167,12 @@
                                 </x-ui.alert>
                             @endif
 
-                            <x-ui.input label="Financial Institution" wire:model="bank_name" placeholder="e.g. Ecobank Ghana" required />
-                            <x-ui.input label="Official Account Name" wire:model="account_name" placeholder="e.g. Diamonds & Pearls Ltd" required />
+                            <x-ui.input label="Financial Institution" wire:model="bank_name" placeholder="e.g. Ecobank Ghana" required :error="$errors->first('bank_name')" />
+                            <x-ui.input label="Official Account Name" wire:model="account_name" placeholder="e.g. Diamonds & Pearls Ltd" required :error="$errors->first('account_name')" />
                             
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <x-ui.input label="Account Number" wire:model="account_number" placeholder="Enter number" required />
-                                <x-ui.input label="Branch Code" wire:model="branch_code" placeholder="Optional" />
+                                <x-ui.input label="Account Number" wire:model="account_number" placeholder="Enter number" required :error="$errors->first('account_number')" />
+                                <x-ui.input label="Branch Code" wire:model="branch_code" placeholder="Optional" :error="$errors->first('branch_code')" />
                             </div>
 
                             <div class="pt-4 flex justify-end">
@@ -211,8 +213,8 @@
                             </div>
                         </div>
 
-                        <x-ui.input label="Public Key" wire:model="paystack_public_key" placeholder="pk_test_..." required />
-                        <x-ui.input label="Secret Key" wire:model="paystack_secret_key" type="password" placeholder="sk_test_..." required />
+                        <x-ui.input label="Public Key" wire:model="paystack_public_key" placeholder="pk_test_..." required :error="$errors->first('paystack_public_key')" />
+                        <x-ui.input label="Secret Key" wire:model="paystack_secret_key" type="password" placeholder="sk_test_..." required :error="$errors->first('paystack_secret_key')" />
 
                         <div class="pt-2 flex justify-end">
                             <x-ui.button type="submit" variant="secondary" size="md" wire:loading.attr="disabled">

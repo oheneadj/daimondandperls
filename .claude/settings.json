@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /home/oheneadj/server/dpc -name *ome*age* -newer /home/oheneadj/server/dpc/composer.json)",
+      "Bash(git stash:*)"
+    ],
+    "additionalDirectories": [
+      "/home/oheneadj/server/dpc/resources/views/components"
+    ]
+  }
+}

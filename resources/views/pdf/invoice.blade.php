@@ -141,7 +141,7 @@
                 @foreach($booking->items as $index => $item)
                     <tr>
                         <td>{{ $index + 1 }}</td>
-                        <td style="font-weight: 600;">{{ $item->package->name ?? 'Package' }}</td>
+                        <td style="font-weight: 600;">{{ $item->package_name ?? $item->package?->name ?? 'Package' }}</td>
                         <td>{{ $item->quantity }}</td>
                         <td><span class="currency">GHc</span>{{ number_format($item->price, 2) }}</td>
                         <td style="font-weight: 600;"><span class="currency">GHc</span>{{ number_format($item->price * $item->quantity, 2) }}</td>

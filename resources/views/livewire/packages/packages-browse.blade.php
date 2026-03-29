@@ -110,8 +110,7 @@
     <!-- Booking Bar (Dynamic) -->
     @if($cartCount > 0)
         <div 
-            class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-xl animate-in fade-in slide-in-from-bottom-5 border border-accent rounded-3xl duration-500"
-        >
+            class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-xl animate-in fade-in slide-in-from-bottom-5 border border-accent rounded-3xl duration-500">
             <div class="booking-bar-status">
                 <div class="booking-count-badge">
                     {{ $cartCount }}

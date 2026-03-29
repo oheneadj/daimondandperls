@@ -37,7 +37,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
             <!-- Main Form Column -->
             <div class="lg:col-span-7">
-                <div class="bg-base-100 border border-base-content/10 rounded-[24px] p-8 lg:p-12 shadow-sm">
+                <div class="bg-base-100 border border-base-content/10 rounded-[24px] p-5 sm:p-8 lg:p-12 shadow-sm">
                     @if($currentStep === 1)
                         <div wire:key="step-review" class="animate-fade-in space-y-8">
                             <div>
@@ -48,15 +48,12 @@
                             <div class="space-y-6">
                                 @foreach($cartItems as $item)
                                     <div wire:key="cart-review-{{ $item['package']->id }}" class="flex items-center gap-6 p-4 bg-base-200 rounded-2xl border border-base-content/10 group transition-all hover:bg-white hover:shadow-sm">
-                                        <div class="size-20 bg-base-200-mid rounded-xl overflow-hidden shrink-0 flex items-center justify-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-8 text-primary/20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                                        </div>
                                         <div class="flex-1">
                                             <h4 class=" text-lg lg:text-xl font-semibold text-base-content mb-1">{{ $item['package']->name }}</h4>
                                             <div class="flex items-center gap-4">
-                                                <div class="text-[14px] font-bold text-primary">GH₵ {{ number_format($item['package']->price, 0) }} / head</div>
+                                                <div class="text-[14px] font-bold text-primary">GH₵ {{ number_format($item['package']->price, 0) }}</div>
                                                 <div class="size-1 border-base-content/10 rounded-full"></div>
-                                                <div class="text-[13px] text-base-content/60 font-medium">Qty: {{ $item['quantity'] }} attendees</div>
+                                                <div class="text-[13px] text-base-content/60 font-medium">Qty: {{ $item['quantity'] }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -95,30 +92,76 @@
                                     @error('email') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
                                 </div>
 
-                                @if(!auth()->check())
-                                    <div class="mt-4 p-6 bg-base-200 border border-base-content/10 rounded-2xl space-y-4">
+                                @guest
+                                    <div class="mt-4 p-4 sm:p-6 bg-primary/5 border border-primary/10 rounded-2xl space-y-4">
                                         <label class="flex items-center gap-3 cursor-pointer group">
-                                            <input type="checkbox" wire:model.live="createAccount" class="size-5 rounded border-base-content/10 text-primary focus:ring-dp-rose-soft transition-all">
-                                            <span class="text-[14px] font-bold text-base-content group-hover:text-primary transition-colors">
-                                                Create an account to track your booking and get more personalized service?
-                                            </span>
+                                            <input type="checkbox" wire:model.live="verifyPhone" class="size-5 rounded border-base-content/10 text-primary focus:ring-primary/20 transition-all">
+                                            <div>
+                                                <span class="text-[14px] font-bold text-base-content group-hover:text-primary transition-colors">
+                                                    Verify phone to track your booking
+                                                </span>
+                                                <p class="text-[11px] text-base-content/40 mt-0.5">
+                                                    We'll send a code to your phone number above so you can sign in and track your order.
+                                                </p>
+                                            </div>
                                         </label>
 
-                                        @if($createAccount)
-                                            <div class="space-y-2 animate-fade-in pt-2">
-                                                <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Create Password</label>
-                                                <input type="password" wire:model="password" class="w-full px-5 py-4 bg-white border border-base-content/10 focus:border-dp-rose focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium placeholder:text-dp-text-disabled" placeholder="Minimum 8 characters">
-                                                @error('password') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
-                                                <p class="text-[11px] text-base-content/60 font-medium italic mt-1">Confirming your booking will automatically create your account and log you in.</p>
+                                        @if($verifyPhone && $otpStep === 0)
+                                            {{-- Ready to send OTP --}}
+                                            <div class="pt-2">
+                                                <button type="button" wire:click="sendOtp" wire:loading.attr="disabled"
+                                                    class="w-full h-12 bg-primary hover:bg-primary/90 text-white rounded-full font-bold text-[12px] uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2">
+                                                    <span wire:loading.remove wire:target="sendOtp">Send Verification Code</span>
+                                                    <span wire:loading wire:target="sendOtp" class="flex items-center gap-2">
+                                                        <span class="loading loading-spinner loading-sm"></span>
+                                                        Sending...
+                                                    </span>
+                                                </button>
+                                                @error('phone') <p class="text-[11px] font-bold text-error mt-2">{{ $message }}</p> @enderror
+                                            </div>
+                                        @elseif($otpStep === 2)
+                                            {{-- OTP verification grid --}}
+                                            <div class="pt-2 space-y-4">
+                                                <p class="text-[13px] text-base-content/60 font-medium">
+                                                    We've sent a 6-digit code to <strong class="text-base-content">{{ $phone }}</strong>.
+                                                </p>
+
+                                                @if($otpError)
+                                                    <div class="p-3 bg-error/10 text-error text-[12px] font-bold rounded-xl border border-error/10 flex items-center gap-2">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                        {{ $otpError }}
+                                                    </div>
+                                                @endif
+
+                                                <x-auth.otp-grid wireModel="otp" wireSubmit="verifyOtp" wireResend="resendOtp" :compact="true" />
+
+                                                <x-auth.resend-timer wireResend="resendOtp" :seconds="60" />
+
+                                                <div class="flex gap-3">
+                                                    <button type="button" wire:click="cancelOtp"
+                                                        class="flex-1 h-11 text-[12px] font-bold text-base-content/50 hover:text-base-content border border-base-content/10 rounded-full transition-colors">
+                                                        Cancel
+                                                    </button>
+                                                    <button type="button" wire:click="verifyOtp" wire:loading.attr="disabled"
+                                                        class="flex-1 h-11 bg-success text-white rounded-full font-bold text-[12px] uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2">
+                                                        <span wire:loading.remove wire:target="verifyOtp">Verify</span>
+                                                        <span wire:loading wire:target="verifyOtp" class="flex items-center gap-2">
+                                                            <span class="loading loading-spinner loading-sm"></span>
+                                                            Verifying...
+                                                        </span>
+                                                    </button>
+                                                </div>
                                             </div>
                                         @endif
                                     </div>
-                                @endif
+                                @endguest
                             </div>
 
                             <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t border-base-content/10">
                                 <x-ui.button variant="ghost" wire:click="previousStep" class="w-full sm:w-auto font-bold">&larr; {{ __('Back') }}</x-ui.button>
-                                <x-ui.button variant="primary" size="lg" wire:click="nextStep" class="w-full sm:w-auto shadow-md">
+                                <x-ui.button variant="primary" size="lg" wire:click="nextStep" class="w-full !h-12 sm:w-auto shadow-md">
                                     {{ __('Next: Event Location') }}
                                 </x-ui.button>
                             </div>
@@ -218,13 +261,14 @@
                                 </div>
                             </div>
 
-                            <div class="bg-success/5 border border-dp-success/20 rounded-2xl p-5 flex items-start gap-4">
-                                <div class="size-6 bg-success text-white rounded-full flex items-center justify-center mt-0.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                                </div>
+                            <div class="bg-success/5 border border-success rounded-2xl p-5 flex items-start gap-4">
+                                <div class="size-6 bg-success text-white rounded-full p-4 flex items-center justify-center mt-0.5">
+ <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                    </svg>                                </div>
                                 <div>
-                                    <div class="text-[13px] font-bold text-dp-success uppercase tracking-wide">Ready for confirmation</div>
-                                    <p class="text-[12px] text-dp-success/80 font-medium leading-relaxed">By clicking finalize, you agree to our catering terms. A booking reference will be generated for your payment.</p>
+                                    <div class="text-[13px] font-bold text-success uppercase tracking-wide">Ready for confirmation</div>
+                                    <p class="text-[12px] text-success/80 font-medium leading-relaxed">By clicking finalize, you agree to our catering terms. A booking reference will be generated for your payment.</p>
                                 </div>
                             </div>
 
@@ -241,7 +285,7 @@
 
             <!-- Sidebar Summary -->
             <div class="lg:col-span-5 space-y-8">
-                <div class="bg-base-100 border border-base-content/10 rounded-[24px] p-8 lg:p-10 shadow-sm">
+                <div class="bg-base-100 border border-base-content/10 rounded-[24px] p-5 sm:p-8 lg:p-10 shadow-sm">
                     <h4 class=" text-2xl font-semibold text-base-content mb-8 pb-4 border-b border-base-content/10">Order Summary</h4>
                     
                     <div class="space-y-6 mb-10">

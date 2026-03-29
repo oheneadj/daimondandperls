@@ -1,16 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Fortify;
 
 use App\Concerns\PasswordValidationRules;
-use App\Concerns\ProfileValidationRules;
+use App\Enums\UserType;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
 class CreateNewUser implements CreatesNewUsers
 {
-    use PasswordValidationRules, ProfileValidationRules;
+    use PasswordValidationRules;
 
     /**
      * Validate and create a newly registered user.
@@ -20,23 +24,25 @@ class CreateNewUser implements CreatesNewUsers
     public function create(array $input): User
     {
         Validator::make($input, [
-            ...$this->profileRules(),
-            'phone' => ['required', 'string', 'max:20'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique(User::class), 'required_without:phone'],
+            'phone' => ['nullable', 'string', 'regex:/^(?:\+233|0)\d{9}$/', Rule::unique(User::class), 'required_without:email'],
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($input) {
+        return DB::transaction(function () use ($input): User {
             $user = User::create([
                 'name' => $input['name'],
-                'email' => $input['email'],
+                'email' => $input['email'] ?? null,
+                'phone' => $input['phone'] ?? null,
                 'password' => $input['password'],
-                'type' => \App\Enums\UserType::Customer,
+                'type' => UserType::Customer,
             ]);
 
             $user->customer()->create([
                 'name' => $user->name,
                 'email' => $user->email,
-                'phone' => $input['phone'],
+                'phone' => $input['phone'] ?? null,
             ]);
 
             return $user;

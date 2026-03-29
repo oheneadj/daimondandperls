@@ -8,13 +8,12 @@ window.Chart = Chart;
 window.ApexCharts = ApexCharts;
 
 // FilePond
-import * as FilePond from 'filepond/dist/filepond.esm.js';
+import * as FilePond from 'filepond';
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 import FilePondPluginFileValidateSize from 'filepond-plugin-file-validate-size';
 
-// Handle FilePond being a module object or a function
-const fp = FilePond.default || FilePond;
+const fp = FilePond;
 window.FilePond = fp;
 
 import 'filepond/dist/filepond.min.css';

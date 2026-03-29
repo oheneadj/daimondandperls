@@ -258,9 +258,22 @@
         </x-ui.card>
 
         <div class="flex items-center justify-between">
-            <x-ui.button variant="black" href="{{ route('admin.manage-packages.index') }}" wire:navigate>
-                {{ __('Cancel') }}
-            </x-ui.button>
+            <div class="flex items-center gap-3">
+                <x-ui.button variant="black" href="{{ route('admin.manage-packages.index') }}" wire:navigate>
+                    {{ __('Cancel') }}
+                </x-ui.button>
+
+                @if($package)
+                    <x-ui.button type="button" wire:click="$set('showDeleteModal', true)" class="bg-[#D52518] border-[#D52518] hover:bg-[#b01e14] text-white">
+                        <x-slot:icon>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </x-slot:icon>
+                        {{ __('Delete') }}
+                    </x-ui.button>
+                @endif
+            </div>
             <x-ui.button type="submit" variant="primary" size="lg" wire:loading.attr="disabled" class="min-w-[200px] shadow-dp-lg">
                 <span wire:loading.remove wire:target="save">
                     {{ $package ? __('Update Package') : __('Add Package') }}
@@ -271,5 +284,31 @@
                 </span>
             </x-ui.button>
         </div>
+
+        @error('delete')
+            <div class="p-4 rounded-xl bg-[#D52518]/10 border border-[#D52518]">
+                <p class="text-[13px] font-bold text-[#D52518]">{{ $message }}</p>
+            </div>
+        @enderror
     </form>
+
+    @if($package)
+        <x-ui.modal wire:model="showDeleteModal" title="Confirm Deletion" icon="heroicon-o-exclamation-triangle" persistent>
+            <div class="space-y-6">
+                <p class="text-[14px] text-base-content leading-relaxed">
+                    {{ __('Are you sure you want to retire this culinary masterpiece? This action will remove the package from the active menu.') }}
+                </p>
+                <div class="p-4 rounded-xl bg-[#D52518]/5 border border-[#D52518]">
+                    <p class="text-[13px] font-bold text-base-content">{{ $package->name }}</p>
+                </div>
+            </div>
+
+            <x-slot:footer>
+                <x-ui.button variant="ghost" wire:click="$set('showDeleteModal', false)">{{ __('Cancel') }}</x-ui.button>
+                <x-ui.button type="danger" variant="primary" wire:click="deletePackage" class="bg-[#D52518] border-[#D52518] hover:bg-[#b01e14]">
+                    {{ __('Retire Package') }}
+                </x-ui.button>
+            </x-slot:footer>
+        </x-ui.modal>
+    @endif
 </div>

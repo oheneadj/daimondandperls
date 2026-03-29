@@ -12,7 +12,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable, \Illuminate\Database\Eloquent\Concerns\HasUuids, \App\Traits\HasRoles;
+    use \App\Traits\HasRoles, HasFactory, \Illuminate\Database\Eloquent\Concerns\HasUuids, Notifiable, TwoFactorAuthenticatable;
 
     /**
      * The attributes that are mass assignable.
@@ -100,11 +100,23 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the user's preferred display name
+     */
+    public function displayName(): string
+    {
+        if ($this->isCustomer() && $this->customer) {
+            return $this->customer->name;
+        }
+
+        return $this->name;
+    }
+
+    /**
      * Get the user's initials
      */
     public function initials(): string
     {
-        return Str::of($this->name)
+        return Str::of($this->displayName())
             ->explode(' ')
             ->take(2)
             ->map(fn ($word) => Str::substr($word, 0, 1))

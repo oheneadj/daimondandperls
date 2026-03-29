@@ -9,7 +9,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -26,26 +25,38 @@ class AdminSettings extends Component
     public string $tab = 'company';
 
     // Business Info
-    public string $business_name = '';
-    public string $business_address = '';
-    public string $business_phone = '';
-    public string $business_email = '';
+    public ?string $business_name = '';
+
+    public ?string $business_address = '';
+
+    public ?string $business_phone = '';
+
+    public ?string $business_whatsapp = '';
+
+    public ?string $business_email = '';
+
     public $business_logo;
+
     public ?string $current_logo_path = null;
 
     // Payment Gateway
-    public string $paystack_public_key = '';
-    public string $paystack_secret_key = '';
+    public ?string $paystack_public_key = '';
+
+    public ?string $paystack_secret_key = '';
 
     // Notification Preferences
     public bool $email_notifications = false;
+
     public bool $sms_notifications = false;
-    
+
     // Bank Details
-    public string $bank_name = '';
-    public string $account_name = '';
-    public string $account_number = '';
-    public string $branch_code = '';
+    public ?string $bank_name = '';
+
+    public ?string $account_name = '';
+
+    public ?string $account_number = '';
+
+    public ?string $branch_code = '';
 
     public function mount(): void
     {
@@ -54,6 +65,7 @@ class AdminSettings extends Component
         $this->business_name = $settings->get('business_name')?->value ?? '';
         $this->business_address = $settings->get('business_address')?->value ?? '';
         $this->business_phone = $settings->get('business_phone')?->value ?? '';
+        $this->business_whatsapp = $settings->get('business_whatsapp')?->value ?? '';
         $this->business_email = $settings->get('business_email')?->value ?? '';
         $this->current_logo_path = $settings->get('business_logo')?->value;
 
@@ -80,6 +92,7 @@ class AdminSettings extends Component
             'business_name' => 'required|string|max:255',
             'business_address' => 'required|string|max:500',
             'business_phone' => 'required|string|max:20',
+            'business_whatsapp' => 'nullable|string|max:20',
             'business_email' => 'required|email|max:255',
             'business_logo' => 'nullable|image|max:2048', // 2MB Max
         ]);
@@ -95,9 +108,10 @@ class AdminSettings extends Component
         $this->updateSetting('business_name', $this->business_name, \App\Enums\SettingType::String, 'business');
         $this->updateSetting('business_address', $this->business_address, \App\Enums\SettingType::String, 'business');
         $this->updateSetting('business_phone', $this->business_phone, \App\Enums\SettingType::String, 'business');
+        $this->updateSetting('business_whatsapp', $this->business_whatsapp, \App\Enums\SettingType::String, 'business');
         $this->updateSetting('business_email', $this->business_email, \App\Enums\SettingType::String, 'business');
 
-        session()->flash('business_info_success', 'Business information updated successfully.');
+        $this->dispatch('banner', style: 'success', message: 'Business information updated successfully.');
     }
 
     public function savePaymentSettings(): void
@@ -110,7 +124,7 @@ class AdminSettings extends Component
         $this->updateSetting('paystack_public_key', $this->paystack_public_key, \App\Enums\SettingType::String, 'payment');
         $this->updateSetting('paystack_secret_key', $this->paystack_secret_key, \App\Enums\SettingType::String, 'payment');
 
-        session()->flash('payment_settings_success', 'Payment gateway credentials updated.');
+        $this->dispatch('banner', style: 'success', message: 'Payment gateway credentials updated.');
     }
 
     public function saveBankDetails(): void
@@ -127,17 +141,19 @@ class AdminSettings extends Component
         $this->updateSetting('account_number', $this->account_number, \App\Enums\SettingType::String, 'bank');
         $this->updateSetting('branch_code', $this->branch_code, \App\Enums\SettingType::String, 'bank');
 
-        session()->flash('bank_details_success', 'Company bank details updated successfully.');
+        $this->dispatch('banner', style: 'success', message: 'Company bank details updated successfully.');
     }
 
     public function updatedEmailNotifications($value): void
     {
         $this->updateSetting('email_enabled', $value, \App\Enums\SettingType::Boolean, 'notifications');
+        $this->dispatch('banner', style: 'success', message: 'Notification preferences updated successfully.');
     }
 
     public function updatedSmsNotifications($value): void
     {
         $this->updateSetting('sms_enabled', $value, \App\Enums\SettingType::Boolean, 'notifications');
+        $this->dispatch('banner', style: 'success', message: 'Notification preferences updated successfully.');
     }
 
     private function updateSetting(string $key, mixed $value, \App\Enums\SettingType $type = \App\Enums\SettingType::String, ?string $group = null): void
@@ -182,7 +198,7 @@ class AdminSettings extends Component
                 'env' => App::environment(),
                 'debug' => config('app.debug'),
                 'url' => config('app.url'),
-            ]
+            ],
         ];
     }
 
@@ -194,9 +210,11 @@ class AdminSettings extends Component
                 $uptimeSeconds = (float) $uptime;
                 $days = (int) floor($uptimeSeconds / 86400);
                 $hours = (int) floor(($uptimeSeconds / 3600) % 24);
-                return (string) $days . 'd ' . (string) $hours . 'h';
+
+                return (string) $days.'d '.(string) $hours.'h';
             }
         }
+
         return 'N/A';
     }
 

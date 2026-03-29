@@ -5,58 +5,54 @@
     @include('partials.head')
 </head>
 
-<body class="bg-base-200 antialiased text-base-content overflow-hidden">
-    <div class="flex h-screen overflow-hidden">
+<body class="min-h-screen bg-base-200 antialiased text-base-content overflow-x-hidden flex"
+    x-data="{ mobileMenuOpen: false }">
 
-        {{-- SIDEBAR: fixed 256px wide, full height, dark background (#121212) --}}
-        <aside class="w-64 flex-shrink-0 overflow-y-auto bg-neutral border-r border-white/[0.03]">
-            @include('layouts.partials.sidebar')
-        </aside>
+    <!-- Mobile Sidebar Backdrop -->
+    <div x-show="mobileMenuOpen" x-transition.opacity @click="mobileMenuOpen = false"
+        class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden" style="display: none;"></div>
 
-        {{-- MAIN AREA: fluid, contains header + scrollable content --}}
-        <div class="flex-1 flex flex-col overflow-hidden">
-            {{-- TOP BAR: Light (Cream) background (#f3e8cc) --}}
-            <header class="h-16 flex-shrink-0 bg-base-200 border-b border-base-content/[0.03] flex items-center px-6 md:px-10">
-                @include('layouts.partials.header')
-            </header>
+    <x-admin.sidebar />
 
-            {{-- PAGE CONTENT: scrollable, spacious padding --}}
-            <main class="flex-1 overflow-y-auto p-6 md:p-10 lg:p-16">
-                <div class="max-w-7xl mx-auto">
-                @if(session()->has('impersonator_id'))
-                    <div class="mb-8 bg-neutral text-neutral-content px-6 py-4 rounded-2xl flex items-center justify-between shadow-md animate-in slide-in-from-top duration-500">
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center animate-pulse">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary-content" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-[14px] font-bold tracking-tight">Impersonating Customer: <span class="text-primary-content/80">{{ auth()->user()->name }}</span></p>
-                                <p class="text-[11px] opacity-70 font-medium uppercase tracking-widest">You are currently viewing the ecosystem as this customer.</p>
-                            </div>
+    <!-- Main Content Wrapper -->
+    <div class="flex-1 flex flex-col min-w-0 min-h-screen lg:ml-64">
+        <x-admin.header :title="$title ?? null" />
+
+        <!-- Page Content -->
+        <main class="flex-1 overflow-y-auto p-6 md:p-10 lg:p-16">
+            <div class="max-w-7xl mx-auto">
+            @if(session()->has('impersonator_id'))
+                <div class="mb-8 bg-neutral text-neutral-content px-6 py-4 rounded-2xl flex items-center justify-between shadow-md animate-in slide-in-from-top duration-500">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center animate-pulse">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary-content" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
                         </div>
-
-                        <a href="{{ route('admin.impersonate.stop') }}" class="btn btn-primary btn-sm">
-                            Leaving Impersonation
-                        </a>
+                        <div>
+                            <p class="text-[14px] font-bold tracking-tight">Impersonating Customer: <span class="text-primary-content/80">{{ auth()->user()->displayName() }}</span></p>
+                            <p class="text-[11px] opacity-70 font-medium uppercase tracking-widest">You are currently viewing the ecosystem as this customer.</p>
+                        </div>
                     </div>
-                @endif
-                
-                {{ $slot }}
-                </div>
-            </main>
 
-        </div>
+                    <a href="{{ route('admin.impersonate.stop') }}" class="btn btn-primary btn-sm">
+                        Leaving Impersonation
+                    </a>
+                </div>
+            @endif
+
+            {{ $slot }}
+            </div>
+        </main>
     </div>
 
     @stack('scripts')
 
-    <div 
-        x-data="{ 
-            toasts: [], 
-            addToast(detail) { 
-                const type = detail.type || 'info';
+    <div
+        x-data="{
+            toasts: [],
+            addToast(detail) {
+                const type = detail.type || detail.style || 'info';
                 const message = detail.message || (typeof detail === 'string' ? detail : '');
                 if (!message) return;
                 const id = Date.now();
@@ -65,7 +61,7 @@
                     this.toasts = this.toasts.filter(t => t.id !== id);
                 }, 7000);
             }
-        }" 
+        }"
         x-init="
             @if(session('success')) addToast({ type: 'success', message: '{{ session('success') }}' }); @endif
             @if(session('error')) addToast({ type: 'error', message: '{{ session('error') }}' }); @endif
@@ -76,13 +72,13 @@
         class="fixed top-20 right-6 z-[100] flex flex-col gap-3 min-w-[320px] max-w-md pointer-events-none"
     >
         <template x-for="toast in toasts" :key="toast.id">
-            <div 
+            <div
                 class="pointer-events-auto relative group alert shadow-lg border-none flex gap-3 animate-in slide-in-from-right duration-300"
                 :class="{
                     'bg-[#9ABC05] text-white': toast.type === 'success',
-                    'bg-[#FFC926] text-black': toast.type === 'warning',
-                    'bg-[#D52518] text-white': toast.type === 'error',
-                    'bg-[#F96015] text-white': toast.type === 'info' || toast.type === 'success'
+                    'bg-[#F96015] text-white': toast.type === 'warning',
+                    'bg-[#D52518] text-white': toast.type === 'error' || toast.type === 'danger',
+                    'bg-[#FFC926] text-black': toast.type === 'info'
                 }"
                 x-show="true"
                 x-transition:leave="transition ease-in duration-300 transform"
@@ -105,9 +101,9 @@
                 </div>
 
                 <div class="flex-1 text-[13px] font-bold" x-text="toast.message"></div>
-                
-                <button 
-                    @click="toasts = toasts.filter(t => t.id !== toast.id)" 
+
+                <button
+                    @click="toasts = toasts.filter(t => t.id !== toast.id)"
                     class="p-1 hover:bg-black/10 rounded-md transition-colors opacity-0 group-hover:opacity-60 hover:opacity-100"
                     :class="toast.type === 'warning' ? 'text-black' : 'text-white'"
                 >

@@ -46,7 +46,7 @@
             @forelse($items as $item)
                 <div class="flex items-start justify-between gap-3  text-[12px]">
                     <span class="text-base-content leading-snug">
-                         <span class="text-primary font-bold">{{ $item->quantity }}×</span> {{ $item->package->name ?? 'Package' }}
+                         <span class="text-primary font-bold">{{ $item->quantity }}×</span> {{ $item->package_name ?? $item->package?->name ?? 'Package' }}
                     </span>
                 </div>
             @empty

@@ -7,10 +7,12 @@ namespace App\Livewire\Settings;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Title('Notification settings')]
+#[Layout('layouts.admin')]
 class Notifications extends Component
 {
     public string $notification_preference = 'email';
@@ -21,7 +23,7 @@ class Notifications extends Component
 
     public function mount(): void
     {
-        $this->notification_preference = Auth::user()->notification_preference ?? 'email';
+        $this->notification_preference = Auth::user()->notification_preference?->value ?? Auth::user()->notification_preference ?? 'email';
 
         $smsSetting = Setting::firstOrCreate(
             ['key' => 'sms_enabled'],
@@ -53,7 +55,7 @@ class Notifications extends Component
 
         Cache::forget('app_settings');
 
-        $this->dispatch('notifications-updated');
+        $this->dispatch('toast', type: 'success', message: 'Notification preferences successfully updated.');
     }
 
     public function render()

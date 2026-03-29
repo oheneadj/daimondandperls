@@ -108,10 +108,7 @@ class CategoryIndex extends Component
         }
 
         $this->showFormModal = false;
-        $this->dispatch('toast', [
-            'type' => 'success',
-            'message' => $message,
-        ]);
+        $this->dispatch('banner', style: 'success', message: 'Package deleted successfully.');
     }
 
     public function confirmDelete(int $id): void
@@ -129,10 +126,7 @@ class CategoryIndex extends Component
         $category = Category::findOrFail($this->categoryToDeleteId);
 
         if ($category->packages()->count() > 0) {
-            $this->dispatch('toast', [
-                'type' => 'error',
-                'message' => "Cannot delete '{$category->name}' because it has packages inside.",
-            ]);
+            $this->dispatch('banner', style: 'error', message: "Cannot delete '{$category->name}' because it has packages inside.");
             $this->showDeleteModal = false;
             $this->categoryToDeleteId = null;
 
@@ -142,10 +136,7 @@ class CategoryIndex extends Component
         $category->delete();
         $this->showDeleteModal = false;
         $this->categoryToDeleteId = null;
-        $this->dispatch('toast', [
-            'type' => 'success',
-            'message' => 'Collection deleted',
-        ]);
+        $this->dispatch('banner', style: 'success', message: 'Collection deleted successfully.');
     }
 
     protected function getStats(): array

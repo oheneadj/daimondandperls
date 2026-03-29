@@ -2,10 +2,16 @@
 
 namespace App\Livewire\Booking;
 
+use App\Enums\UserType;
 use App\Models\Booking;
 use App\Models\Customer;
+use App\Models\User;
+use App\Notifications\OtpNotification;
 use App\Services\CartService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -23,10 +29,15 @@ class BookingWizard extends Component
     public ?string $phone = null;
 
     public ?string $email = null;
-    
-    public bool $createAccount = false;
-    
-    public ?string $password = null;
+
+    // Phone verification (OTP)
+    public bool $verifyPhone = false;
+
+    public string $otp = '';
+
+    public int $otpStep = 0;
+
+    public string $otpError = '';
 
     // Event Details (Step 2)
     public ?string $event_date = null;
@@ -45,17 +56,152 @@ class BookingWizard extends Component
             return redirect()->route('home');
         }
 
-        if (\Illuminate\Support\Facades\Auth::check()) {
-            $user = \Illuminate\Support\Facades\Auth::user();
+        // Restore wizard state after OTP login redirect
+        if (session()->has('checkout_wizard_state')) {
+            $state = session()->pull('checkout_wizard_state');
+            $this->currentStep = $state['currentStep'] ?? 1;
+            $this->name = $state['name'] ?? null;
+            $this->phone = $state['phone'] ?? null;
+            $this->email = $state['email'] ?? null;
+            $this->event_date = $state['event_date'] ?? null;
+            $this->event_start_time = $state['event_start_time'] ?? null;
+            $this->event_end_time = $state['event_end_time'] ?? null;
+            $this->event_type = $state['event_type'] ?? null;
+            $this->event_type_other = $state['event_type_other'] ?? null;
+
+            return;
+        }
+
+        if (Auth::check()) {
+            $user = Auth::user();
             $this->name = $user->name;
             $this->email = $user->email;
             $this->phone = $user->phone;
         }
     }
 
+    public function sendOtp(): void
+    {
+        $this->validate([
+            'phone' => ['required', 'string', 'regex:/^(?:\+233|0)\d{9}$/'],
+        ], [
+            'phone.regex' => 'Please enter a valid Ghana phone number (e.g. 0244000000).',
+        ]);
+
+        $user = User::query()->where('phone', $this->phone)->first();
+
+        if (! $user) {
+            $customer = Customer::query()->where('phone', $this->phone)->first();
+
+            $user = DB::transaction(function () use ($customer): User {
+                $user = User::create([
+                    'name' => $customer?->name ?? $this->name ?? 'Customer '.substr($this->phone, -4),
+                    'phone' => $this->phone,
+                    'email' => $customer?->email ?? $this->email,
+                    'password' => Hash::make(Str::random(32)),
+                    'type' => UserType::Customer,
+                ]);
+
+                if ($customer) {
+                    $customer->update(['user_id' => $user->id]);
+                } else {
+                    $user->customer()->create([
+                        'name' => $user->name,
+                        'phone' => $this->phone,
+                        'email' => $this->email,
+                    ]);
+                }
+
+                return $user;
+            });
+        }
+
+        $otp = (string) rand(100000, 999999);
+        $user->update([
+            'otp_code' => $otp,
+            'otp_expires_at' => now()->addMinutes(10),
+        ]);
+
+        $user->notify(new OtpNotification($otp));
+
+        $this->otpStep = 2;
+        $this->otpError = '';
+    }
+
+    public function verifyOtp()
+    {
+        $this->validate([
+            'otp' => ['required', 'string', 'size:6'],
+        ]);
+
+        $user = User::query()
+            ->where('phone', $this->phone)
+            ->where('otp_code', $this->otp)
+            ->where('otp_expires_at', '>', now())
+            ->first();
+
+        if (! $user) {
+            $this->otpError = 'Invalid or expired OTP code.';
+
+            return;
+        }
+
+        $user->update([
+            'otp_code' => null,
+            'otp_expires_at' => null,
+        ]);
+
+        Auth::login($user, true);
+
+        // Fill contact fields from the authenticated user's stored details
+        $name = $user->name;
+        $email = $user->email ?? $this->email;
+
+        // Also check if a linked customer has more complete data
+        $customer = $user->customer;
+        if ($customer) {
+            $name = $customer->name ?: $name;
+            $email = $customer->email ?: $email;
+        }
+
+        // Save wizard state to session so it survives the redirect
+        // (Auth::login regenerates the session/CSRF token, so we must
+        // do a full page reload for Livewire to pick up the new token)
+        session()->put('checkout_wizard_state', [
+            'currentStep' => $this->currentStep,
+            'name' => $name,
+            'phone' => $this->phone,
+            'email' => $email,
+            'event_date' => $this->event_date,
+            'event_start_time' => $this->event_start_time,
+            'event_end_time' => $this->event_end_time,
+            'event_type' => $this->event_type,
+            'event_type_other' => $this->event_type_other,
+        ]);
+
+        return $this->redirect(route('checkout'));
+    }
+
+    public function resendOtp(): void
+    {
+        $this->otp = '';
+        $this->otpError = '';
+        $this->sendOtp();
+    }
+
+    public function cancelOtp(): void
+    {
+        $this->otpStep = 0;
+        $this->otp = '';
+        $this->otpError = '';
+        $this->verifyPhone = false;
+    }
+
     public function updated($propertyName)
     {
-        if ($this->$propertyName === '') {
+        $type = (new \ReflectionProperty($this, $propertyName))->getType();
+
+        if ($this->$propertyName === '' && $type?->allowsNull()) {
             $this->$propertyName = null;
         }
     }
@@ -80,22 +226,14 @@ class BookingWizard extends Component
         }
     }
 
-    private function validateStep2()
+    private function validateStep2(): void
     {
-        $rules = [
+        $this->validate([
             'name' => ['required', 'string', 'max:100', 'min:3'],
             'phone' => ['required', 'regex:/^(?:\+233|0)\d{9}$/'],
             'email' => ['nullable', 'email', 'max:150'],
-        ];
-
-        if ($this->createAccount) {
-            $rules['email'] = ['required', 'email', 'max:150', 'unique:users,email'];
-            $rules['password'] = ['required', 'string', 'min:8'];
-        }
-
-        $this->validate($rules, [
+        ], [
             'phone.regex' => 'Please enter a valid Ghanaian phone number (e.g. 024XXXXXXX or +23324XXXXXXX).',
-            'email.unique' => 'This email is already registered. Please login instead.',
         ]);
     }
 
@@ -134,14 +272,8 @@ class BookingWizard extends Component
             // Find or create customer
             $customer = Customer::query()->where(['phone' => $this->phone])->first();
 
-            if ($this->createAccount && ! \Illuminate\Support\Facades\Auth::check()) {
-                $user = \App\Models\User::create([
-                    'name' => $this->name,
-                    'email' => $this->email,
-                    'password' => \Illuminate\Support\Facades\Hash::make($this->password),
-                    'phone' => $this->phone,
-                    'type' => \App\Enums\UserType::Customer,
-                ]);
+            if (Auth::check()) {
+                $user = Auth::user();
 
                 if ($customer) {
                     $customer->update([
@@ -156,16 +288,13 @@ class BookingWizard extends Component
                         'email' => $this->email,
                     ]);
                 }
-
-                \Illuminate\Support\Facades\Auth::login($user);
-            } elseif (!$customer) {
+            } elseif (! $customer) {
                 $customer = Customer::query()->create([
                     'phone' => $this->phone,
                     'name' => $this->name,
                     'email' => $this->email,
                 ]);
             } else {
-                // Update existing customer info if not logged in or if info changed
                 $customer->update([
                     'name' => $this->name,
                     'email' => $this->email,
@@ -205,6 +334,8 @@ class BookingWizard extends Component
             foreach ($cart->getCart() as $item) {
                 $booking->items()->create([
                     'package_id' => $item['package']->id,
+                    'package_name' => $item['package']->name,
+                    'package_description' => $item['package']->description,
                     'price' => $item['package']->price,
                     'quantity' => $item['quantity'],
                 ]);

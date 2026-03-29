@@ -30,15 +30,10 @@
             </div>
 
             <div class="text-center mb-16 animate-fade-in-up">
-                <div class="inline-flex items-center justify-center size-24 rounded-full bg-base-100 text-primary mb-10 shadow-xl relative">
-                    <div class="absolute inset-0 bg-primary/10 rounded-full animate-ping"></div>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                    </svg>
-                </div>
+                
                 
                 <h1 class=" text-4xl lg:text-6xl font-semibold text-base-content tracking-tight mb-6">Booking Confirmed</h1>
-                <p class=" text-xl text-base-content/60 font-medium italic max-w-xl mx-auto leading-relaxed">
+                <p class=" text-xl text-base-content/60  max-w-xl mx-auto leading-relaxed">
                     Thank you for choosing Diamonds & Pearls, <span class="text-primary font-bold not-italic">{{ $booking->customer->name }}</span>. Your catering experience is now being meticulously planned.
                 </p>
             </div>
@@ -69,7 +64,7 @@
                             @foreach($booking->items as $item)
                             <div class="flex justify-between items-center group">
                                 <div class="space-y-1">
-                                    <p class=" text-xl font-bold text-base-content group-hover:text-primary transition-colors">{{ $item->package->name }}</p>
+                                    <p class=" text-xl font-bold text-base-content group-hover:text-primary transition-colors">{{ $item->package_name ?? $item->package?->name ?? 'Package' }}</p>
                                     <p class="text-[11px] font-bold text-base-content/60 uppercase tracking-widest">Quantity: {{ $item->quantity }}</p>
                                 </div>
                                 <p class=" text-xl font-bold text-base-content">GH₵ {{ number_format($item->price * $item->quantity, 0) }}</p>
@@ -116,7 +111,7 @@
                     
                     <div class="pt-10 flex flex-col sm:flex-row justify-center gap-4">
                         @if($booking->payment_status === \App\Enums\PaymentStatus::Paid)
-                            <x-ui.button href="{{ app(\App\Services\InvoiceService::class)->getDownloadUrl($booking) }}" target="_blank" variant="secondary" size="lg" class="px-10 h-16 shadow-lg rounded-2xl text-lg font-bold">
+                            <x-ui.button href="{!! app(\App\Services\InvoiceService::class)->getDownloadUrl($booking) !!}" target="_blank" variant="secondary" size="lg" class="px-10 h-16 shadow-lg rounded-2xl text-lg font-bold">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="size-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
@@ -133,7 +128,7 @@
                         <script>
                             window.onload = function() {
                                 setTimeout(function() {
-                                    window.open("{{ app(\App\Services\InvoiceService::class)->getDownloadUrl($booking) }}", "_blank");
+                                    window.open("{!! app(\App\Services\InvoiceService::class)->getDownloadUrl($booking) !!}", "_blank");
                                 }, 1000);
                             };
                         </script>

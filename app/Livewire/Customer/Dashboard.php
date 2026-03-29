@@ -1,51 +1,61 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Customer;
 
-use App\Models\Booking;
-use App\Models\Customer;
-use Illuminate\Support\Facades\Auth;
+use App\Enums\BookingStatus;
+use App\Enums\PaymentStatus;
+use App\Traits\ResolvesCustomer;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Layout('components.guest-layout')]
-#[Title('My Bookings')]
+#[Layout('layouts.customer')]
+#[Title('Dashboard')]
 class Dashboard extends Component
 {
-    public $bookings;
+    use ResolvesCustomer;
 
-    public function mount()
+    public function render(): View
     {
-        $user = Auth::user();
-        
-        // Find customer associated with this user
-        $customer = $user->customer;
+        $customer = $this->resolveCustomer();
 
-        if (!$customer) {
-            // Try to find customer by phone or email if not linked yet
-            $customer = Customer::where(function($query) use ($user) {
-                $query->where('phone', $user->phone)
-                      ->orWhere('email', $user->email);
-            })->first();
-
-            if ($customer && !$customer->user_id) {
-                $customer->update(['user_id' => $user->id]);
-            }
-        }
+        $totalBookings = 0;
+        $upcomingBookings = 0;
+        $totalSpent = 0;
+        $pendingPayments = 0;
+        $recentBookings = collect();
 
         if ($customer) {
-            $this->bookings = $customer->bookings()
+            $totalBookings = $customer->bookings()->count();
+
+            $upcomingBookings = $customer->bookings()
+                ->whereIn('status', [BookingStatus::Pending, BookingStatus::Confirmed, BookingStatus::InPreparation])
+                ->count();
+
+            $totalSpent = (float) $customer->bookings()
+                ->where('payment_status', PaymentStatus::Paid)
+                ->sum('total_amount');
+
+            $pendingPayments = $customer->bookings()
+                ->where('payment_status', PaymentStatus::Unpaid)
+                ->count();
+
+            $recentBookings = $customer->bookings()
                 ->with(['items.package', 'payment'])
                 ->latest()
+                ->take(5)
                 ->get();
-        } else {
-            $this->bookings = collect();
         }
-    }
 
-    public function render()
-    {
-        return view('livewire.customer.dashboard');
+        return view('livewire.customer.dashboard', [
+            'totalBookings' => $totalBookings,
+            'upcomingBookings' => $upcomingBookings,
+            'totalSpent' => $totalSpent,
+            'pendingPayments' => $pendingPayments,
+            'recentBookings' => $recentBookings,
+        ]);
     }
 }

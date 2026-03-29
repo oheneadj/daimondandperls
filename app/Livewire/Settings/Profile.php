@@ -7,10 +7,12 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Title('Profile settings')]
+#[Layout('layouts.admin')]
 class Profile extends Component
 {
     use ProfileValidationRules;
@@ -43,6 +45,7 @@ class Profile extends Component
         $user->save();
 
         $this->dispatch('profile-updated', name: $user->name);
+        $this->dispatch('toast', type: 'success', message: 'Personal profile details successfully refined.');
     }
 
     /**

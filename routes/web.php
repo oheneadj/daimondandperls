@@ -3,7 +3,7 @@
 use App\Http\Controllers\PublicPackageController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [PublicPackageController::class, 'welcome'])->name('home');
+Route::get('/', \App\Livewire\Pages\HomePage::class)->name('home');
 Route::get('/packages', \App\Livewire\Packages\PackagesBrowse::class)->name('packages.browse');
 Route::get('/package/{package:slug}', [PublicPackageController::class, 'show'])->name('packages.show');
 
@@ -20,9 +20,16 @@ Route::get('/privacy', function () {
     return view('public.privacy');
 })->name('privacy');
 
-Route::get('/dashboard', \App\Livewire\Customer\Dashboard::class)
-    ->middleware(['auth', 'customer'])
-    ->name('dashboard');
+Route::middleware(['auth', 'customer'])
+    ->prefix('dashboard')
+    ->name('dashboard.')
+    ->group(function () {
+        Route::get('/', \App\Livewire\Customer\Dashboard::class)->name('index');
+        Route::get('/bookings', \App\Livewire\Customer\Bookings\Index::class)->name('bookings.index');
+        Route::get('/bookings/{booking:reference}', \App\Livewire\Customer\Bookings\Show::class)->name('bookings.show');
+        Route::get('/payments', \App\Livewire\Customer\Payments\Index::class)->name('payments.index');
+        Route::get('/profile', \App\Livewire\Customer\Profile::class)->name('profile');
+    });
 
 // Customer Booking Flow
 Route::get('/checkout', App\Livewire\Booking\BookingWizard::class)->name('checkout');

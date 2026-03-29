@@ -1,14 +1,37 @@
 @props([])
 
-<aside 
-    {{ $attributes->merge(['class' => 'fixed inset-y-0 left-0 z-50 w-64 bg-[#1C1A18] flex flex-col transition-transform duration-300 lg:translate-x-0']) }}
-    :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'"
+@php
+    $navGroups = [
+        'MAIN' => [
+            ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'icon' => 'squares-2x2'],
+        ],
+        'OPERATIONS' => [
+            ['label' => 'Bookings', 'route' => 'admin.bookings.index', 'icon' => 'clipboard-document-list', 'badge' => auth()->user()->unreadBookingsCount() ?? 0, 'pattern' => 'admin.bookings.*'],
+            ['label' => 'Packages', 'route' => 'admin.manage-packages.index', 'icon' => 'cake', 'pattern' => 'admin.manage-packages.*'],
+            ['label' => 'Collections', 'route' => 'admin.categories.index', 'icon' => 'tag', 'pattern' => 'admin.categories.*'],
+            ['label' => 'Payments', 'route' => 'admin.payments.index', 'icon' => 'credit-card', 'badge' => auth()->user()->pendingPaymentsCount() ?? 0, 'pattern' => 'admin.payments.*'],
+            ['label' => 'Customers', 'route' => 'admin.customers.index', 'icon' => 'user-group', 'pattern' => 'admin.customers.*'],
+        ],
+        'STAFF' => [
+            ['label' => 'Admins & Staff', 'route' => 'admin.users.index', 'icon' => 'user-group', 'pattern' => 'admin.users.*'],
+            ['label' => 'Roles & Perms', 'route' => 'admin.roles.index', 'icon' => 'shield-check', 'pattern' => 'admin.roles.*'],
+        ],
+        'SYSTEM' => [
+            ['label' => 'Reports', 'route' => 'admin.reports.index', 'icon' => 'chart-bar-square', 'pattern' => 'admin.reports.*'],
+            ['label' => 'Settings', 'route' => 'admin.settings.index', 'icon' => 'cog-6-tooth', 'pattern' => 'admin.settings.*'],
+        ],
+    ];
+@endphp
+
+<aside
+    {{ $attributes->merge(['class' => 'fixed inset-y-0 left-0 z-50 w-64 bg-neutral flex flex-col transition-transform duration-300 -translate-x-full lg:translate-x-0']) }}
+    :class="mobileMenuOpen ? '!translate-x-0' : '-translate-x-full'"
 >
-    <!-- Sidebar Header (Logo) -->
-    <div class="p-5 border-b border-white/10 flex items-center justify-between h-16">
+    {{-- Logo Area --}}
+    <div class="p-6 border-b border-white/[0.03] flex items-center justify-between">
         <div class="flex flex-col">
-            <span class=" text-[20px] font-semibold text-white leading-tight">Diamonds & Pearls</span>
-            <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 mt-1 italic">Catering Services</span>
+            <span class="text-[18px] font-bold text-[#f3e8cc] tracking-tight leading-tight">Diamonds & Pearls</span>
+            <span class="text-[11px] font-bold uppercase tracking-widest text-[#9ABC05] mt-1.5 italic opacity-80">Catering Services</span>
         </div>
         <button @click="mobileMenuOpen = false" class="p-2 lg:hidden text-white/50 hover:text-white transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -17,101 +40,60 @@
         </button>
     </div>
 
-    <!-- Navigation Links -->
-    <nav class="flex-1 px-3 py-5 overflow-y-auto space-y-8">
-        <!-- Platform Section -->
-        <div>
-            <span class="px-3 text-[11px] font-bold uppercase tracking-[0.2em] text-white/30">{{ __('Platform') }}</span>
-            <ul class="mt-3 space-y-1">
-                <li>
-                    <x-admin.sidebar-item 
-                        label="Dashboard" 
-                        icon="squares-2x2" 
-                        :href="route('admin.dashboard')" 
-                        :active="request()->routeIs('admin.dashboard')" 
-                    />
-                </li>
-            </ul>
-        </div>
+    {{-- Navigation --}}
+    <nav class="flex-1 px-4 py-6 overflow-y-auto space-y-8">
+        @foreach($navGroups as $group => $items)
+            <div class="space-y-3">
+                <span class="px-3 text-[10px] font-bold uppercase tracking-widest text-white/30">{{ __($group) }}</span>
+                <ul class="space-y-1">
+                    @foreach($items as $item)
+                        @php
+                            $isActive = request()->routeIs($item['route']) || (isset($item['pattern']) && request()->routeIs($item['pattern']));
+                        @endphp
+                        <li class="relative">
+                            <a href="{{ route($item['route']) }}"
+                               wire:navigate
+                               @click="mobileMenuOpen = false"
+                               class="flex items-center justify-between py-3 px-4 transition-all duration-200 group relative {{ $isActive ? 'bg-[#FFC926]/10 text-[#FFC926] border-l-[3px] border-[#FFC926]' : 'text-[#f3e8cc]/70 hover:bg-[#1a1a1a] hover:text-accent' }}">
+                                <div class="flex items-center gap-3">
+                                    @include('layouts.partials.icons.' . $item['icon'], ['class' => 'w-5 h-5 ' . ($isActive ? 'text-[#FFC926]' : 'text-[#f3e8cc]/40 group-hover:text-accent')])
+                                    <span class="text-[13px] font-medium leading-none">{{ __($item['label']) }}</span>
+                                </div>
 
-        <!-- Operations Section -->
-        <div>
-            <span class="px-3 text-[11px] font-bold uppercase tracking-[0.2em] text-white/30">{{ __('Operations') }}</span>
-            <ul class="mt-3 space-y-1">
-                <li>
-                    <x-admin.sidebar-item 
-                        label="Bookings" 
-                        icon="calendar-days" 
-                        :href="route('admin.bookings.index')" 
-                        :active="request()->routeIs('admin.bookings.*')" 
-                        :badge="auth()->user()->unreadBookingsCount() > 0 ? auth()->user()->unreadBookingsCount() : null"
-                    />
-                </li>
-                <li>
-                    <x-admin.sidebar-item 
-                        label="Packages" 
-                        icon="archive-box" 
-                        :href="route('admin.manage-packages.index')" 
-                        :active="request()->routeIs('admin.manage-packages.*')" 
-                    />
-                </li>
-                <li>
-                    <x-admin.sidebar-item 
-                        label="Payments" 
-                        icon="banknotes" 
-                        :href="route('admin.payments.index')" 
-                        :active="request()->routeIs('admin.payments.*')" 
-                        :badge="auth()->user()->pendingPaymentsCount() > 0 ? auth()->user()->pendingPaymentsCount() : null"
-                    />
-                </li>
-                <li>
-                    <x-admin.sidebar-item 
-                        label="Reports" 
-                        icon="chart-bar" 
-                        :href="route('admin.reports.index')" 
-                        :active="request()->routeIs('admin.reports.*')" 
-                    />
-                </li>
-            </ul>
-        </div>
-
-        <!-- Configuration Section -->
-        <div>
-            <span class="px-3 text-[11px] font-bold uppercase tracking-[0.2em] text-white/30">{{ __('Management') }}</span>
-            <ul class="mt-3 space-y-1">
-                <li>
-                    <x-admin.sidebar-item 
-                        label="Categories" 
-                        icon="tag" 
-                        :href="route('admin.categories.index')" 
-                        :active="request()->routeIs('admin.categories.*')" 
-                    />
-                </li>
-                <li>
-                    <x-admin.sidebar-item 
-                        label="Customers" 
-                        icon="user-group" 
-                        :href="route('admin.customers.index')" 
-                        :active="request()->routeIs('admin.customers.*')" 
-                    />
-                </li>
-                <li>
-                    <x-admin.sidebar-item 
-                        label="Settings" 
-                        icon="cog-6-tooth" 
-                        :href="route('admin.settings.index')" 
-                        :active="request()->routeIs('admin.settings.*')" 
-                    />
-                </li>
-            </ul>
-        </div>
+                                @if(!empty($item['badge']) && $item['badge'] > 0)
+                                    <span class="px-2 py-0.5 rounded-full {{ $isActive ? 'bg-[#FFC926]/20 text-[#FFC926]' : 'bg-white/5 text-white/40' }} text-[10px] font-bold leading-none min-w-[20px] text-center">
+                                        {{ $item['badge'] }}
+                                    </span>
+                                @endif
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endforeach
     </nav>
 
-    <!-- Sidebar Footer -->
-    <div class="px-6 py-5 border-t border-white/5">
-        <div class="flex items-center gap-3">
-            <div class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
-            <span class="text-[10px] font-bold uppercase tracking-widest text-white/40">{{ __('Operational Suite v1.5') }}</span>
+    {{-- Admin User Block --}}
+    <div class="mt-auto p-4 border-t border-white/10">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-base-content text-[12px] font-bold border border-white/10 shadow-sm">
+                    {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                </div>
+                <div class="flex flex-col overflow-hidden">
+                    <span class="text-[13px] font-semibold text-white truncate max-w-[120px]">{{ auth()->user()->name }}</span>
+                    <span class="text-[11px] text-white/40 leading-none">{{ ucfirst(auth()->user()->role?->value ?? 'Administrator') }}</span>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ route('logout') }}" x-data>
+                @csrf
+                <button type="submit" @click.prevent="$root.submit();" class="p-2 text-white/30 hover:text-primary transition-colors" title="Logout">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                    </svg>
+                </button>
+            </form>
         </div>
     </div>
 </aside>

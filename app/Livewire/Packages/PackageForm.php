@@ -43,6 +43,8 @@ class PackageForm extends Component
 
     public ?string $existing_image = null;
 
+    public bool $showDeleteModal = false;
+
     public function mount(?Package $package = null): void
     {
         if ($package && $package->exists) {
@@ -123,14 +125,33 @@ class PackageForm extends Component
 
         if ($this->package) {
             $this->package->update($data);
-            $this->dispatch('banner', style: 'success', message: 'Package updated successfully.');
+            session()->flash('success', 'Package updated successfully.');
         } else {
             $data['sort_order'] = Package::max('sort_order') + 1;
             Package::create($data);
-            $this->dispatch('banner', style: 'success', message: 'Package created successfully.');
+            session()->flash('success', 'Package created successfully.');
         }
 
-        return $this->redirect(route('admin.manage-packages.index'), navigate: true);
+        return $this->redirect(route('admin.manage-packages.index'));
+    }
+
+    public function deletePackage()
+    {
+        if (! $this->package) {
+            return;
+        }
+
+        if ($this->package->bookingItems()->count() > 0) {
+            $this->showDeleteModal = false;
+            $this->addError('delete', "Cannot delete '{$this->package->name}' because it has existing bookings.");
+
+            return;
+        }
+
+        $this->package->delete();
+        session()->flash('success', 'Package deleted successfully.');
+
+        return $this->redirect(route('admin.manage-packages.index'));
     }
 
     public function render(): View

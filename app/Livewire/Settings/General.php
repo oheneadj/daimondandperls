@@ -6,10 +6,12 @@ namespace App\Livewire\Settings;
 
 use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Title('General settings')]
+#[Layout('layouts.admin')]
 class General extends Component
 {
     public array $settings = [];
@@ -54,7 +56,7 @@ class General extends Component
 
         Cache::forget('app_settings');
 
-        $this->dispatch('settings-updated');
+        $this->dispatch('toast', type: 'success', message: 'General configurations successfully updated and secured.');
     }
 
     public function render()

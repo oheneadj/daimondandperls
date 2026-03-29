@@ -30,9 +30,11 @@ class PackageIndex extends Component
     public string $status = 'all'; // all, active, inactive
 
     public string $sortField = 'sort_order';
+
     public string $sortDirection = 'asc';
 
     public bool $showDeleteModal = false;
+
     public ?int $packageToDeleteId = null;
 
     public function sortBy(string $field): void
@@ -96,7 +98,7 @@ class PackageIndex extends Component
         $package->delete();
         $this->showDeleteModal = false;
         $this->packageToDeleteId = null;
-        $this->dispatch('banner', style: 'success', message: 'Package soft-deleted successfully.');
+        $this->dispatch('banner', style: 'success', message: 'Package deleted successfully.');
     }
 
     public function reorder(array $orderedIds): void

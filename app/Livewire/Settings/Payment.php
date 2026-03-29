@@ -6,10 +6,12 @@ namespace App\Livewire\Settings;
 
 use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Title('Payment settings')]
+#[Layout('layouts.admin')]
 class Payment extends Component
 {
     public array $settings = [];
@@ -50,7 +52,7 @@ class Payment extends Component
 
         Cache::forget('app_settings');
 
-        $this->dispatch('settings-updated');
+        $this->dispatch('toast', type: 'success', message: 'Payment gateway settings successfully updated.');
     }
 
     public function render()

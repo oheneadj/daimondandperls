@@ -1,26 +1,27 @@
 <div class="space-y-6 pb-10" x-data="{ showCustomDates: @entangle('period').live === 'custom' }">
     {{-- Page Header --}}
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div class="space-y-4">
         <div>
-            <h1 class="text-[28px] font-semibold text-base-content leading-tight">
+            <h1 class="text-[24px] md:text-[28px] font-semibold text-base-content leading-tight">
                 {{ __('Reports & Analytics') }}
             </h1>
-            <p class="text-[14px] text-base-content/50 mt-1">{{ __('Deep insights into your catering operations and revenue streams.') }}</p>
+            <p class="text-[13px] md:text-[14px] text-base-content/50 mt-1">{{ __('Deep insights into your catering operations and revenue streams.') }}</p>
         </div>
-        
-        <div class="flex flex-col md:items-end gap-3">
-            @php
-                $periodStyles = [
-                    'today' => ['active' => 'bg-[#9ABC05]/10 text-[#6B8A00] border border-[#9ABC05]/30 shadow-sm', 'dot' => 'bg-[#9ABC05]'],
-                    'this_week' => ['active' => 'bg-[#F96015]/10 text-[#D94E0E] border border-[#F96015]/30 shadow-sm', 'dot' => 'bg-[#F96015]'],
-                    'this_month' => ['active' => 'bg-[#A31C4E]/10 text-[#A31C4E] border border-[#A31C4E]/30 shadow-sm', 'dot' => 'bg-[#A31C4E]'],
-                    'custom' => ['active' => 'bg-neutral/10 text-neutral border border-neutral/20 shadow-sm', 'dot' => 'bg-neutral'],
-                ];
-            @endphp
-            <div class="flex items-center gap-2">
+
+        @php
+            $periodStyles = [
+                'today' => ['active' => 'bg-[#9ABC05]/10 text-[#6B8A00] border border-[#9ABC05]/30 shadow-sm', 'dot' => 'bg-[#9ABC05]'],
+                'this_week' => ['active' => 'bg-[#F96015]/10 text-[#D94E0E] border border-[#F96015]/30 shadow-sm', 'dot' => 'bg-[#F96015]'],
+                'this_month' => ['active' => 'bg-[#A31C4E]/10 text-[#A31C4E] border border-[#A31C4E]/30 shadow-sm', 'dot' => 'bg-[#A31C4E]'],
+                'custom' => ['active' => 'bg-neutral/10 text-neutral border border-neutral/20 shadow-sm', 'dot' => 'bg-neutral'],
+            ];
+        @endphp
+
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-2">
                 @foreach(['today' => 'Today', 'this_week' => 'Week', 'this_month' => 'Month'] as $key => $label)
                     <button wire:key="period-{{ $key }}" wire:click="setPeriod('{{ $key }}')" wire:loading.attr="disabled"
-                        class="inline-flex items-center gap-2 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.15em] rounded-lg transition-all duration-200 {{ $period === $key ? $periodStyles[$key]['active'] : 'bg-base-200 text-base-content/50 hover:bg-base-200-mid hover:text-base-content border border-transparent' }}">
+                        class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 text-[11px] font-bold uppercase tracking-[0.15em] rounded-lg transition-all duration-200 {{ $period === $key ? $periodStyles[$key]['active'] : 'bg-base-200 text-base-content/50 hover:bg-base-200-mid hover:text-base-content border border-transparent' }}">
                         @if($period === $key)
                             <span class="w-2 h-2 rounded-full {{ $periodStyles[$key]['dot'] }} animate-pulse"></span>
                         @endif
@@ -30,8 +31,8 @@
                         </span>
                     </button>
                 @endforeach
-                <button @click="showCustomDates = !showCustomDates; if(showCustomDates) $wire.set('period', 'custom')" 
-                    class="inline-flex items-center gap-2 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.15em] rounded-lg transition-all duration-200 {{ $period === 'custom' ? $periodStyles['custom']['active'] : 'bg-base-200 text-base-content/50 hover:bg-base-200-mid hover:text-base-content border border-transparent' }}">
+                <button @click="showCustomDates = !showCustomDates; if(showCustomDates) $wire.set('period', 'custom')"
+                    class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 text-[11px] font-bold uppercase tracking-[0.15em] rounded-lg transition-all duration-200 {{ $period === 'custom' ? $periodStyles['custom']['active'] : 'bg-base-200 text-base-content/50 hover:bg-base-200-mid hover:text-base-content border border-transparent' }}">
                     @if($period === 'custom')
                         <span class="w-2 h-2 rounded-full {{ $periodStyles['custom']['dot'] }} animate-pulse"></span>
                     @endif
@@ -39,8 +40,8 @@
                     {{ __('Custom') }}
                 </button>
             </div>
-            
-            <x-ui.button variant="success" size="sm" wire:click="exportCsv" wire:loading.attr="disabled" class="shadow-sm" title="{{ __('Export CSV') }}">
+
+            <x-ui.button variant="success" size="sm" wire:click="exportCsv" wire:loading.attr="disabled" class="shadow-sm w-full sm:w-auto" title="{{ __('Export CSV') }}">
                 <x-slot:icon>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -54,55 +55,55 @@
     {{-- Custom Date Picker --}}
     <div x-show="showCustomDates" x-collapse x-cloak>
         <x-ui.card class="bg-base-200-mid/30 border-base-content/10">
-            <div class="flex flex-wrap items-end gap-6 p-2">
+            <div class="flex flex-wrap items-end gap-6 p-2 sm:w-full">
                 <div>
                     <label class="text-[11px] font-bold uppercase tracking-[0.2em] text-base-content/60 mb-2 block">{{ __('From') }}</label>
-                    <x-ui.input type="date" wire:model.live="startDate" class="bg-base-100" />
+                    <x-ui.input type="date" wire:model.live="startDate" class="bg-base-100 sm:w-full" />
                 </div>
                 <div>
                     <label class="text-[11px] font-bold uppercase tracking-[0.2em] text-base-content/60 mb-2 block">{{ __('To') }}</label>
-                    <x-ui.input type="date" wire:model.live="endDate" class="bg-base-100" />
+                    <x-ui.input type="date" wire:model.live="endDate" class="bg-base-100 sm:w-full" />
                 </div>
             </div>
         </x-ui.card>
     </div>
 
     {{-- KPI Stats Row --}}
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-white border border-base-content/5 rounded-lg p-4 flex items-center gap-4">
-            <div class="w-10 h-10 rounded-lg bg-[#9ABC05]/10 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#9ABC05]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div class="bg-white border border-base-content/5 rounded-lg p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-[#9ABC05]/10 flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5 text-[#9ABC05]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
-            <div>
-                <p class="text-[20px] font-bold text-base-content">GH₵{{ number_format($stats['total_revenue'], 2) }}</p>
-                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Revenue') }}</p>
-            </div>
-        </div>
-        <div class="bg-white border border-base-content/5 rounded-lg p-4 flex items-center gap-4">
-            <div class="w-10 h-10 rounded-lg bg-[#F96015]/10 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#F96015]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-            </div>
-            <div>
-                <p class="text-[20px] font-bold text-base-content">{{ number_format($stats['total_bookings']) }}</p>
-                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Bookings') }}</p>
+            <div class="min-w-0">
+                <p class="text-[16px] sm:text-[20px] font-bold text-base-content truncate">GH₵{{ number_format($stats['total_revenue'], 2) }}</p>
+                <p class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Revenue') }}</p>
             </div>
         </div>
-        <div class="bg-white border border-base-content/5 rounded-lg p-4 flex items-center gap-4">
-            <div class="w-10 h-10 rounded-lg bg-[#A31C4E]/10 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#A31C4E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+        <div class="bg-white border border-base-content/5 rounded-lg p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-[#F96015]/10 flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5 text-[#F96015]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
-            <div>
-                <p class="text-[20px] font-bold text-base-content">GH₵{{ number_format($stats['avg_value'], 2) }}</p>
-                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Avg Value') }}</p>
+            <div class="min-w-0">
+                <p class="text-[16px] sm:text-[20px] font-bold text-base-content">{{ number_format($stats['total_bookings']) }}</p>
+                <p class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Bookings') }}</p>
             </div>
         </div>
-        <div class="bg-white border border-base-content/5 rounded-lg p-4 flex items-center gap-4">
-            <div class="w-10 h-10 rounded-lg bg-[#FFC926]/10 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#FFC926]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+        <div class="bg-white border border-base-content/5 rounded-lg p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-[#A31C4E]/10 flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5 text-[#A31C4E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
             </div>
-            <div>
-                <p class="text-[20px] font-bold text-base-content truncate max-w-[140px]" title="{{ $stats['popular_package'] }}">{{ $stats['popular_package'] }}</p>
-                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Top Package') }}</p>
+            <div class="min-w-0">
+                <p class="text-[16px] sm:text-[20px] font-bold text-base-content truncate">GH₵{{ number_format($stats['avg_value'], 2) }}</p>
+                <p class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Avg Value') }}</p>
+            </div>
+        </div>
+        <div class="bg-white border border-base-content/5 rounded-lg p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-[#FFC926]/10 flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5 text-[#FFC926]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+            </div>
+            <div class="min-w-0">
+                <p class="text-[16px] sm:text-[20px] font-bold text-base-content truncate" title="{{ $stats['popular_package'] }}">{{ $stats['popular_package'] }}</p>
+                <p class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Top Package') }}</p>
             </div>
         </div>
     </div>
@@ -229,7 +230,7 @@
     </div>
 
     {{-- Tables Row --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
         {{-- Upcoming Events --}}
         <x-ui.table>
             <x-slot name="header">

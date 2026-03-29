@@ -5,10 +5,12 @@ namespace App\Livewire\Settings;
 use App\Concerns\PasswordValidationRules;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Title('Password settings')]
+#[Layout('layouts.admin')]
 class Password extends Component
 {
     use PasswordValidationRules;
@@ -42,5 +44,6 @@ class Password extends Component
         $this->reset('current_password', 'password', 'password_confirmation');
 
         $this->dispatch('password-updated');
+        $this->dispatch('toast', type: 'success', message: 'Password successfully updated.');
     }
 }

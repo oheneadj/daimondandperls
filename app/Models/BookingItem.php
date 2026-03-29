@@ -9,6 +9,8 @@ class BookingItem extends Model
     protected $fillable = [
         'booking_id',
         'package_id',
+        'package_name',
+        'package_description',
         'price',
         'quantity',
     ];
@@ -20,6 +22,6 @@ class BookingItem extends Model
 
     public function package()
     {
-        return $this->belongsTo(Package::class);
+        return $this->belongsTo(Package::class)->withTrashed();
     }
 }

@@ -1,6 +1,7 @@
 {
     "agents": [
-        "copilot"
+        "copilot",
+        "claude_code"
     ],
     "guidelines": true,
     "herd_mcp": false,
@@ -8,9 +9,9 @@
     "nightwatch_mcp": false,
     "sail": false,
     "skills": [
-        "fluxui-development",
         "livewire-development",
         "pest-testing",
-        "tailwindcss-development"
+        "tailwindcss-development",
+        "echo-development"
     ]
 }

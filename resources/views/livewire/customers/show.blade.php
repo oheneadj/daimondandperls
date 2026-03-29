@@ -30,11 +30,11 @@
                 <h1 class="text-[32px] font-semibold text-base-content leading-tight">{{ $customer->name }}</h1>
                 <div class="flex items-center gap-2">
                     <x-ui.badge type="success" dot class="font-bold text-[10px] uppercase tracking-widest">
-                        {{ __('Active Customer') }}
+                        {{ __('Active') }}
                     </x-ui.badge>
                     @if($customer->user_id)
                         <x-ui.badge type="info" dot class="font-bold text-[10px] uppercase tracking-widest">
-                            {{ __('Linked Account') }}
+                            {{ __('Registered') }}
                         </x-ui.badge>
                     @else
                         <x-ui.badge type="neutral" dot class="font-bold text-[10px] uppercase tracking-widest">
@@ -49,7 +49,7 @@
             @if($customer->user_id)
                 <x-ui.button 
                     wire:click="impersonate" 
-                    variant="neutral"
+                    variant="accent"
                     size="md"
                     class="font-bold"
                 >

@@ -10,6 +10,9 @@
 </head>
 
 <body class="bg-base-200 text-dp-text-body min-h-screen  antialiased overflow-x-hidden flex flex-col selection:bg-primary-soft selection:text-primary">
+    @php
+        $whatsappNumber = \App\Models\Setting::where('key', 'business_whatsapp')->value('value') ?: '233244203181';
+    @endphp
     <!-- Navbar -->
     <header class="bg-base-100/80 backdrop-blur-md sticky top-0 z-50 border-b border-base-content/10" x-data="{ mobileMenuOpen: false }">
         <div class="container mx-auto px-4 lg:px-8 flex justify-between items-center h-[68px]">
@@ -50,7 +53,7 @@
 
             <!-- Right Actions -->
             <div class="flex items-center gap-3">
-                <a href="https://wa.me/233244203181" target="_blank" class="hidden rounded-full sm:inline-flex bg-[#25D366] text-white text-[13px] font-bold px-4 py-2 hover:bg-[#20bd5a] transition-all shadow-sm items-center gap-2">
+                <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" class="hidden rounded-full sm:inline-flex bg-[#25D366] text-white text-[13px] font-bold px-4 py-2 hover:bg-[#20bd5a] transition-all shadow-sm items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.573-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.082 21.183c-1.653 0-3.331-.482-4.717-1.3l-5.365 1.488 1.474-5.26c-.822-1.391-1.309-3.093-1.309-4.821 0-5.319 4.316-9.635 9.636-9.635 5.316 0 9.632 4.316 9.632 9.635 0 5.317-4.316 9.631-9.351 9.631z"/>
                     </svg>
@@ -68,7 +71,7 @@
                             <span class="text-[13px] font-semibold hidden md:inline">Admin</span>
                         </a>
                     @else
-                        <a href="{{ route('dashboard') }}" class="flex items-center gap-2 px-3 py-2 text-base-content/60 hover:text-primary hover:bg-primary-soft rounded-lg transition-all group" title="My Bookings">
+                        <a href="{{ route('dashboard.index') }}" class="flex items-center gap-2 px-3 py-2 text-base-content/60 hover:text-primary hover:bg-primary-soft rounded-lg transition-all group" title="My Bookings">
                             <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
@@ -104,69 +107,88 @@
         </div>
 
         <!-- Mobile Menu Slide-over -->
-        <div x-show="mobileMenuOpen" 
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="translate-x-full"
-             x-transition:enter-end="translate-x-0"
-             x-transition:leave="transition ease-in duration-300"
-             x-transition:leave-start="translate-x-0"
-             x-transition:leave-end="translate-x-full"
-             class="fixed inset-0 z-50 lg:hidden" 
-             style="display: none;">
+        <template x-teleport="body">
+            <div class="fixed inset-0 z-[100] lg:hidden" 
+                 x-show="mobileMenuOpen"
+             x-transition.opacity.duration.300ms
+             style="display: none;"
+             @keydown.escape.window="mobileMenuOpen = false">
             
-            <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="mobileMenuOpen = false"></div>
+            <!-- Backdrop -->
+            <div class="absolute inset-0 bg-neutral/80 backdrop-blur-sm" 
+                 @click="mobileMenuOpen = false"></div>
 
-            <div class="fixed inset-y-0 right-0 w-full max-w-xs bg-base-100 shadow-dp-lg flex flex-col p-6">
-                <div class="flex items-center justify-between mb-8 pb-6 border-b border-base-content/10">
+            <!-- Slide-over panel -->
+            <div class="absolute inset-y-0 right-0 w-full max-w-[300px] sm:max-w-sm bg-base-100 shadow-2xl flex flex-col border-l border-base-content/10 transition-transform duration-300 transform"
+                 :class="mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'"
+                 @click.stop>
+                 
+                {{-- Decorative background blur --}}
+                <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-accent/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+
+                <!-- Header -->
+                <div class="flex items-center justify-between p-6 relative z-10 border-b border-base-content/10">
                     <div class="flex items-center gap-3">
-                        <div class="size-8 bg-primary rounded-full flex items-center justify-center text-white text-[10px]">D&P</div>
-                        <span class=" text-lg font-semibold text-base-content">Diamonds & Pearls</span>
+                        <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white text-[11px] font-bold shadow-md">D&P</div>
+                        <span class="text-xl font-bold text-base-content tracking-tight">Menu</span>
                     </div>
-                    <button @click="mobileMenuOpen = false" class="p-2 text-base-content/60 hover:text-base-content">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    <button @click="mobileMenuOpen = false" class="p-2.5 bg-base-200 text-base-content/60 hover:text-base-content hover:bg-base-300 rounded-full transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
-                <nav class="flex-1 space-y-2">
-                    <a href="{{ route('home') }}" class="block p-3 rounded-xl text-[15px] font-bold {{ request()->routeIs('home') ? 'text-primary bg-primary-soft' : 'text-base-content/80 hover:bg-base-200 hover:text-primary' }} transition-all">Home</a>
-                    <a href="{{ route('packages.browse') }}" class="block p-3 rounded-xl text-[15px] font-bold {{ request()->routeIs('packages.browse') ? 'text-primary bg-primary-soft' : 'text-base-content/80 hover:bg-base-200 hover:text-primary' }} transition-all">Our Menu</a>
-                    <a href="{{ route('booking.track') }}" class="block p-3 rounded-xl text-[15px] font-bold {{ request()->routeIs('booking.track') ? 'text-primary bg-primary-soft' : 'text-base-content/80 hover:bg-base-200 hover:text-primary' }} transition-all">Track Order</a>
-                    <a href="{{ route('about') }}" class="block p-3 rounded-xl text-[15px] font-bold {{ request()->routeIs('about') ? 'text-primary bg-primary-soft' : 'text-base-content/80 hover:bg-base-200 hover:text-primary' }} transition-all">About Us</a>
-                    <a href="{{ route('contact') }}" class="block p-3 rounded-xl text-[15px] font-bold {{ request()->routeIs('contact') ? 'text-primary bg-primary-soft' : 'text-base-content/80 hover:bg-base-200 hover:text-primary' }} transition-all">Contact</a>
-                    
-                    <div class="pt-6 mt-6 border-t border-base-content/10">
-                        <a href="https://wa.me/233244203181" target="_blank" class="flex justify-center items-center gap-2 bg-[#25D366] text-white font-bold py-3 mb-3 rounded-xl shadow-md text-[14px] hover:bg-[#20bd5a] transition-all">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="currentColor">
+                <!-- Content -->
+                <div class="flex-1 overflow-y-auto px-6 py-8 relative z-10 flex flex-col gap-8">
+                    <nav class="space-y-2">
+                        @php
+                            $mobileNavLinks = [
+                                ['route' => 'home', 'label' => 'Home'],
+                                ['route' => 'packages.browse', 'label' => 'Our Menu'],
+                                ['route' => 'booking.track', 'label' => 'Track Order'],
+                                ['route' => 'about', 'label' => 'About Us'],
+                                ['route' => 'contact', 'label' => 'Contact'],
+                            ];
+                        @endphp
+                        
+                        @foreach($mobileNavLinks as $link)
+                            <a href="{{ route($link['route']) }}" class="group flex items-center justify-between p-4 rounded-2xl text-[17px] font-bold {{ request()->routeIs($link['route']) ? 'bg-primary text-white shadow-md shadow-primary/20' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content' }} transition-all">
+                                {{ $link['label'] }}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all {{ request()->routeIs($link['route']) ? 'opacity-100 translate-x-0 text-white' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                        @endforeach
+                    </nav>
+
+                    <div class="space-y-4">
+                        <div class="h-px w-full bg-base-content/10 mt-2 mb-4"></div>
+                        <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" class="flex justify-center items-center gap-2 bg-[#25D366] text-white font-bold py-4 rounded-2xl shadow-md text-[15px] hover:bg-[#20bd5a] hover:-translate-y-0.5 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.573-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.082 21.183c-1.653 0-3.331-.482-4.717-1.3l-5.365 1.488 1.474-5.26c-.822-1.391-1.309-3.093-1.309-4.821 0-5.319 4.316-9.635 9.636-9.635 5.316 0 9.632 4.316 9.632 9.635 0 5.317-4.316 9.631-9.351 9.631z"/>
                             </svg>
                             WhatsApp Us
                         </a>
 
                         @auth
-                            <a href="{{ route('admin.dashboard') }}" class="flex justify-center bg-primary text-white font-bold py-3.5 rounded-xl uppercase tracking-wider text-[12px]">
+                            <a href="{{ route('admin.dashboard') }}" class="flex justify-center bg-base-content text-base-100 font-bold py-4 rounded-2xl uppercase tracking-wider text-[13px] hover:bg-base-content/90 transition-all">
                                 Go to Dashboard
                             </a>
                         @else
                             <div class="grid grid-cols-2 gap-3">
-                                <a href="{{ route('packages.browse') }}" class="flex justify-center items-center bg-primary text-white font-bold py-3 rounded-xl text-[13px] shadow-sm">
+                                <a href="{{ route('packages.browse') }}" class="flex justify-center items-center bg-primary text-white font-bold py-4 rounded-2xl text-[14px] shadow-sm hover:bg-primary-hover hover:-translate-y-0.5 transition-all">
                                     Book Now
                                 </a>
-                                <a href="{{ route('login') }}" class="flex justify-center items-center bg-base-200 text-base-content font-bold py-3 rounded-xl hover:bg-base-300 transition-all text-[13px]">
+                                <a href="{{ route('login') }}" class="flex justify-center items-center bg-base-200 border border-base-content/10 text-base-content font-bold py-4 rounded-2xl hover:bg-base-300 transition-all text-[14px]">
                                     Log in
                                 </a>
                             </div>
                         @endauth
                     </div>
-                </nav>
-
-                <div class="mt-auto pt-6 border-t border-base-content/10 flex items-center gap-3">
-                    <div class="size-2 rounded-full bg-primary animate-pulse"></div>
-                    <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/60">Premium Catering Hub</span>
                 </div>
             </div>
         </div>
+        </template>
     </header>
 
     <!-- Main Content Slot -->
@@ -257,7 +279,7 @@
                     <p class="text-[13px] text-white/45 leading-relaxed">
                         Ready to plan your next event? Reach out to us on WhatsApp for a quick response.
                     </p>
-                    <a href="https://wa.me/233244203181" target="_blank" class="inline-flex items-center gap-2.5 bg-[#25D366] text-white text-[13px] font-bold px-5 py-3 rounded-xl hover:bg-[#20bd5a] transition-all shadow-lg shadow-[#25D366]/20 hover:shadow-[#25D366]/30 hover:-translate-y-0.5">
+                    <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" class="inline-flex items-center gap-2.5 bg-[#25D366] text-white text-[13px] font-bold px-5 py-3 rounded-xl hover:bg-[#20bd5a] transition-all shadow-lg shadow-[#25D366]/20 hover:shadow-[#25D366]/30 hover:-translate-y-0.5">
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.573-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.082 21.183c-1.653 0-3.331-.482-4.717-1.3l-5.365 1.488 1.474-5.26c-.822-1.391-1.309-3.093-1.309-4.821 0-5.319 4.316-9.635 9.636-9.635 5.316 0 9.632 4.316 9.632 9.635 0 5.317-4.316 9.631-9.351 9.631z"/>
                         </svg>
