@@ -5,7 +5,8 @@
 @source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
 
 @layer base {
-  :root {
+  :root,
+  [data-theme="light"] {
     /* ── MASTER CULINARY SPEC (DEFINITIVE) ── */
     --color-primary: #D52518;
     /* Crisp Carrot - Vibrant Action */
