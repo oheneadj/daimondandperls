@@ -12,16 +12,6 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
-    build: {
-        rollupOptions: {
-            output: {
-                manualChunks: {
-                    charts: ['apexcharts', 'chart.js'],
-                    filepond: ['filepond', 'filepond-plugin-image-preview', 'filepond-plugin-file-validate-type', 'filepond-plugin-file-validate-size'],
-                },
-            },
-        },
-    },
     server: {
         cors: true,
         watch: {

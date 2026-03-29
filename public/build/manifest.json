@@ -1,12 +1,4 @@
 {
-  "_charts-kqjULfa9.js": {
-    "file": "assets/charts-kqjULfa9.js",
-    "name": "charts"
-  },
-  "_filepond-D-4VnaDU.js": {
-    "file": "assets/filepond-D-4VnaDU.js",
-    "name": "filepond"
-  },
   "resources/css/app.css": {
     "file": "assets/app-CVBUHaVz.css",
     "src": "resources/css/app.css",
@@ -17,14 +9,10 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-BNCnFg8k.js",
+    "file": "assets/app-Bphxx3r8.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
-    "imports": [
-      "_charts-kqjULfa9.js",
-      "_filepond-D-4VnaDU.js"
-    ],
     "css": [
       "assets/app-GbLOqleP.css"
     ]
