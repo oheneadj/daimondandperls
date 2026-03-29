@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(find /home/oheneadj/server/dpc -name *ome*age* -newer /home/oheneadj/server/dpc/composer.json)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(grep -r \"@entangle\\\\|x-data.*appearance\\\\|$dispatch.*appearance\" /home/oheneadj/server/dpc/resources --include=\"*.blade.php\" -A 2 -B 2)",
+      "Bash(grep -r \"$dispatch.*appearance\\\\|listenTo.*appearance\" /home/oheneadj/server/dpc --include=\"*.php\" -A 5)"
     ],
     "additionalDirectories": [
       "/home/oheneadj/server/dpc/resources/views/components"

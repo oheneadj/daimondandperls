@@ -4,7 +4,7 @@ use App\Http\Controllers\PublicPackageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', \App\Livewire\Pages\HomePage::class)->name('home');
-Route::get('/packages', \App\Livewire\Packages\PackagesBrowse::class)->name('packages.browse');
+Route::get('/all-packages', \App\Livewire\Packages\PackagesBrowse::class)->name('packages.browse');
 Route::get('/package/{package:slug}', [PublicPackageController::class, 'show'])->name('packages.show');
 
 Route::get('/about', function () {
