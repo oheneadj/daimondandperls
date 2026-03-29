@@ -4,39 +4,40 @@
 @source "../views";
 @source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
 
+/* ── DPC BRAND OVERRIDES (unlayered to beat FlyonUI theme) ── */
+:root,
+[data-theme="light"] {
+  /* ── MASTER CULINARY SPEC (DEFINITIVE) ── */
+  --color-primary: #D52518;
+  /* Crisp Carrot - Vibrant Action */
+  --color-primary-content: #FFFFFF;
+  --color-success: #9ABC05;
+  /* Kiwi - Positive / Completed */
+  --color-error: #F96015;
+  /* Tomato Burst - Urgent / Cancel */
+  --color-accent: #FFC926;
+  /* Sunshine - High Energy Highlight */
+  --color-neutral: #121212;
+  /* Modern Black - Sidebar */
+
+  /* ── BRAND UTILITIES ── */
+  --text-authority: #18542A;
+  /* Forest Green - High-Contrast Text */
+  --text-sunshine: #FFC926;
+  /* Sunshine Accent */
+
+  /* ── REFINED NEUTRALS (High Contrast Gray) ── */
+  --color-base-100: #FFFFFF;
+  /* Pure White - Cards */
+  --color-base-200: #F4F4F6;
+  /* Modern Gray - App Background & Top Bar */
+  --color-base-300: #E6E8EA;
+  /* Subtle Borders */
+  --color-base-content: #1C1A18;
+  /* Ink - Primary Text */
+}
+
 @layer base {
-  :root,
-  [data-theme="light"] {
-    /* ── MASTER CULINARY SPEC (DEFINITIVE) ── */
-    --color-primary: #D52518;
-    /* Crisp Carrot - Vibrant Action */
-    --color-primary-content: #FFFFFF;
-    --color-success: #9ABC05;
-    /* Kiwi - Positive / Completed */
-    --color-error: #F96015;
-    /* Tomato Burst - Urgent / Cancel */
-    --color-accent: #FFC926;
-    /* Sunshine - High Energy Highlight */
-    --color-neutral: #121212;
-    /* Modern Black - Sidebar */
-
-    /* ── BRAND UTILITIES ── */
-    --text-authority: #18542A;
-    /* Forest Green - High-Contrast Text */
-    --text-sunshine: #FFC926;
-    /* Sunshine Accent */
-
-    /* ── REFINED NEUTRALS (High Contrast Gray) ── */
-    --color-base-100: #FFFFFF;
-    /* Pure White - Cards */
-    --color-base-200: #F4F4F6;
-    /* Modern Gray - App Background & Top Bar */
-    --color-base-300: #E6E8EA;
-    /* Subtle Borders */
-    --color-base-content: #1C1A18;
-    /* Ink - Primary Text */
-  }
-
   html {
     font-family: 'Outfit', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
     -webkit-font-smoothing: antialiased;
