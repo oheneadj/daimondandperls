@@ -7,7 +7,6 @@
             </h1>
             <p class="text-[14px] text-base-content/50 mt-1">{{ __('Organize your catering packages into groups') }}</p>
         </div>
-        
         <x-ui.button variant="primary" size="sm" wire:click="openCreateModal" class="shadow-sm">
             <x-slot:icon>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
