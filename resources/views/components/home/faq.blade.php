@@ -2,11 +2,11 @@
     $whatsappNumber = \App\Models\Setting::where('key', 'business_whatsapp')->value('value') ?: '233244203181';
 @endphp
 
-<section class="py-24 bg-base-200 border-b border-base-content/10">
+<section class="py-16 sm:py-24 bg-base-200 border-b border-base-content/10">
     <div class="container mx-auto px-4 lg:px-8 max-w-4xl">
-        <div class="text-center mb-16">
+        <div class="text-center mb-10 sm:mb-16">
             <span class="text-[11px] font-bold text-accent uppercase tracking-[0.2em] mb-3 block">Got Questions?</span>
-            <h2 class="text-4xl lg:text-5xl font-semibold text-base-content tracking-tight">Frequently Asked Questions</h2>
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-semibold text-base-content tracking-tight">Frequently Asked Questions</h2>
         </div>
 
         <div class="space-y-4" x-data="{ active: null }">

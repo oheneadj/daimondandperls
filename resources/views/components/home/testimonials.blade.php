@@ -1,11 +1,11 @@
-<section class="py-24 bg-base-200 border-b border-base-content/10">
+<section class="py-16 sm:py-24 bg-base-200 border-b border-base-content/10">
     <div class="container mx-auto px-4 lg:px-8">
-        <div class="text-center mb-16">
+        <div class="text-center mb-10 sm:mb-16">
             <span class="text-[11px] font-bold text-accent uppercase tracking-[0.2em] mb-3 block">Word of mouth</span>
-            <h2 class="text-4xl lg:text-5xl font-semibold text-base-content tracking-tight">What our clients say</h2>
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-semibold text-base-content tracking-tight">What our clients say</h2>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
             @php
                 $reviews = [
                     ['name' => 'Ama Mensah', 'event' => 'Wedding, Labadi', 'text' => "The food was incredible. Every guest was asking who the caterer was. The local dishes tasted exactly like my grandmother's cooking, just elevated!"],
