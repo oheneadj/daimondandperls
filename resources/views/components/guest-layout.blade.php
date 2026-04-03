@@ -55,36 +55,62 @@
             <!-- Right Actions -->
             <div class="flex items-center gap-3">
 
-                 <a href="{{ route('event-booking') }}" class="h-full flex items-center text-[13px] font-bold text-white bg-green-500 px-4 py-2 rounded-full border border-green-500/20 hover:bg-green-600 transition-all">
+                 <a href="{{ route('event-booking') }}" class="h-full hidden sm:flex items-center text-[13px] font-bold text-white bg-green-500 px-4 py-2 rounded-full border border-green-500/20 hover:bg-green-600 transition-all">
                     Plan an Event
                 </a>
                 @auth
                     <div class="h-6 w-px border-base-content/10 mx-1 hidden sm:block"></div>
                     
-                    @if(Auth::user()->role?->value === 'admin' || Auth::user()->role?->value === 'super_admin')
-                        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 px-3 py-2 text-base-content/60 hover:text-primary hover:bg-primary-soft rounded-lg transition-all group" title="Admin Dashboard">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                            </svg>
-                            <span class="text-[13px] font-semibold hidden md:inline">Admin</span>
-                        </a>
-                    @else
-                        <a href="{{ route('dashboard.index') }}" class="flex items-center gap-2 px-3 py-2 text-base-content/60 hover:text-primary hover:bg-primary-soft rounded-lg transition-all group" title="My Bookings">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            <span class="text-[13px] font-semibold hidden md:inline">Dashboard</span>
-                        </a>
-                    @endif
-
-                    <form method="POST" action="{{ route('logout') }}" class="inline">
-                        @csrf
-                        <button type="submit" class="p-2 text-base-content/60 hover:text-error transition-colors" title="Logout">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                        <button @click="open = !open" class="flex items-center gap-2 px-2 py-1.5 text-base-content/80 hover:text-primary hover:bg-primary/5 rounded-full transition-all border border-transparent hover:border-primary/10">
+                            <div class="size-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[12px]">
+                                {{ method_exists(Auth::user(), 'initials') ? Auth::user()->initials() : substr(Auth::user()->name, 0, 1) }}
+                            </div>
+                            <span class="text-[13px] font-bold hidden sm:block">{{ method_exists(Auth::user(), 'displayName') ? explode(' ', Auth::user()->displayName())[0] : explode(' ', Auth::user()->name)[0] }}</span>
+                            <svg class="size-3.5 text-base-content/40 transition-transform duration-200" :class="{'rotate-180': open}" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                             </svg>
                         </button>
-                    </form>
+
+                        <div x-show="open" 
+                             x-transition.opacity.duration.200ms
+                             class="absolute right-0 mt-3 w-56 bg-base-100 rounded-2xl shadow-xl shadow-base-content/5 border border-base-content/10 py-2 z-50 flex flex-col"
+                             style="display: none;">
+                            
+                            <div class="px-4 py-3 border-b border-base-content/5 mb-1 bg-base-200/30 rounded-t-2xl -mt-2">
+                                <p class="text-[14px] font-bold text-base-content truncate">{{ method_exists(Auth::user(), 'displayName') ? Auth::user()->displayName() : Auth::user()->name }}</p>
+                                <p class="text-[11px] font-medium text-base-content/50 truncate">{{ Auth::user()->email }}</p>
+                            </div>
+
+                            @if(Auth::user()->role?->value === 'admin' || Auth::user()->role?->value === 'super_admin')
+                                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-2 text-[13px] font-semibold text-base-content/70 hover:text-primary hover:bg-primary/5 transition-colors mx-1 rounded-xl">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                                    </svg>
+                                    Admin Dashboard
+                                </a>
+                            @else
+                                <a href="{{ route('dashboard.index') }}" class="flex items-center gap-3 px-4 py-2 text-[13px] font-semibold text-base-content/70 hover:text-primary hover:bg-primary/5 transition-colors mx-1 rounded-xl">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    My Bookings
+                                </a>
+                            @endif
+
+                            <div class="h-px bg-base-content/5 my-1"></div>
+
+                            <form method="POST" action="{{ route('logout') }}" class="block px-1">
+                                @csrf
+                                <button type="submit" class="flex items-center w-full gap-3 px-3 py-2 text-[13px] font-semibold text-error/80 hover:text-error hover:bg-error/10 transition-colors rounded-xl text-left">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                    </svg>
+                                    Log out
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 @else
                     <a href="{{ route('login') }}" class="hidden sm:inline-flex items-center gap-2 text-[13px] font-bold text-white bg-primary hover:bg-primary/90 transition-all px-4 py-2 rounded-full shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -162,6 +188,12 @@
 
                     <div class="space-y-4">
                         <div class="h-px w-full bg-base-content/10 mt-2 mb-4"></div>
+                        <a href="{{ $eventBookingUrl }}" class="flex justify-center items-center gap-2  text-primary font-bold py-4 rounded-2xl text-[15px] border border-primary/20 hover:bg-primary/10 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                            </svg>
+                            Plan an Event
+                        </a>
                         <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" class="flex justify-center items-center gap-2 bg-[#25D366] text-white font-bold py-4 rounded-2xl shadow-md text-[15px] hover:bg-[#20bd5a] hover:-translate-y-0.5 transition-all">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.573-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.082 21.183c-1.653 0-3.331-.482-4.717-1.3l-5.365 1.488 1.474-5.26c-.822-1.391-1.309-3.093-1.309-4.821 0-5.319 4.316-9.635 9.636-9.635 5.316 0 9.632 4.316 9.632 9.635 0 5.317-4.316 9.631-9.351 9.631z"/>
@@ -319,10 +351,10 @@
 
     <!-- Floating WhatsApp Widget -->
     <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank"
-       class="fixed bottom-6 left-6 z-[100] group flex items-center justify-center size-[60px] bg-[#25D366] text-white rounded-full shadow-2xl shadow-[#25D366]/40 hover:scale-110 hover:shadow-[#25D366]/50 transition-all duration-300 animate-in slide-in-from-bottom-10 fade-in zoom-in"
+       class="fixed bottom-6 right-6 z-[100] group flex items-center justify-center size-[60px] bg-[#25D366] text-white rounded-full shadow-2xl shadow-[#25D366]/40 hover:scale-110 hover:shadow-[#25D366]/50 transition-all duration-300 animate-in slide-in-from-bottom-10 fade-in zoom-in"
        aria-label="Chat on WhatsApp">
-        <svg xmlns="http://www.w3.org/2000/svg" class="size-8 group-hover:rotate-12 transition-transform duration-300" viewBox="0 0 448 512" fill="currentColor">
-            <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
+        <svg xmlns="http://www.w3.org/2000/svg" class="size-8 group-hover:rotate-12 transition-transform duration-300" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.573-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.082 21.183c-1.653 0-3.331-.482-4.717-1.3l-5.365 1.488 1.474-5.26c-.822-1.391-1.309-3.093-1.309-4.821 0-5.319 4.316-9.635 9.636-9.635 5.316 0 9.632 4.316 9.632 9.635 0 5.317-4.316 9.631-9.351 9.631z"/>
         </svg>
         <span class="absolute -top-1 -right-1 flex h-3 w-3">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#25D366] opacity-75"></span>
