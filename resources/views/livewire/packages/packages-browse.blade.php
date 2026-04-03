@@ -120,7 +120,7 @@
                     </div>
                 </div>
                 <button 
-                    onclick="window.location.href='{{ route('checkout') }}'"
+                    onclick="window.location.href='{{ route('booking.select-type') }}'"
                     class="px-5 py-2.5 bg-white text-[#121212] font-black text-[12px] uppercase tracking-wider rounded-xl hover:bg-primary hover:text-white transition-all shadow-md active:scale-95"
                 >
                     {{ __('Proceed to book') }}

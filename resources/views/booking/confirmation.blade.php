@@ -39,16 +39,16 @@
                 </div>
                 <h1 class=" text-4xl lg:text-6xl font-semibold text-base-content tracking-tight mb-6">Booking Confirmed</h1>
                 <p class=" text-xl text-base-content/60  max-w-xl mx-auto leading-relaxed">
-                    Thank you for choosing Diamonds & Pearls, <span class="text-primary font-bold not-italic">{{ $booking->customer->name }}</span>. Your catering experience is now being meticulously planned.
+                    Thank you for choosing Diamonds & Pearls, <span class="text-primary font-bold not-italic">{{ $booking->customer->name }}</span>. Your order is being meticulously planned.
                 </p>
             </div>
 
             <x-ui.card class="overflow-hidden border-base-content/10 shadow-xl rounded-[32px] mb-16">
                 {{-- Success Header --}}
-                <div class="bg-[#18542A] text-white p-10 lg:p-14 text-center grid sm:grid-cols-2 gap-12 sm:divide-x divide-white/20">
+                <div class="bg-[#18542A] text-white p-8 lg:p-14 text-center grid sm:grid-cols-2 gap-12 sm:divide-x divide-white/20">
                     <div class="space-y-3">
                         <p class="text-[11px] font-black uppercase tracking-[0.3em] opacity-70">Order Reference</p>
-                        <div class="text-4xl  font-bold tracking-[0.1em]">{{ $booking->reference }}</div>
+                        <div class="text-3xl md:text-4xl font-bold tracking-[0.1em]">{{ $booking->reference }}</div>
                     </div>
                     
                     <div class="flex flex-col items-center justify-center space-y-3">
@@ -142,7 +142,7 @@
             </x-ui.card>
 
             <div class="text-center opacity-40">
-                <p class="text-[11px] font-black  tracking-[0.5em] text-base-content/60">Diamonds & Pearls Catering — Excellence in Coordination</p>
+                <p class="text-[11px] font-black uppercase tracking-[0.5em] text-base-content/60">Diamonds & Pearls Catering — Excellence in Coordination</p>
             </div>
         </div>
     </div>

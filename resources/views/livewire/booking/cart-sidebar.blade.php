@@ -100,16 +100,15 @@
             <div class="flex justify-between items-end">
                 <div class="space-y-1">
                    <span class="text-[10px] font-bold text-dp-text-disabled uppercase tracking-[0.2em]">{{ __('Menu Total') }}</span>
-                   <p class="text-[10px] text-secondary font-bold uppercase tracking-widest">{{ __('Food & Setup Included') }}</p>
                 </div>
                 <span class=" text-3xl sm:text-4xl font-bold text-primary tracking-tight"><span class="text-[18px] mr-1">GHS</span>{{ number_format($cartTotal, 2) }}</span>
             </div>
             <div class="space-y-4">
-                <x-ui.button :href="route('checkout')" class="w-full h-16 text-[15px] shadow-md !rounded-full" variant="primary" wire:navigate>
+                <x-ui.button :href="route('booking.select-type')" class="w-full h-16 text-[15px] shadow-md !rounded-full" variant="primary" wire:navigate>
                     {{ __('Begin Secure Checkout') }}
                 </x-ui.button>
                 <p class="text-center text-[10px] text-dp-text-disabled font-bold uppercase tracking-[0.2em]">
-                    {{ __('Events & Logistics captured next') }}
+                    {{ __('All Rights Reserved - Diamond & Pearls Catering') }}
                 </p>
             </div>
         </div>

@@ -96,7 +96,7 @@
             </div>
 
             <!-- Sidebar -->
-            <x-booking.order-summary :cartItems="$cartItems" :cartTotal="$cartTotal" :isEvent="false" />
+            <x-booking.order-summary :cartItems="$cartItems" :cartTotal="$cartTotal" :isEvent="false" :hideOnMobile="true" />
         </div>
     </div>
 </div>
