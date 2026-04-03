@@ -139,6 +139,33 @@
                             </div>
                         @endif
                     @endif
+
+                    @if($booking->payment_channel)
+                        <div class="flex items-center justify-between">
+                            <span class="text-[12px] font-medium text-base-content/50">Channel</span>
+                            <span class="text-[13px] font-semibold text-base-content">
+                                @if($booking->payment_channel === '13') MTN MoMo
+                                @elseif($booking->payment_channel === '6') Telecel
+                                @elseif($booking->payment_channel === '7') AT Money
+                                @else {{ $booking->payment_channel }}
+                                @endif
+                            </span>
+                        </div>
+                    @endif
+
+                    @if($booking->payer_number)
+                        <div class="flex items-center justify-between">
+                            <span class="text-[12px] font-medium text-base-content/50">Paid Via</span>
+                            <span class="text-[13px] font-semibold text-base-content">{{ $booking->payer_number }}</span>
+                        </div>
+                    @endif
+
+                    @if($booking->payment_reference)
+                        <div class="flex flex-col gap-1 mt-2">
+                            <span class="text-[12px] font-medium text-base-content/50">Transaction Reference</span>
+                            <span class="text-[11px] font-mono font-semibold text-base-content break-all bg-base-200/50 p-1.5 rounded">{{ $booking->payment_reference }}</span>
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Actions -->

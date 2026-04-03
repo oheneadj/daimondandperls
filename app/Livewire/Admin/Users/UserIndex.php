@@ -34,8 +34,11 @@ class UserIndex extends Component
     public string $sortDirection = 'desc';
 
     public bool $showConfirmationModal = false;
+
     public string $sensitiveAction = ''; // 'delete' or 'toggleStatus'
+
     public string $confirmationPassword = '';
+
     public ?User $actionTarget = null;
 
     public function sortBy(string $field): void
@@ -71,14 +74,16 @@ class UserIndex extends Component
                 'type' => 'error',
                 'message' => 'You cannot delete yourself.',
             ]);
+
             return;
         }
 
-        if ($user->hasRole('super_admin') && !auth()->user()->hasRole('super_admin')) {
+        if ($user->hasRole('super_admin') && ! auth()->user()->hasRole('super_admin')) {
             $this->dispatch('toast', [
                 'type' => 'error',
                 'message' => 'Only super admins can modify other super admins.',
             ]);
+
             return;
         }
 
@@ -95,6 +100,7 @@ class UserIndex extends Component
                 'type' => 'error',
                 'message' => __('The password you entered is incorrect.'),
             ]);
+
             return;
         }
 
@@ -121,9 +127,9 @@ class UserIndex extends Component
         $users = User::query()
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('name', 'like', '%' . $this->search . '%')
-                      ->orWhere('email', 'like', '%' . $this->search . '%')
-                      ->orWhere('phone', 'like', '%' . $this->search . '%');
+                    $q->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('email', 'like', '%'.$this->search.'%')
+                        ->orWhere('phone', 'like', '%'.$this->search.'%');
                 });
             })
             ->when($this->role, function ($query) {

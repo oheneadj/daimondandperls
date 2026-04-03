@@ -11,9 +11,7 @@ class OtpNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public string $otp)
-    {
-    }
+    public function __construct(public string $otp) {}
 
     public function via(object $notifiable): array
     {

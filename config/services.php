@@ -40,4 +40,12 @@ return [
         'api_token' => env('GAINT_SMS_API_TOKEN'),
     ],
 
+    'moolre' => [
+        'base_url' => env('MOOLRE_BASE_URL', 'https://api.moolre.com/open/transact'),
+        'api_user' => env('MOOLRE_API_USER'),
+        'pub_key' => env('MOOLRE_API_PUBKEY'),
+        'merchant_id' => env('MOOLRE_MERCHANT_ID'),
+        'webhook_secret' => env('MOOLRE_WEBHOOK_SECRET'),
+    ],
+
 ];

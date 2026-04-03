@@ -17,9 +17,13 @@ class UserForm extends Component
     public ?User $user = null;
 
     public string $name = '';
+
     public string $email = '';
+
     public string $phone = '';
+
     public ?int $selectedRole = null;
+
     public bool $is_active = true;
 
     public function mount(?User $user = null): void

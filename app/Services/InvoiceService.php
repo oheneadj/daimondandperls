@@ -42,7 +42,7 @@ class InvoiceService
         $pdf = Pdf::loadView('pdf.invoice', $data);
         $pdf->setPaper('a4');
 
-        $path = 'invoices/' . $booking->reference . '.pdf';
+        $path = 'invoices/'.$booking->reference.'.pdf';
 
         Storage::disk('public')->put($path, $pdf->output());
 
@@ -64,6 +64,6 @@ class InvoiceService
      */
     public function exists(Booking $booking): bool
     {
-        return Storage::disk('public')->exists('invoices/' . $booking->reference . '.pdf');
+        return Storage::disk('public')->exists('invoices/'.$booking->reference.'.pdf');
     }
 }

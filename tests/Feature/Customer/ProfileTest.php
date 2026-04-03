@@ -85,5 +85,6 @@ test('profile validation requires name and email', function () {
         ->set('name', '')
         ->set('email', '')
         ->call('save')
-        ->assertHasErrors(['name', 'email']);
+        ->assertHasErrors(['name'])
+        ->assertHasNoErrors(['email']);
 });

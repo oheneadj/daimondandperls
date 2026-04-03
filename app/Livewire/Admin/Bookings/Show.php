@@ -79,9 +79,14 @@ class Show extends Component
             && $this->booking->payment_status === \App\Enums\PaymentStatus::Paid;
     }
 
-    public function getCanBeCompletedProperty(): bool
+    public function getCanBeDispatchedProperty(): bool
     {
         return $this->booking->status === BookingStatus::InPreparation;
+    }
+
+    public function getCanBeCompletedProperty(): bool
+    {
+        return $this->booking->status === BookingStatus::ReadyForDelivery;
     }
 
     public function getCanBeCancelledProperty(): bool
@@ -101,7 +106,7 @@ class Show extends Component
             // Refetch the relationships that might have been impacted
             $this->booking->refresh();
 
-            $this->dispatch('banner', style: 'success', message: 'Booking confirmed successfully.');
+            $this->dispatch('banner', ['style' => 'success', 'message' => 'Booking confirmed successfully.']);
         }
     }
 
@@ -112,7 +117,18 @@ class Show extends Component
                 'status' => BookingStatus::InPreparation,
             ]);
             $this->booking->refresh();
-            $this->dispatch('banner', style: 'success', message: 'Booking preparation started successfully.');
+            $this->dispatch('banner', ['style' => 'success', 'message' => 'Booking preparation started successfully.']);
+        }
+    }
+
+    public function markAsReadyForDelivery()
+    {
+        if ($this->canBeDispatched) {
+            $this->booking->update([
+                'status' => BookingStatus::ReadyForDelivery,
+            ]);
+            $this->booking->refresh();
+            $this->dispatch('banner', ['style' => 'success', 'message' => 'Booking marked as ready for delivery.']);
         }
     }
 
@@ -131,7 +147,7 @@ class Show extends Component
 
             $this->booking->refresh();
 
-            $this->dispatch('banner', style: 'success', message: 'Booking completed successfully.');
+            $this->dispatch('banner', ['style' => 'success', 'message' => 'Booking completed successfully.']);
         }
     }
 
@@ -159,7 +175,7 @@ class Show extends Component
 
             $this->redirectRoute('admin.bookings.show', ['booking' => $this->booking], navigate: true);
 
-            $this->dispatch('banner', style: 'success', message: 'Booking cancelled successfully.');
+            $this->dispatch('banner', ['style' => 'success', 'message' => 'Booking cancelled successfully.']);
         }
     }
 
@@ -227,7 +243,7 @@ class Show extends Component
         $this->booking->refresh();
         $this->closeQuoteModal();
 
-        $this->dispatch('banner', style: 'success', message: 'Quote of GH₵ '.number_format((float) $this->quoteAmount, 2).' sent to customer.');
+        $this->dispatch('banner', ['style' => 'success', 'message' => 'Quote of GH₵ '.number_format((float) $this->quoteAmount, 2).' sent to customer.']);
     }
 
     public function getCanEditEventProperty(): bool
@@ -298,7 +314,7 @@ class Show extends Component
         $this->booking->refresh();
         $this->closeEventEditModal();
 
-        $this->dispatch('banner', style: 'success', message: 'Event details updated and quote of GH₵ '.number_format((float) $this->editQuoteAmount, 2).' sent to customer.');
+        $this->dispatch('banner', ['style' => 'success', 'message' => 'Event details updated and quote of GH₵ '.number_format((float) $this->editQuoteAmount, 2).' sent to customer.']);
     }
 
     public function verifyPayment()
@@ -347,6 +363,8 @@ class Show extends Component
             $this->confirmBooking();
         } elseif ($this->actionToConfirm === 'startPreparation') {
             $this->startPreparation();
+        } elseif ($this->actionToConfirm === 'readyForDelivery') {
+            $this->markAsReadyForDelivery();
         } elseif ($this->actionToConfirm === 'completeBooking') {
             $this->completeBooking();
         }

@@ -2,10 +2,9 @@
 
 namespace App\Livewire\Customers;
 
-use App\Models\Customer;
-use App\Models\ActivityLog;
 use App\Enums\BookingStatus;
-use App\Enums\PaymentGatewayStatus;
+use App\Models\ActivityLog;
+use App\Models\Customer;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -27,17 +26,23 @@ class CustomerShow extends Component
     // Bookings State
     #[Url]
     public string $searchBookings = '';
+
     #[Url]
     public string $filterBookingStatus = '';
+
     public string $sortBookingsField = 'created_at';
+
     public string $sortBookingsDirection = 'desc';
 
     // Payments State
     #[Url]
     public string $searchPayments = '';
+
     #[Url]
     public string $filterPaymentStatus = '';
+
     public string $sortPaymentsField = 'created_at';
+
     public string $sortPaymentsDirection = 'desc';
 
     // Activity State
@@ -73,6 +78,7 @@ class CustomerShow extends Component
     {
         if (! $this->customer->user_id) {
             $this->addError('impersonate', 'This customer does not have a linked account.');
+
             return;
         }
 
@@ -118,13 +124,13 @@ class CustomerShow extends Component
     {
         return $this->customer->bookings()
             ->with(['items.package', 'payment'])
-            ->when(fn() => filled($this->searchBookings), function ($query) {
+            ->when(fn () => filled($this->searchBookings), function ($query) {
                 $query->where(function ($q) {
-                    $q->where('reference', 'like', '%' . $this->searchBookings . '%')
-                        ->orWhereHas('items.package', fn($pq) => $pq->where('name', 'like', '%' . $this->searchBookings . '%'));
+                    $q->where('reference', 'like', '%'.$this->searchBookings.'%')
+                        ->orWhereHas('items.package', fn ($pq) => $pq->where('name', 'like', '%'.$this->searchBookings.'%'));
                 });
             })
-            ->when(fn() => filled($this->filterBookingStatus), function ($query) {
+            ->when(fn () => filled($this->filterBookingStatus), function ($query) {
                 $query->where('status', '=', $this->filterBookingStatus);
             })
             ->orderBy($this->sortBookingsField, $this->sortBookingsDirection)
@@ -134,10 +140,10 @@ class CustomerShow extends Component
     public function getPaymentsProperty()
     {
         return $this->customer->payments()
-            ->when(fn() => filled($this->searchPayments), function ($query) {
-                $query->where('gateway_reference', 'like', '%' . $this->searchPayments . '%');
+            ->when(fn () => filled($this->searchPayments), function ($query) {
+                $query->where('gateway_reference', 'like', '%'.$this->searchPayments.'%');
             })
-            ->when(fn() => filled($this->filterPaymentStatus), function ($query) {
+            ->when(fn () => filled($this->filterPaymentStatus), function ($query) {
                 $query->where('status', '=', $this->filterPaymentStatus);
             })
             ->orderBy($this->sortPaymentsField, $this->sortPaymentsDirection)
@@ -151,10 +157,10 @@ class CustomerShow extends Component
         }
 
         return ActivityLog::where('user_id', '=', $this->customer->user_id)
-            ->when(fn() => filled($this->searchActivity), function ($query) {
+            ->when(fn () => filled($this->searchActivity), function ($query) {
                 $query->where(function ($q) {
-                    $q->where('description', 'like', '%' . $this->searchActivity . '%')
-                      ->orWhere('action', 'like', '%' . $this->searchActivity . '%');
+                    $q->where('description', 'like', '%'.$this->searchActivity.'%')
+                        ->orWhere('action', 'like', '%'.$this->searchActivity.'%');
                 });
             })
             ->latest()

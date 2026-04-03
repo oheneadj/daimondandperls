@@ -2,9 +2,11 @@
 
 namespace App\Livewire\Booking;
 
+use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Notifications\BookingConfirmedNotification;
+use App\Services\MoolrePaymentService;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -15,7 +17,14 @@ class CheckoutPayment extends Component
 {
     public Booking $booking;
 
-    public string $paymentMethod = 'mobile_money'; // default
+    public string $paymentMethod = 'mobile_money';
+
+    // Mobile Money fields
+    public string $momoNetwork = '';
+
+    public string $momoNumber = '';
+
+    public bool $isAwaitingPayment = false;
 
     // Form fields for Bank Transfer
     public string $senderName = '';
@@ -23,27 +32,76 @@ class CheckoutPayment extends Component
     public string $referenceNotes = '';
 
     public ?string $errorMessage = null;
-    
+
     // Bank Details from Settings
     public string $bankName = '';
+
     public string $accountName = '';
+
     public string $accountNumber = '';
+
     public string $branchCode = '';
 
     public ?string $loading = null;
+
+    /**
+     * Strip non-numeric characters as user types.
+     */
+    public function updatedMomoNumber(string $value): void
+    {
+        $this->momoNumber = preg_replace('/[^0-9]/', '', $value);
+    }
+
+    /**
+     * Computed: is the MoMo form valid enough to enable the Pay button?
+     */
+    public function getIsMomoFormValidProperty(): bool
+    {
+        if (empty($this->momoNetwork) || strlen($this->momoNumber) !== 10) {
+            return false;
+        }
+
+        return (bool) preg_match($this->getNetworkPrefixPattern(), $this->momoNumber);
+    }
+
+    /**
+     * Returns the regex pattern matching valid prefixes for the selected network.
+     */
+    private function getNetworkPrefixPattern(): string
+    {
+        return match ($this->momoNetwork) {
+            '13' => '/^0(24|54|55|59)\d{7}$/',  // MTN
+            '6' => '/^0(20|50)\d{7}$/',         // Telecel
+            '7' => '/^0(26|56|27|57)\d{7}$/',   // AT
+            default => '/^0\d{9}$/',
+        };
+    }
 
     public function mount(Booking $booking)
     {
         $this->booking = $booking->load(['items.package', 'customer']);
 
-        // Set initial error if persists in session (e.g. from previous redirect)
         if (session()->has('error')) {
             $this->errorMessage = session('error');
         }
 
-        // If already paid or pending verification, redirect to confirmation immediately
-        if ($this->booking->payment_status !== \App\Enums\PaymentStatus::Unpaid && $this->booking->payment_status !== \App\Enums\PaymentStatus::Failed) {
+        if ($this->booking->payment_status === PaymentStatus::Paid) {
             return redirect()->route('booking.confirmation', ['booking' => $this->booking->reference]);
+        }
+
+        // Auto-resume polling if already initialized (e.g., page refresh)
+        if ($this->booking->payment_status === PaymentStatus::Pending && ! empty($this->booking->payment_reference)) {
+            $this->isAwaitingPayment = true;
+            $this->paymentMethod = 'mobile_money';
+            $this->momoNetwork = $this->booking->payment_channel ?? '';
+            $this->momoNumber = $this->booking->payer_number ?? '';
+        }
+
+        // Prefill from user if applicable
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            $this->momoNumber = $user->saved_momo_number ?? $this->momoNumber;
+            $this->momoNetwork = $user->saved_momo_network ?? $this->momoNetwork;
         }
 
         // Load Bank Details from Settings
@@ -58,73 +116,103 @@ class CheckoutPayment extends Component
     {
         $this->errorMessage = null;
         session()->forget('error');
+        $this->isAwaitingPayment = false;
     }
 
-    public function processMobileMoney()
+    public function processMobileMoney(MoolrePaymentService $moolre)
     {
         $this->loading = 'processMobileMoney';
-        DB::transaction(function () {
-            // Create a successful dummy payment record
-            $payment = Payment::updateOrCreate(
+        $this->errorMessage = null;
+
+        $networkPrefixPattern = $this->getNetworkPrefixPattern();
+
+        $this->validate([
+            'momoNetwork' => 'required|in:13,6,7',
+            'momoNumber' => ['required', 'regex:'.$networkPrefixPattern],
+        ], [
+            'momoNetwork.required' => 'Please select your mobile network.',
+            'momoNetwork.in' => 'Invalid network selected.',
+            'momoNumber.required' => 'Please provide your mobile money number.',
+            'momoNumber.regex' => 'This number doesn\'t match the selected network. Please check the prefix.',
+        ]);
+
+        $response = $moolre->initiatePayment($this->booking, $this->momoNetwork, $this->momoNumber);
+
+        if (isset($response['status']) && $response['status'] == 1) {
+            $this->booking->update([
+                'payment_channel' => $this->momoNetwork,
+                'payer_number' => $this->momoNumber,
+                'payment_status' => PaymentStatus::Pending,
+                'payment_reference' => $response['data'] ?? null,
+            ]);
+
+            if (\Illuminate\Support\Facades\Auth::check()) {
+                \Illuminate\Support\Facades\Auth::user()->update([
+                    'saved_momo_number' => $this->momoNumber,
+                    'saved_momo_network' => $this->momoNetwork,
+                ]);
+            }
+
+            $this->isAwaitingPayment = true;
+        } else {
+            $this->errorMessage = $response['message'] ?? 'Failed to initiate payment prompt. Please try again.';
+            session()->flash('error', $this->errorMessage);
+        }
+
+        $this->loading = null;
+    }
+
+    public function checkPaymentStatus()
+    {
+        $this->booking->refresh();
+
+        if ($this->booking->payment_status === PaymentStatus::Paid) {
+
+            // Generate robust Payment record mirroring dummy card model logic
+            Payment::updateOrCreate(
                 ['booking_id' => $this->booking->id],
                 [
-                    'gateway' => 'paystack',
+                    'gateway' => 'moolre',
                     'method' => 'mobile_money',
                     'amount' => $this->booking->total_amount,
                     'currency' => 'GHS',
                     'status' => 'successful',
                     'paid_at' => now(),
-                    'gateway_reference' => 'MOMO-SIM-'.uniqid(),
-                    'gateway_response' => json_encode(['status' => 'success', 'message' => 'Simulated Mobile Money Payment']),
+                    'gateway_reference' => $this->booking->payment_reference,
+                    'gateway_response' => json_encode($this->booking->payment_details ?? []),
                 ]
             );
 
-            $this->booking->update([
-                'status' => 'confirmed',
-                'payment_status' => 'paid',
-            ]);
-
+            // Notify customer of paid success
             $this->booking->customer->notify(new BookingConfirmedNotification(
                 $this->booking,
                 app(\App\Services\InvoiceService::class)->getDownloadUrl($this->booking)
             ));
-        });
 
-        return redirect()->route('booking.confirmation', ['booking' => $this->booking->reference]);
+            return redirect()->route('booking.confirmation', ['booking' => $this->booking->reference]);
+        }
+
+        if ($this->booking->payment_status === PaymentStatus::Failed) {
+            $this->isAwaitingPayment = false;
+            $this->errorMessage = 'Payment was declined or failed. Please try again.';
+            session()->flash('error', $this->errorMessage);
+        }
     }
 
-    public function simulateMobileMoneyFailure()
+    public function cancelPayment()
     {
-        DB::transaction(function () {
-            // Create a failed dummy payment record
-            Payment::updateOrCreate(
-                ['booking_id' => $this->booking->id],
-                [
-                    'gateway' => 'paystack',
-                    'method' => 'mobile_money',
-                    'amount' => $this->booking->total_amount,
-                    'currency' => 'GHS',
-                    'status' => 'failed',
-                    'gateway_reference' => 'MOMO-FAIL-'.uniqid(),
-                    'gateway_response' => json_encode(['status' => 'failed', 'message' => 'Insufficient Funds Simulation']),
-                ]
-            );
-
-            $this->booking->update([
-                'payment_status' => 'failed',
-            ]);
-        });
-
-        $this->errorMessage = 'Payment failed! Insufficient funds. Please try again.';
-        session()->flash('error', $this->errorMessage);
+        $this->isAwaitingPayment = false;
+        $this->booking->update([
+            'payment_status' => PaymentStatus::Unpaid,
+            'payment_reference' => null,
+        ]);
     }
 
     public function processCard()
     {
         $this->loading = 'processCard';
         DB::transaction(function () {
-            // Create a successful dummy card payment record
-            $payment = Payment::updateOrCreate(
+            Payment::updateOrCreate(
                 ['booking_id' => $this->booking->id],
                 [
                     'gateway' => 'paystack',
@@ -140,7 +228,7 @@ class CheckoutPayment extends Component
 
             $this->booking->update([
                 'status' => 'confirmed',
-                'payment_status' => 'paid',
+                'payment_status' => PaymentStatus::Paid,
             ]);
 
             $this->booking->customer->notify(new BookingConfirmedNotification(
@@ -161,7 +249,6 @@ class CheckoutPayment extends Component
         ]);
 
         DB::transaction(function () {
-            // Create a pending manual payment record
             Payment::updateOrCreate(
                 ['booking_id' => $this->booking->id],
                 [
@@ -176,8 +263,6 @@ class CheckoutPayment extends Component
                     ]),
                 ]
             );
-
-            // Leave booking payment_status as unpaid, but it's now pending manual verification
         });
 
         return redirect()->route('booking.confirmation', ['booking' => $this->booking->reference]);

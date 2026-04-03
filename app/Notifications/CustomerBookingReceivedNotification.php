@@ -26,11 +26,11 @@ class CustomerBookingReceivedNotification extends Notification implements Should
         $resumeUrl = route('booking.payment', $this->booking->reference);
 
         return (new MailMessage)
-            ->subject('Booking Received: ' . $this->booking->reference)
-            ->greeting('Hello ' . $this->booking->customer->name . '!')
+            ->subject('Booking Received: '.$this->booking->reference)
+            ->greeting('Hello '.$this->booking->customer->name.'!')
             ->line('Thank you for choosing Diamonds & Pearls Catering. Your booking has been received and is currently pending payment.')
-            ->line('Booking Reference: **' . $this->booking->reference . '**')
-            ->line('Total Amount: **GHS ' . number_format((float) $this->booking->total_amount, 2) . '**')
+            ->line('Booking Reference: **'.$this->booking->reference.'**')
+            ->line('Total Amount: **GHS '.number_format((float) $this->booking->total_amount, 2).'**')
             ->action('Complete Payment', $resumeUrl)
             ->line('If you have already initiated a bank transfer, please ignore this message while we verify your payment.')
             ->line('Thank you for your business!');

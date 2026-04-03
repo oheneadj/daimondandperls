@@ -9,13 +9,13 @@ beforeEach(function () {
         'type' => \App\Enums\UserType::Admin,
         'is_active' => true,
     ]);
-    
+
     $this->actingAs($this->user);
 });
 
 test('it can render the user show page', function () {
     $otherUser = User::factory()->create();
-    
+
     Livewire::test(UserShow::class, ['user' => $otherUser])
         ->assertStatus(200)
         ->assertSee($otherUser->name)

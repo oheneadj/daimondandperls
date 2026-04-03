@@ -22,7 +22,7 @@ class UserShow extends Component
     public function render(): View
     {
         $this->user->loadMissing(['roles']);
-        
+
         return view('livewire.admin.users.user-show');
     }
 }

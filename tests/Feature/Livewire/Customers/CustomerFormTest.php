@@ -19,4 +19,3 @@ test('it can load the form for a customer with a null email', function () {
         ->assertSet('email', '')
         ->assertStatus(200);
 });
-

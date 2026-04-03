@@ -16,22 +16,23 @@
             <span class="text-base-content">{{ $booking->reference }}</span>
         </div>
 
-        {{-- Status Flow Stepper --}}
         @php
-            $flowSteps = ['New Booking', 'Confirmed', 'In Preparation', 'Completed'];
+            $flowSteps = ['New', 'Confirmed', 'Prep', 'Ready Delivery', 'Completed'];
+            
             $currentStatusVal = $booking->status?->value ?? 'pending';
 
-            $currentStep = match($currentStatusVal) {
-                'pending' => 1,
-                'confirmed' => 2,
-                'in_preparation' => 3,
-                'completed' => 4,
-                'cancelled' => 1,
-                default => 1,
-            };
-
             if ($currentStatusVal === 'cancelled') {
-                $flowSteps[0] = 'Terminated';
+                $flowSteps = ['New', 'Terminated'];
+                $currentStep = 2;
+            } else {
+                $currentStep = match($currentStatusVal) {
+                    'pending' => 1,
+                    'confirmed' => 2,
+                    'in_preparation' => 3,
+                    'ready_for_delivery' => 4,
+                    'completed' => 5,
+                    default => 1,
+                };
             }
         @endphp
 
@@ -82,7 +83,7 @@
             </p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-3">
+        <div class="flex flex-wrap items-center justify-end gap-3">
             @if($booking->payment_status?->value === 'paid')
                 <x-ui.button variant="success" class="border" size="sm" href="{!! app(\App\Services\InvoiceService::class)->getDownloadUrl($booking) !!}" target="_blank" title="{{ __('Download Invoice') }}">
                     <x-slot:icon>
@@ -205,6 +206,54 @@
                     </div>
                 </x-ui.card>
                 @endif
+
+                {{-- Payment Details Card --}}
+                @if($booking->payment_channel || $booking->payment_reference)
+                <x-ui.card>
+                    <div class="flex items-center gap-2.5 mb-6">
+                        <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            </svg>
+                        </div>
+                        <h2 class="text-[11px] font-bold uppercase tracking-[0.2em] text-base-content">{{ __('Payment Details') }}</h2>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        @if($booking->payment_channel)
+                        <div class="flex flex-col">
+                            <p class="text-[10px] font-bold text-base-content/60 uppercase tracking-widest mb-1 opacity-50">{{ __('Payment Channel') }}</p>
+                            <p class="text-[14px] sm:text-[15px] font-bold text-base-content">
+                                @if($booking->payment_channel === '13')
+                                    MTN MoMo
+                                @elseif($booking->payment_channel === '6')
+                                    Telecel
+                                @elseif($booking->payment_channel === '7')
+                                    AT Money
+                                @else
+                                    {{ $booking->payment_channel }}
+                                @endif
+                            </p>
+                        </div>
+                        @endif
+
+                        @if($booking->payer_number)
+                        <div class="flex flex-col">
+                            <p class="text-[10px] font-bold text-base-content/60 uppercase tracking-widest mb-1 opacity-50">{{ __('Payer Number') }}</p>
+                            <p class="text-[14px] sm:text-[15px] font-bold text-base-content">{{ $booking->payer_number }}</p>
+                        </div>
+                        @endif
+
+                        @if($booking->payment_reference)
+                        <div class="flex flex-col col-span-2">
+                            <p class="text-[10px] font-bold text-base-content/60 uppercase tracking-widest mb-1 opacity-50">{{ __('Transaction Reference') }}</p>
+                            <p class="text-[13px] font-mono font-medium text-base-content/80 break-all">{{ $booking->payment_reference }}</p>
+                        </div>
+                        @endif
+                    </div>
+                </x-ui.card>
+                @endif
+
             </div>
 
             {{-- Packages / Invoice Table --}}
@@ -353,6 +402,16 @@
                         </button>
                     @endif
 
+                    @if($this->canBeDispatched)
+                        <button class="group w-full flex items-center justify-center gap-2 py-4 px-5 rounded-lg bg-gradient-to-r from-[#8B5CF6] to-[#A855F7] text-white text-[14px] font-bold shadow-[0_8px_16px_-4px_rgba(139,92,246,0.4)] hover:shadow-[0_12px_20px_-4px_rgba(139,92,246,0.5)] hover:-translate-y-1 transition-all duration-300 border border-white/10 overflow-hidden relative" wire:click="promptAction('readyForDelivery')">
+                            <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="relative z-10 w-5 h-5 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                            </svg>
+                            <span class="relative z-10 tracking-wide">{{ __('Ready For Delivery') }}</span>
+                        </button>
+                    @endif
+
                     @if($this->canBeCompleted)
                         <button class="group w-full flex items-center justify-center gap-2 py-4 px-5 rounded-lg bg-gradient-to-r from-[#18542A] to-[#206f38] text-white text-[14px] font-bold shadow-[0_8px_16px_-4px_rgba(24,84,42,0.4)] hover:shadow-[0_12px_20px_-4px_rgba(24,84,42,0.5)] hover:-translate-y-1 transition-all duration-300 border border-white/10 overflow-hidden relative" wire:click="promptAction('completeBooking')">
                                 <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
@@ -494,6 +553,8 @@
                     <strong class="text-primary uppercase tracking-widest">{{ __('Verification & Confirmation') }}</strong>
                 @elseif($actionToConfirm === 'startPreparation')
                     <strong class="text-secondary uppercase tracking-widest">{{ __('Start Preparation') }}</strong>
+                @elseif($actionToConfirm === 'readyForDelivery')
+                    <strong class="text-[#A855F7] uppercase tracking-widest">{{ __('Ready For Delivery') }}</strong>
                 @elseif($actionToConfirm === 'completeBooking')
                     <strong class="text-dp-success uppercase tracking-widest">{{ __('Complete Booking') }}</strong>
                 @else

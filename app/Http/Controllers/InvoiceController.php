@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Services\InvoiceService;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class InvoiceController extends Controller
 {
@@ -24,12 +24,12 @@ class InvoiceController extends Controller
         }
 
         $booking = Booking::where('reference', $reference)->firstOrFail();
-        $path = 'invoices/' . $booking->reference . '.pdf';
+        $path = 'invoices/'.$booking->reference.'.pdf';
 
         // Always regenerate to ensure latest business settings are reflected
         $invoiceService->generate($booking);
 
-        return Storage::disk('public')->download($path, 'Invoice-' . $booking->reference . '.pdf', [
+        return Storage::disk('public')->download($path, 'Invoice-'.$booking->reference.'.pdf', [
             'Content-Type' => 'application/pdf',
         ]);
     }

@@ -39,12 +39,12 @@ class FortifyServiceProvider extends ServiceProvider
                         Fortify::username() => [__('Your account has been disabled. Please contact support.')],
                     ]);
                 }
+
                 return $user;
             }
 
             return null;
         });
-
 
         // Add custom redirect logic after login
         $this->app->singleton(

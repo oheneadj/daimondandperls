@@ -11,7 +11,9 @@ use Livewire\Component;
 class TrackBooking extends Component
 {
     public string $reference = '';
+
     public string $phone = '';
+
     public ?string $message = null;
 
     public function track()
@@ -29,8 +31,9 @@ class TrackBooking extends Component
             })
             ->first();
 
-        if (!$booking) {
+        if (! $booking) {
             $this->message = 'We couldn\'t find a booking matching those details. Please check and try again.';
+
             return;
         }
 

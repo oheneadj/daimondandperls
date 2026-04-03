@@ -174,13 +174,28 @@
                 <div class="payment-row">
                     <strong>Method:</strong> {{ str($booking->payment->method?->value ?? 'N/A')->replace('_', ' ')->title() }}
                 </div>
+                @if($booking->payment_channel)
+                    <div class="payment-row">
+                        <strong>Payment Channel:</strong> 
+                        @if($booking->payment_channel === '13') MTN MoMo
+                        @elseif($booking->payment_channel === '6') Telecel
+                        @elseif($booking->payment_channel === '7') AT Money
+                        @else {{ $booking->payment_channel }}
+                        @endif
+                    </div>
+                @endif
+                @if($booking->payer_number)
+                    <div class="payment-row">
+                        <strong>Paid Via:</strong> {{ $booking->payer_number }}
+                    </div>
+                @endif
                 @if($booking->payment->paid_at)
                     <div class="payment-row">
                         <strong>Paid On:</strong> {{ $booking->payment->paid_at->format('F d, Y \\a\\t h:i A') }}
                     </div>
                 @endif
                 <div class="payment-row">
-                    <strong>Reference:</strong> {{ $booking->payment->gateway_reference ?? 'N/A' }}
+                    <strong>Reference:</strong> {{ $booking->payment->gateway_reference ?? $booking->payment_reference ?? 'N/A' }}
                 </div>
             </div>
         @elseif($bank['name'])

@@ -20,7 +20,7 @@ beforeEach(function () {
 });
 
 it('generates a pdf invoice file', function () {
-    $service = new InvoiceService();
+    $service = new InvoiceService;
     $path = $service->generate($this->booking);
 
     expect($path)->toBe('invoices/TEST-INV-001.pdf');
@@ -28,7 +28,7 @@ it('generates a pdf invoice file', function () {
 });
 
 it('generates a valid signed download url', function () {
-    $service = new InvoiceService();
+    $service = new InvoiceService;
     $url = $service->getDownloadUrl($this->booking);
 
     expect($url)->toContain('invoice/TEST-INV-001/download');
@@ -36,9 +36,9 @@ it('generates a valid signed download url', function () {
 });
 
 it('downloads the invoice via signed route', function () {
-    $service = new InvoiceService();
+    $service = new InvoiceService;
     $service->generate($this->booking);
-    
+
     $url = $service->getDownloadUrl($this->booking);
 
     $this->get($url)
@@ -48,20 +48,20 @@ it('downloads the invoice via signed route', function () {
 });
 
 it('forbids downloading invoice with invalid signature', function () {
-    $url = route('invoice.download', ['reference' => $this->booking->reference]) . '?signature=invalid';
+    $url = route('invoice.download', ['reference' => $this->booking->reference]).'?signature=invalid';
 
     $this->get($url)->assertStatus(403);
 });
 
 it('regenerates invoice if missing during download', function () {
     Storage::disk('public')->assertMissing('invoices/TEST-INV-001.pdf');
-    
+
     $url = URL::signedRoute('invoice.download', [
         'reference' => $this->booking->reference,
     ], now()->addHour());
 
     $this->get($url)->assertStatus(200);
-    
+
     Storage::disk('public')->assertExists('invoices/TEST-INV-001.pdf');
 });
 
@@ -74,7 +74,7 @@ it('handles null event details gracefully', function () {
         'event_end_time' => null,
     ]);
 
-    $service = new InvoiceService();
+    $service = new InvoiceService;
     $path = $service->generate($booking);
 
     expect($path)->toBe('invoices/NULL-EVENT-001.pdf');

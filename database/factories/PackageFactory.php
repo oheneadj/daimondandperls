@@ -26,7 +26,7 @@ class PackageFactory extends Factory
             'Chilled Local Drinks',
             'Professional Servers',
             'Premium Cutlery & Setup',
-            'Eco-friendly Packaging'
+            'Eco-friendly Packaging',
         ];
 
         return [

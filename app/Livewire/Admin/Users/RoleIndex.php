@@ -15,19 +15,24 @@ use Livewire\Component;
 class RoleIndex extends Component
 {
     public $roles;
+
     public $permissions;
+
     public ?Role $selectedRole = null;
+
     public array $rolePermissions = [];
 
     // Create Role properties
     public bool $showCreateModal = false;
+
     public string $name = '';
+
     public string $description = '';
 
     public function mount(): void
     {
         $this->loadData();
-        
+
         if ($this->roles->count() > 0) {
             $this->selectRole($this->roles->first()->id);
         }
@@ -75,6 +80,7 @@ class RoleIndex extends Component
                 'type' => 'error',
                 'message' => 'The Super Admin role cannot be deleted.',
             ]);
+
             return;
         }
 
@@ -83,12 +89,13 @@ class RoleIndex extends Component
                 'type' => 'error',
                 'message' => 'Cannot delete a role that is assigned to users.',
             ]);
+
             return;
         }
 
         $role->delete();
         $this->loadData();
-        
+
         if ($this->roles->count() > 0) {
             $this->selectRole($this->roles->first()->id);
         } else {
@@ -104,13 +111,15 @@ class RoleIndex extends Component
 
     public function savePermissions(): void
     {
-        if (!$this->selectedRole) return;
+        if (! $this->selectedRole) {
+            return;
+        }
 
         $this->selectedRole->permissions()->sync($this->rolePermissions);
 
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => 'Permissions updated for ' . $this->selectedRole->name,
+            'message' => 'Permissions updated for '.$this->selectedRole->name,
         ]);
     }
 
@@ -126,5 +135,4 @@ class RoleIndex extends Component
             'permissionsGrouped' => $permissionsGrouped,
         ]);
     }
-
 }

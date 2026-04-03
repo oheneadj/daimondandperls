@@ -20,12 +20,17 @@ use Livewire\WithPagination;
 class PaymentsOverview extends Component
 {
     use WithPagination;
+
     #[Url(history: true)]
     public string $search = '';
+
     #[Url(history: true)]
     public string $activeTab = 'all';
+
     public string $sortField = 'created_at';
+
     public string $sortDirection = 'desc';
+
     public function sortBy(string $field): void
     {
         if ($this->sortField === $field) {
@@ -36,6 +41,7 @@ class PaymentsOverview extends Component
         }
         $this->resetPage();
     }
+
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -43,10 +49,12 @@ class PaymentsOverview extends Component
 
     // Verification State
     public bool $showingVerifyModal = false;
+
     public ?Payment $paymentToVerify = null;
 
     // Show Modal State
     public bool $showingPaymentModal = false;
+
     public ?Payment $selectedPayment = null;
 
     public ?string $loading = null;
@@ -107,7 +115,7 @@ class PaymentsOverview extends Component
                 // Generate and send invoice
                 $booking = $this->paymentToVerify->booking;
                 $invoiceUrl = app(\App\Services\InvoiceService::class)->getDownloadUrl($booking);
-                
+
                 if ($booking->customer) {
                     $booking->customer->notify(new \App\Notifications\BookingConfirmedNotification($booking, $invoiceUrl));
                 }
@@ -149,7 +157,7 @@ class PaymentsOverview extends Component
                 default => null
             };
             if ($status) {
-                $query->where(fn($q) => $q->where('status', '=', $status->value));
+                $query->where(fn ($q) => $q->where('status', '=', $status->value));
             }
         }
 

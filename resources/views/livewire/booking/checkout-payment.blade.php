@@ -1,4 +1,4 @@
-<div class="bg-base-200 min-h-screen py-10 lg:py-20 px-4">
+<div class="bg-base-200 min-h-screen py-6 lg:py-20 px-3 sm:px-4">
     <div class="container mx-auto max-w-6xl">
         <!-- Progress Bar (5 Steps) -->
         <div class="mb-12 lg:mb-16 max-w-4xl mx-auto">
@@ -38,30 +38,32 @@
             <!-- Main Content Column -->
             <div class="lg:col-span-8">
                 <div class="bg-base-100 border border-base-content/10 rounded-[24px] overflow-hidden shadow-sm">
-                    <div class="p-8 lg:p-12">
+                    <div class="p-5 sm:p-8 lg:p-12">
                         <div class="mb-10">
                             <h1 class=" text-3xl font-semibold text-base-content mb-2">Secure Payment</h1>
                             <p class="text-base-content/60 text-[14px] font-medium">Coordinate your catering preference for: <span class="text-primary font-bold">{{ $booking->reference }}</span></p>
                         </div>
 
                         @if ($errorMessage)
-                            <div class="mb-10 animate-fade-in">
-                                <div class="bg-dp-danger/5 border border-dp-danger/20 p-6 rounded-2xl flex items-start gap-4">
-                                    <div class="bg-white size-10 rounded-full shadow-sm shrink-0 flex items-center justify-center">
+                            <div class="mb-8 sm:mb-10 animate-fade-in">
+                                <div class="bg-error/5 border border-error/15 p-5 sm:p-6 rounded-2xl flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 text-center sm:text-left">
+                                    <div class="bg-error/10 size-12 sm:size-10 rounded-full shrink-0 flex items-center justify-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                                     </div>
-                                    <div>
-                                        <h3 class="text-xs font-bold uppercase tracking-widest text-error mb-1">Transaction Failed</h3>
-                                        <p class="text-[14px] font-medium text-base-content">{{ $errorMessage }}</p>
-                                        <x-ui.button wire:click="retry" variant="ghost" size="sm" class="text-error hover:text-error font-bold !p-0 underline mt-3">
-                                            {{ __('Retry with another method') }}
-                                        </x-ui.button>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-[11px] font-bold uppercase tracking-widest text-error mb-1">Transaction Failed</h3>
+                                        <p class="text-sm font-medium text-base-content leading-relaxed">{{ $errorMessage }}</p>
+                                        <button wire:click="retry" class="inline-flex items-center gap-1.5 mt-3 text-sm font-bold text-error hover:text-error/80 transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                            Try again
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         @endif
 
-                        <!-- Method Selector -->
+                        {{-- Method Selector (hidden — only MoMo is active for now) --}}
+                        @if(false)
                         <div class="flex items-center gap-3 p-1.5 bg-base-200 border border-base-content/10 rounded-2xl mb-12 overflow-x-auto scrollbar-hide">
                             @foreach([
                                 'mobile_money' => 'Mobile Money',
@@ -77,29 +79,139 @@
                                 </button>
                             @endforeach
                         </div>
+                        @endif
 
                         <div class="min-h-[400px]">
                             @if ($paymentMethod === 'mobile_money')
-                                <div class="animate-fade-in space-y-12">
-                                    <div class="flex justify-center gap-12 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
-                                        <span class="font-black text-xl italic tracking-tighter">MTN MoMo</span>
-                                        <span class="font-black text-xl italic tracking-tighter">Telecel</span>
-                                        <span class="font-black text-xl italic tracking-tighter">AT Money</span>
-                                    </div>
+                                <div class="animate-fade-in space-y-8">
+                                    @if ($isAwaitingPayment)
+                                        <div wire:poll.3s="checkPaymentStatus" class="bg-base-200/50 border border-base-content/10 rounded-3xl p-10 text-center relative overflow-hidden transition-all duration-500 mt-2">
+                                            <div class="absolute inset-0 bg-primary/5 animate-pulse"></div>
+                                            <div class="relative z-10">
+                                                <div class="flex justify-center mb-6">
+                                                    <span class="loading loading-ring loading-lg text-primary scale-150"></span>
+                                                </div>
+                                                <h3 class="text-xl font-bold text-base-content mb-2">Awaiting Authorization</h3>
+                                                <p class="text-[14px] text-base-content/60 font-medium max-w-sm mx-auto mb-8 leading-relaxed">
+                                                    Please check your handset ({{ $momoNumber }}). A payment prompt has been sent. Enter your PIN to authorize the transaction.
+                                                </p>
+                                                <div class="flex items-center justify-center gap-4">
+                                                    <x-ui.button wire:click="checkPaymentStatus" variant="outline" size="sm" class="font-bold border-base-content/20 bg-white shadow-sm hover:border-primary">
+                                                        Check Status Now
+                                                    </x-ui.button>
+                                                    <x-ui.button wire:click="cancelPayment" variant="ghost" size="sm" class="text-error font-bold hover:bg-error/10">
+                                                        Cancel & Try Again
+                                                    </x-ui.button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <!-- Network Selection -->
+                                        <div>
+                                            <div class="text-[11px] font-bold text-base-content/60 uppercase tracking-widest mb-4 ml-1">Select Network</div>
+                                            <div class="bg-base-100 border border-base-content/10 rounded-2xl overflow-hidden divide-y divide-base-content/10">
+                                                {{-- MTN MoMo --}}
+                                                <button type="button" wire:click="$set('momoNetwork', '13')" class="w-full flex items-center justify-between px-5 py-4 transition-colors duration-150 hover:bg-base-200/50 {{ $momoNetwork == '13' ? 'bg-primary/5' : '' }}">
+                                                    <div class="flex items-center gap-4">
+                                                        <img src="{{ asset('logos/mtn-momo.png') }}" class="size-9 object-contain rounded-lg" alt="MTN MoMo" onerror="this.style.display='none'">
+                                                        <span class="text-[15px] font-semibold text-base-content">MTN Mobile Money</span>
+                                                    </div>
+                                                    <div class="size-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200 {{ $momoNetwork == '13' ? 'border-primary' : 'border-base-content/20' }}">
+                                                        @if($momoNetwork == '13')
+                                                            <div class="size-3.5 rounded-full bg-primary"></div>
+                                                        @endif
+                                                    </div>
+                                                </button>
 
-                                    <div class="bg-base-200/50 border border-base-content/10 rounded-3xl p-10 text-center">
-                                        <div class="size-20 bg-base-100 rounded-full flex items-center justify-center mx-auto mb-8 shadow-sm">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                                                {{-- Telecel Cash --}}
+                                                <button type="button" wire:click="$set('momoNetwork', '6')" class="w-full flex items-center justify-between px-5 py-4 transition-colors duration-150 hover:bg-base-200/50 {{ $momoNetwork == '6' ? 'bg-primary/5' : '' }}">
+                                                    <div class="flex items-center gap-4">
+                                                        <img src="{{ asset('logos/Telecel-Cash.jpg') }}" class="size-9 object-contain rounded-lg" alt="Telecel Cash" onerror="this.style.display='none'">
+                                                        <span class="text-[15px] font-semibold text-base-content">Telecel Cash</span>
+                                                    </div>
+                                                    <div class="size-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200 {{ $momoNetwork == '6' ? 'border-primary' : 'border-base-content/20' }}">
+                                                        @if($momoNetwork == '6')
+                                                            <div class="size-3.5 rounded-full bg-primary"></div>
+                                                        @endif
+                                                    </div>
+                                                </button>
+
+                                                {{-- AT Money --}}
+                                                <button type="button" wire:click="$set('momoNetwork', '7')" class="w-full flex items-center justify-between px-5 py-4 transition-colors duration-150 hover:bg-base-200/50 {{ $momoNetwork == '7' ? 'bg-primary/5' : '' }}">
+                                                    <div class="flex items-center gap-4">
+                                                        <img src="{{ asset('logos/airteltigo-money.png') }}" class="size-9 object-contain rounded-lg" alt="AirtelTigo Money" onerror="this.style.display='none'">
+                                                        <span class="text-[15px] font-semibold text-base-content">AirtelTigo Money</span>
+                                                    </div>
+                                                    <div class="size-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200 {{ $momoNetwork == '7' ? 'border-primary' : 'border-base-content/20' }}">
+                                                        @if($momoNetwork == '7')
+                                                            <div class="size-3.5 rounded-full bg-primary"></div>
+                                                        @endif
+                                                    </div>
+                                                </button>
+                                            </div>
+                                            @error('momoNetwork') <span class="text-[11px] font-bold text-error mt-2 block ml-1 uppercase tracking-wider">{{ $message }}</span> @enderror
                                         </div>
-                                        <p class="text-base-content font-bold text-xl mb-3">Handset Verification</p>
-                                        <p class="text-base-content/60 font-medium text-[15px] max-w-xs mx-auto mb-10 leading-relaxed">Please initiate the transaction. You will receive a prompt on your handset to authorize the payment.</p>
-                                        
-                                        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                                            <x-ui.button wire:click="processMobileMoney" wire:loading.attr="disabled" :loading="$loading === 'processMobileMoney'" variant="primary" size="lg" class="shadow-md">
-                                                {{ __('Simulate Handset Success') }}
-                                            </x-ui.button>
+
+                                        <!-- Phone Number -->
+                                        <div class="space-y-2">
+                                            <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Mobile Money Number</label>
+                                            <div class="relative">
+                                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                                </div>
+                                                <input
+                                                    type="tel"
+                                                    inputmode="numeric"
+                                                    pattern="[0-9]*"
+                                                    wire:model.live="momoNumber"
+                                                    placeholder="{{ match($momoNetwork) { '13' => '024 / 054 / 055 / 059', '6' => '020 / 050', '7' => '026 / 056 / 027 / 057', default => 'Select a network first' } }}"
+                                                    class="w-full pl-12 pr-5 py-4 bg-base-100 border focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-lg tracking-widest text-base-content placeholder-base-content/20"
+                                                    maxlength="10"
+                                                    @if(empty($momoNetwork)) disabled @endif
+                                                >
+                                            </div>
+
+                                            {{-- Prefix hint --}}
+                                            @if($momoNetwork && strlen($momoNumber) > 0 && strlen($momoNumber) < 10)
+                                                <p class="text-[11px] font-medium text-base-content/40 ml-1">
+                                                    @switch($momoNetwork)
+                                                        @case('13') Accepted prefixes: 024, 054, 055, 059 @break
+                                                        @case('6')  Accepted prefixes: 020, 050 @break
+                                                        @case('7')  Accepted prefixes: 026, 056, 027, 057 @break
+                                                    @endswitch
+                                                </p>
+                                            @endif
+
+                                            @if($momoNumber && strlen($momoNumber) === 10 && !$this->isMomoFormValid)
+                                                <span class="text-[11px] font-bold text-error mt-1 block ml-1 uppercase tracking-wider">This number doesn't match the selected network</span>
+                                            @endif
+
+                                            @error('momoNumber') <span class="text-[11px] font-bold text-error mt-1 block ml-1 uppercase tracking-wider">{{ $message }}</span> @enderror
                                         </div>
-                                    </div>
+
+                                        <!-- Action -->
+                                        <div class="pt-2 border-t border-base-content/5 mt-4">
+                                            <button
+                                                type="button"
+                                                wire:click="processMobileMoney"
+                                                wire:loading.attr="disabled"
+                                                @if(!$this->isMomoFormValid) disabled @endif
+                                                class="w-full h-16 rounded-xl text-lg font-bold flex items-center justify-center gap-2 transition-all duration-300 shadow-xl
+                                                    {{ $this->isMomoFormValid
+                                                        ? 'bg-primary text-white hover:bg-primary/90 cursor-pointer'
+                                                        : 'bg-base-content/10 text-base-content/30 cursor-not-allowed' }}"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-5 {{ $this->isMomoFormValid ? 'text-white/70' : 'text-base-content/20' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                <span wire:loading.remove wire:target="processMobileMoney">
+                                                    Pay GH₵ {{ number_format($booking->total_amount, 2) }}
+                                                </span>
+                                                <span wire:loading wire:target="processMobileMoney" class="flex items-center gap-2">
+                                                    <span class="loading loading-spinner loading-sm"></span>
+                                                    Processing...
+                                                </span>
+                                            </button>
+                                        </div>
+                                    @endif
                                 </div>
                             @endif
 
@@ -109,7 +221,6 @@
                                         {{-- Simulated Card Graphic --}}
                                         <div class="absolute -right-8 -bottom-8 size-40 bg-primary/5 rounded-full blur-3xl"></div>
                                         <div class="absolute -left-8 -top-8 size-40 bg-primary/5 rounded-full blur-3xl"></div>
-
                                         <div class="space-y-6 relative z-10">
                                             <div class="flex justify-between items-center mb-8">
                                                 <div class="size-12 bg-base-200-mid rounded-lg"></div>
@@ -171,7 +282,7 @@
                                     <form wire:submit.prevent="submitBankTransfer" class="space-y-6 max-w-lg mx-auto">
                                         <div class="space-y-2">
                                             <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Sender's Full Name</label>
-                                            <input type="text" wire:model="senderName" class="w-full px-5 py-4 bg-base-100 border border-base-content/10 focus:border-dp-rose focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-sm font-medium" placeholder="As it appears on your account">
+                                            <input type="text" wire:model="senderName" class="w-full px-5 py-4 bg-base-100 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-sm font-medium" placeholder="As it appears on your account">
                                             @error('senderName') <span class="text-xs font-bold text-error">{{ $message }}</span> @enderror
                                         </div>
 

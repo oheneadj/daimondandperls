@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Customers;
 
-use App\Models\Customer;
 use App\Enums\UserRole;
-use Illuminate\Support\Facades\Hash;
+use App\Models\Customer;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -28,20 +28,29 @@ class CustomerIndex extends Component
     public string $status = 'all'; // all, active, inactive
 
     public string $sortField = 'created_at';
+
     public string $sortDirection = 'desc';
 
     // Edit Modal Properties
     public bool $showEditModal = false;
+
     public ?Customer $selectedCustomer = null;
+
     public string $name = '';
+
     public string $email = '';
+
     public string $phone = '';
+
     public string $loading = '';
 
     // Security Confirmation Properties
     public bool $showConfirmationModal = false;
+
     public string $sensitiveAction = ''; // 'delete' or 'toggleStatus'
+
     public string $confirmationPassword = '';
+
     public ?Customer $actionTarget = null;
 
     public function sortBy(string $field): void
@@ -82,6 +91,7 @@ class CustomerIndex extends Component
                 'type' => 'error',
                 'message' => __('Only Super Admins can perform this action.'),
             ]);
+
             return;
         }
 
@@ -99,6 +109,7 @@ class CustomerIndex extends Component
 
         if (! Hash::check($this->confirmationPassword, Auth::user()->password)) {
             $this->dispatch('toast', ['type' => 'error', 'message' => __('The password you entered is incorrect.')]);
+
             return;
         }
 

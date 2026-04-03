@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-
 class Customer extends Model
 {
     /** @use HasFactory<\Database\Factories\CustomerFactory> */
-    use HasFactory, Notifiable, HasUuids;
+    use HasFactory, HasUuids, Notifiable;
 
     protected $fillable = [
         'uuid',
@@ -47,5 +46,10 @@ class Customer extends Model
     public function payments(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
     {
         return $this->hasManyThrough(Payment::class, Booking::class);
+    }
+
+    public function paymentMethods(): HasMany
+    {
+        return $this->hasMany(CustomerPaymentMethod::class);
     }
 }

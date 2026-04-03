@@ -21,7 +21,7 @@ class Profile extends Component
 
     public string $name = '';
 
-    public string $email = '';
+    public ?string $email = '';
 
     public string $phone = '';
 
@@ -42,7 +42,7 @@ class Profile extends Component
     {
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['required', 'string', 'regex:/^(?:\+233|0)\d{9}$/'],
             'notificationPreference' => ['required', Rule::in(array_column(NotificationPreference::cases(), 'value'))],
         ], [

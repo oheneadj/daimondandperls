@@ -17,11 +17,13 @@
       "Bash(git commit:*)",
       "mcp__laravel-boost__database-schema",
       "Bash(grep -E \"\\\\.\\(php|blade\\\\.php\\)$\")",
-      "Bash(xargs ls:*)"
+      "Bash(xargs ls:*)",
+      "Bash(find /home/oheneadj/server/dpc/database/migrations -name *customer* -o -name *payment_method*)"
     ],
     "additionalDirectories": [
       "/home/oheneadj/server/dpc/resources/views/components",
-      "/home/oheneadj/.claude/plans"
+      "/home/oheneadj/.claude/plans",
+      "/home/oheneadj/server/dpc/resources/views/components/customer/⚡payment-methods"
     ]
   }
 }

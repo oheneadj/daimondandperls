@@ -28,6 +28,7 @@ Route::middleware(['auth', 'customer'])
         Route::get('/bookings', \App\Livewire\Customer\Bookings\Index::class)->name('bookings.index');
         Route::get('/bookings/{booking:reference}', \App\Livewire\Customer\Bookings\Show::class)->name('bookings.show');
         Route::get('/payments', \App\Livewire\Customer\Payments\Index::class)->name('payments.index');
+        Route::get('/payment-methods', \App\Livewire\Customer\PaymentMethods::class)->name('payment-methods');
         Route::get('/profile', \App\Livewire\Customer\Profile::class)->name('profile');
     });
 

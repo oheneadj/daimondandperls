@@ -32,6 +32,8 @@ class User extends Authenticatable
         'phone',
         'otp_code',
         'otp_expires_at',
+        'saved_momo_number',
+        'saved_momo_network',
     ];
 
     /**

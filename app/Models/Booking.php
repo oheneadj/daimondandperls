@@ -41,6 +41,10 @@ class Booking extends Model
         'confirmed_at',
         'completed_at',
         'cancelled_at',
+        'payment_reference',
+        'payment_channel',
+        'payer_number',
+        'payment_details',
     ];
 
     protected function casts(): array
@@ -56,6 +60,7 @@ class Booking extends Model
             'confirmed_at' => 'datetime',
             'completed_at' => 'datetime',
             'cancelled_at' => 'datetime',
+            'payment_details' => 'array',
         ];
     }
 

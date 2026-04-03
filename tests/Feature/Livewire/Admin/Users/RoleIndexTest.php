@@ -9,15 +9,15 @@ use Livewire\Livewire;
 beforeEach(function () {
     $this->user = User::factory()->create();
     $this->actingAs($this->user);
-    
+
     // Ensure permissions exist
     Permission::updateOrCreate(['slug' => 'manage_bookings'], ['name' => 'Manage Bookings', 'description' => 'Test']);
     Permission::updateOrCreate(['slug' => 'manage_users'], ['name' => 'Manage Users', 'description' => 'Test']);
-    
+
     $this->role = Role::create([
         'name' => 'Test Role',
         'slug' => 'test-role',
-        'description' => 'Test Description'
+        'description' => 'Test Description',
     ]);
 });
 
@@ -36,13 +36,13 @@ test('it can select a role and see permissions', function () {
 
 test('it can save permissions for a role', function () {
     $permission = Permission::where('slug', 'manage_bookings')->first();
-    
+
     Livewire::test(RoleIndex::class)
         ->call('selectRole', $this->role->id)
         ->set('rolePermissions', [$permission->id])
         ->call('savePermissions')
         ->assertHasNoErrors();
-        
+
     expect($this->role->fresh()->permissions->contains($permission->id))->toBeTrue();
 });
 
@@ -52,6 +52,6 @@ test('it can create a new role', function () {
         ->set('description', 'Manages things')
         ->call('createRole')
         ->assertSet('showCreateModal', false);
-        
+
     expect(Role::where('name', 'New Manager')->exists())->toBeTrue();
 });

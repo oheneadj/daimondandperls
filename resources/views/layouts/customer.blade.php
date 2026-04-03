@@ -10,7 +10,7 @@
 
     <!-- Mobile Sidebar Backdrop -->
     <div x-show="mobileMenuOpen" x-transition.opacity @click="mobileMenuOpen = false"
-        class="fixed inset-0 z-40 bg-base-content/20 backdrop-blur-sm lg:hidden" style="display: none;"></div>
+        class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden" style="display: none;"></div>
 
     <x-customer.sidebar />
 

@@ -50,7 +50,7 @@ it('displays payments in the list', function () {
     Livewire::test(PaymentsOverview::class)
         ->assertSee($payment->amount)
         ->assertSee($payment->currency)
-        ->assertSee(match($payment->status->value) {
+        ->assertSee(match ($payment->status->value) {
             'successful' => 'Paid',
             'pending' => 'Pending',
             'failed' => 'Failed',

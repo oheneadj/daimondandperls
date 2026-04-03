@@ -232,6 +232,7 @@ class Dashboard extends Component
     public function render()
     {
         $this->loadData();
+
         return view('dashboard');
     }
 }
