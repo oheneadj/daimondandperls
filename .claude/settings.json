@@ -11,7 +11,13 @@
       "Bash(find /home/oheneadj/server/dpc/resources/js -type f -name *.js)",
       "Bash(find /home/oheneadj/server/dpc/resources -name *theme* -o -name *dark*)",
       "Bash(find /home/oheneadj/server/dpc/resources/views/components -type f -name *.blade.php)",
-      "Bash(grep -r \"Alpine\\\\|@theme\\\\|theme-controller\" /home/oheneadj/server/dpc/resources --include=*.blade.php --include=*.js)"
+      "Bash(grep -r \"Alpine\\\\|@theme\\\\|theme-controller\" /home/oheneadj/server/dpc/resources --include=*.blade.php --include=*.js)",
+      "Bash(grep -n \"class Booking\\\\|class Customer\\\\|class User\" /home/oheneadj/server/dpc/app/Models/*.php)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "mcp__laravel-boost__database-schema",
+      "Bash(grep -E \"\\\\.\\(php|blade\\\\.php\\)$\")",
+      "Bash(xargs ls:*)"
     ],
     "additionalDirectories": [
       "/home/oheneadj/server/dpc/resources/views/components",

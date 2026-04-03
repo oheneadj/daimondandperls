@@ -41,6 +41,8 @@ class EventInquiryWizard extends Component
 
     public bool $is_buffet = false;
 
+    public ?string $notes = null;
+
     public function mount(): void
     {
         if ($this->restoreWizardState()) {
@@ -121,6 +123,7 @@ class EventInquiryWizard extends Component
                 'event_type_other' => $this->event_type_other ?: null,
                 'pax' => $this->pax,
                 'is_buffet' => $this->is_buffet,
+                'customer_notes' => $this->notes,
                 'total_amount' => 0,
                 'status' => BookingStatus::Pending,
                 'payment_status' => PaymentStatus::Unpaid,
@@ -136,7 +139,7 @@ class EventInquiryWizard extends Component
             return $booking;
         });
 
-        return redirect()->route('booking.payment', ['booking' => $booking->reference]);
+        return redirect()->route('booking.confirmation', ['booking' => $booking->reference]);
     }
 
     protected function getRedirectRoute(): string
@@ -154,6 +157,7 @@ class EventInquiryWizard extends Component
             'event_type_other' => $this->event_type_other,
             'pax' => $this->pax,
             'is_buffet' => $this->is_buffet,
+            'notes' => $this->notes,
         ];
     }
 
@@ -166,6 +170,7 @@ class EventInquiryWizard extends Component
         $this->event_type_other = $state['event_type_other'] ?? null;
         $this->pax = $state['pax'] ?? null;
         $this->is_buffet = $state['is_buffet'] ?? false;
+        $this->notes = $state['notes'] ?? null;
     }
 
     #[Title('Plan an Event')]

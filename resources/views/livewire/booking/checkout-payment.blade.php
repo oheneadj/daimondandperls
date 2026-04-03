@@ -197,23 +197,29 @@
                         <div class="flex items-center justify-between gap-4">
                             <div class="flex-1">
                                 <div class="text-[14px] font-bold text-base-content line-clamp-1">{{ $item->package->name }}</div>
-                                <div class="text-[11px] text-base-content/60 font-medium">GH₵ {{ number_format($item->price, 0) }} × {{ $item->quantity }}</div>
+                                @if($booking->booking_type !== \App\Enums\BookingType::Event)
+                                    <div class="text-[11px] text-base-content/60 font-medium">GH₵ {{ number_format($item->price, 0) }} × {{ $item->quantity }}</div>
+                                @endif
                             </div>
-                            <div class="text-[14px] font-bold text-base-content whitespace-nowrap">
-                                GH₵ {{ number_format($item->price * $item->quantity, 0) }}
-                            </div>
+                            @if($booking->booking_type !== \App\Enums\BookingType::Event)
+                                <div class="text-[14px] font-bold text-base-content whitespace-nowrap">
+                                    GH₵ {{ number_format($item->price * $item->quantity, 0) }}
+                                </div>
+                            @endif
                         </div>
                         @endforeach
                     </div>
 
                     <div class="space-y-4 pt-8 border-t-2 border-dashed border-base-content/10">
-                        <div class="flex justify-between items-center text-[14px] text-base-content/60 font-medium">
-                            <span>Subtotal</span>
-                            <span>GH₵ {{ number_format($booking->total_amount, 0) }}</span>
-                        </div>
+                        @if($booking->booking_type !== \App\Enums\BookingType::Event)
+                            <div class="flex justify-between items-center text-[14px] text-base-content/60 font-medium">
+                                <span>Subtotal</span>
+                                <span>GH₵ {{ number_format((float) $booking->total_amount, 0) }}</span>
+                            </div>
+                        @endif
                         <div class="flex justify-between items-center pt-4">
                             <span class=" text-xl font-bold text-base-content">Total Due</span>
-                            <span class=" text-3xl font-bold text-primary">GH₵ {{ number_format($booking->total_amount, 0) }}</span>
+                            <span class=" text-3xl font-bold text-primary">GH₵ {{ number_format((float) $booking->total_amount, 0) }}</span>
                         </div>
                     </div>
 

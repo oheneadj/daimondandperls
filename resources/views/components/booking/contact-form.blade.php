@@ -16,6 +16,9 @@
     <div class="space-y-2">
         <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Phone Number</label>
         <input type="tel" wire:model="phone" class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium placeholder:text-base-content/30" placeholder="024 XXX XXXX">
+        @auth
+            <p class="text-[11px] text-base-content/50 font-medium mt-1 ml-1">{{ __('This number will be used for payment.') }}</p>
+        @endauth
         @error('phone') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
     </div>
 

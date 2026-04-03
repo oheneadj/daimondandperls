@@ -35,6 +35,7 @@ class Booking extends Model
         'status',
         'payment_status',
         'admin_notes',
+        'customer_notes',
         'cancelled_reason',
         'confirmed_by',
         'confirmed_at',

@@ -37,7 +37,11 @@ Route::get('/event-booking', App\Livewire\Booking\EventInquiryWizard::class)->na
 Route::get('/booking/track', App\Livewire\Booking\TrackBooking::class)->name('booking.track');
 Route::get('/booking/payment/{booking:reference}', App\Livewire\Booking\CheckoutPayment::class)->name('booking.payment');
 Route::get('/booking/confirmation/{booking:reference}', function (\App\Models\Booking $booking) {
-    return view('booking.confirmation', ['booking' => $booking]);
+    $view = $booking->booking_type === \App\Enums\BookingType::Event
+        ? 'booking.event-confirmation'
+        : 'booking.confirmation';
+
+    return view($view, ['booking' => $booking]);
 })->name('booking.confirmation');
 
 Route::middleware(['auth', 'verified', 'admin'])
@@ -49,6 +53,9 @@ Route::middleware(['auth', 'verified', 'admin'])
         // Admin Bookings
         Route::get('bookings', \App\Livewire\Admin\Bookings\Index::class)->name('bookings.index');
         Route::get('bookings/{booking:reference}', \App\Livewire\Admin\Bookings\Show::class)->name('bookings.show');
+
+        // Admin Events
+        Route::get('events', \App\Livewire\Admin\Bookings\EventIndex::class)->name('events.index');
 
         // Admin Packages
         Route::get('manage-packages', \App\Livewire\Packages\PackageIndex::class)->name('manage-packages.index');

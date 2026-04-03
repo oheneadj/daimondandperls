@@ -3,11 +3,10 @@
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
             <h1 class="text-[28px] font-semibold text-base-content leading-tight">
-                {{ __('Meal Bookings') }}
+                {{ __('Event Bookings') }}
             </h1>
-            <p class="text-[14px] text-base-content/50 mt-1">{{ __('Manage all meal catering orders') }}</p>
+            <p class="text-[14px] text-base-content/50 mt-1">{{ __('Manage all event inquiries and catering events') }}</p>
         </div>
-       
     </div>
 
     {{-- Stats Bar --}}
@@ -68,13 +67,27 @@
                     @endforeach
                 </select>
 
+                <select wire:model.live="eventType" class="bg-base-200 border-none text-[13px] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#F96015]/30 outline-none transition-all font-medium">
+                    <option value="">All Event Types</option>
+                    @foreach($eventTypes as $et)
+                        <option wire:key="event-type-{{ $et->value }}" value="{{ $et->value }}">{{ str($et->value)->title()->replace('_', ' ') }}</option>
+                    @endforeach
+                </select>
+
+                <div class="flex items-center gap-2">
+                    <input type="date" wire:model.live="startDate" class="bg-base-200 border-none text-[13px] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#F96015]/30 outline-none transition-all font-medium">
+                    <span class="text-base-content/30 text-[11px] font-bold">&rarr;</span>
+                    <input type="date" wire:model.live="endDate" class="bg-base-200 border-none text-[13px] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#F96015]/30 outline-none transition-all font-medium">
+                </div>
             </div>
         </x-slot>
 
         <x-slot name="header">
             <x-ui.table.th>Ref #</x-ui.table.th>
             <x-ui.table.th>Customer</x-ui.table.th>
-            <x-ui.table.th>Package</x-ui.table.th>
+            <x-ui.table.th>Event Type</x-ui.table.th>
+            <x-ui.table.th>Event Date</x-ui.table.th>
+            <x-ui.table.th align="center">Pax</x-ui.table.th>
             <x-ui.table.th align="center">Payment</x-ui.table.th>
             <x-ui.table.th align="center">Status</x-ui.table.th>
             <x-ui.table.th align="right">Actions</x-ui.table.th>
@@ -96,11 +109,24 @@
                     </div>
                 </x-ui.table.td>
                 <x-ui.table.td>
-                    <span class="text-[13px] font-medium text-base-content">
-                        {{ $booking->items->isNotEmpty() ? $booking->items->first()->package->name : 'N/A' }}
-                        @if($booking->items->count() > 1)
-                            <span class="text-[#F96015] font-bold text-[11px] ml-1">+{{ $booking->items->count() - 1 }}</span>
-                        @endif
+                    <x-badge type="ghost" class="text-[11px]">{{ $booking->event_type?->value ? str($booking->event_type->value)->title()->replace('_', ' ') : 'N/A' }}</x-badge>
+                </x-ui.table.td>
+                <x-ui.table.td>
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-md bg-base-200 flex items-center justify-center shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        </div>
+                        <span class="text-[13px] text-base-content font-medium">
+                            {{ $booking->event_date?->format('d M, Y') ?? 'No Date' }}
+                        </span>
+                    </div>
+                </x-ui.table.td>
+                <x-ui.table.td align="center">
+                    <span class="text-[13px] font-bold text-base-content">
+                        {{ $booking->pax ?? '--' }}
+                    </span>
+                    <span class="text-[10px] text-base-content/40 block">
+                        {{ $booking->is_buffet ? 'Buffet' : 'Plates' }}
                     </span>
                 </x-ui.table.td>
                 <x-ui.table.td align="center">
@@ -124,17 +150,15 @@
                 </x-ui.table.td>
                 <x-ui.table.td align="right">
                     <div class="flex items-center justify-end gap-2">
-                        {{-- View Details --}}
                         <a href="{{ route('admin.bookings.show', $booking) }}" wire:navigate class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#18542A]/10 text-[#18542A] text-[12px] font-bold hover:bg-[#18542A]/20 transition-colors">
                             @include('layouts.partials.icons.eye', ['class' => 'w-3.5 h-3.5'])
                             View
                         </a>
 
-                        {{-- Operations Dropdown --}}
                         @php
                             $isTerminal = in_array($booking->status?->value, ['completed', 'cancelled']);
                         @endphp
-                        
+
                         @if(!$isTerminal)
                             <div x-data="{ open: false }" class="relative">
                                 <button @click="open = !open" @click.away="open = false" class="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-base-200 text-base-content/40 text-[12px] font-bold hover:bg-base-300 transition-colors">
@@ -163,42 +187,6 @@
                                         </button>
                                     @endif
 
-                                    @if($booking->status?->value === 'confirmed' && $booking->payment_status?->value !== 'paid')
-                                        <button wire:confirm="Verify payment manually for this booking?" wire:click="verifyPayment({{ $booking->id }})" @click="open = false" class="w-full text-left px-4 py-2 hover:bg-[#FFC926]/10 font-medium flex items-center gap-3 transition-colors">
-                                            <div class="w-7 h-7 rounded-lg bg-[#FFC926]/15 flex items-center justify-center shrink-0">
-                                                @include('layouts.partials.icons.information-circle-solid', ['class' => 'w-4 h-4 text-[#FFC926]'])
-                                            </div>
-                                            <div>
-                                                <span class="text-[13px] text-base-content block font-bold">Verify Payment</span>
-                                                <span class="text-[10px] text-base-content/40 font-medium">Manually unlock order</span>
-                                            </div>
-                                        </button>
-                                    @endif
-
-                                    @if($booking->status?->value === 'confirmed' && $booking->payment_status?->value === 'paid')
-                                        <button wire:confirm="Start preparation for this booking?" wire:click="startPreparation({{ $booking->id }})" @click="open = false" class="w-full text-left px-4 py-2 hover:bg-[#F96015]/10 font-medium flex items-center gap-3 transition-colors">
-                                            <div class="w-7 h-7 rounded-lg bg-[#F96015]/15 flex items-center justify-center shrink-0">
-                                                @include('layouts.partials.icons.clipboard-document-list', ['class' => 'w-4 h-4 text-[#F96015]'])
-                                            </div>
-                                            <div>
-                                                <span class="text-[13px] text-base-content block font-bold">Start Preparation</span>
-                                                <span class="text-[10px] text-base-content/40 font-medium">Move to implementation</span>
-                                            </div>
-                                        </button>
-                                    @endif
-
-                                    @if($booking->status?->value === 'in_preparation')
-                                        <button wire:confirm="Mark this booking as completed?" wire:click="completeBooking({{ $booking->id }})" @click="open = false" class="w-full text-left px-4 py-2 hover:bg-[#18542A]/10 font-medium flex items-center gap-3 transition-colors">
-                                            <div class="w-7 h-7 rounded-lg bg-[#18542A]/15 flex items-center justify-center shrink-0">
-                                                @include('layouts.partials.icons.check-circle-solid', ['class' => 'w-4 h-4 text-[#18542A]'])
-                                            </div>
-                                            <div>
-                                                <span class="text-[13px] text-base-content block font-bold">Final Execution</span>
-                                                <span class="text-[10px] text-base-content/40 font-medium">Mark as completed</span>
-                                            </div>
-                                        </button>
-                                    @endif
-
                                     <div class="border-t border-base-content/5 my-1.5"></div>
 
                                     <button wire:confirm="Are you sure you want to cancel this booking?" wire:click="cancelBooking({{ $booking->id }})" @click="open = false" class="w-full text-left px-4 py-2 hover:bg-[#D52518]/10 font-medium flex items-center gap-3 transition-colors">
@@ -207,7 +195,7 @@
                                         </div>
                                         <div>
                                             <span class="text-[13px] text-[#D52518] block font-bold">Terminate</span>
-                                            <span class="text-[10px] text-base-content/40 font-medium">Strategic reversal</span>
+                                            <span class="text-[10px] text-base-content/40 font-medium">Cancel this event</span>
                                         </div>
                                     </button>
                                 </div>
@@ -221,13 +209,13 @@
                 </x-ui.table.td>
             </x-ui.table.row>
         @empty
-            <x-ui.table.empty colspan="6" />
+            <x-ui.table.empty colspan="8" />
         @endforelse
 
         <x-slot name="pagination">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div class="text-[12px] text-base-content/40 font-medium">
-                    {{ __('Click on the pagination links to navigate through the bookings') }}
+                    {{ __('Click on the pagination links to navigate through the event bookings') }}
                 </div>
                 <div class="flex items-center justify-end gap-2">
                     {{ $bookings?->links(data: ['scrollTo' => false]) }}

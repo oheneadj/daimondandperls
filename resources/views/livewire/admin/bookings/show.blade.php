@@ -5,7 +5,11 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-8">
         {{-- Breadcrumbs --}}
         <div class="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-base-content/60">
-            <a href="{{ route('admin.bookings.index') }}" wire:navigate class="hover:text-[#F96015] transition-colors">{{ __('Bookings') }}</a>
+            @if($booking->booking_type === \App\Enums\BookingType::Event)
+                <a href="{{ route('admin.events.index') }}" wire:navigate class="hover:text-[#F96015] transition-colors">{{ __('Events') }}</a>
+            @else
+                <a href="{{ route('admin.bookings.index') }}" wire:navigate class="hover:text-[#F96015] transition-colors">{{ __('Bookings') }}</a>
+            @endif
             <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
@@ -44,6 +48,16 @@
                     {{ $booking->reference }}
                 </h1>
 
+                @if($booking->booking_type)
+                    <span @class([
+                        'inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border',
+                        'bg-primary/10 text-primary border-primary/20' => $booking->booking_type === \App\Enums\BookingType::Event,
+                        'bg-base-content/5 text-base-content/60 border-base-content/10' => $booking->booking_type === \App\Enums\BookingType::Meal,
+                    ])>
+                        {{ $booking->booking_type->value }}
+                    </span>
+                @endif
+
                 @php
                     $paymentColor = match($booking->payment_status?->value) {
                         'paid' => 'text-success',
@@ -80,13 +94,13 @@
                 </x-ui.button>
             @endif
 
-             <x-ui.button variant="black" class="border-0" size="sm" href="{{ route('admin.bookings.index') }}" wire:navigate title="{{ __('Back to Bookings') }}">
+             <x-ui.button variant="black" class="border-0" size="sm" href="{{ $booking->booking_type === \App\Enums\BookingType::Event ? route('admin.events.index') : route('admin.bookings.index') }}" wire:navigate title="{{ __('Back') }}">
                 <x-slot:icon>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                 </x-slot:icon>
-                {{ __('Back to Bookings') }}
+                {{ $booking->booking_type === \App\Enums\BookingType::Event ? __('Back to Events') : __('Back to Bookings') }}
              </x-ui.button>
         </div>
     </div>
@@ -97,7 +111,7 @@
         <div class="lg:col-span-2 space-y-6 sm:space-y-8">
 
             {{-- Customer & Event Cards --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 {{ $booking->booking_type === \App\Enums\BookingType::Event ? 'sm:grid-cols-2' : '' }} gap-6">
                 {{-- Customer Details Card --}}
                 <x-ui.card>
                     <div class="flex items-center gap-2.5 mb-6">
@@ -136,7 +150,8 @@
                     </div>
                 </x-ui.card>
 
-                {{-- Event Details Card --}}
+                {{-- Event Details Card (only for event bookings) --}}
+                @if($booking->booking_type === \App\Enums\BookingType::Event)
                 <x-ui.card>
                     <div class="flex items-center gap-2.5 mb-6">
                         <div class="w-8 h-8 rounded-full bg-[#FFC926]/15 text-[#FFC926] flex items-center justify-center flex-shrink-0">
@@ -159,7 +174,7 @@
                             <div class="flex flex-col">
                                 <p class="text-[10px] font-bold text-base-content/60 uppercase tracking-widest mb-1 opacity-50">{{ __('Guests') }}</p>
                                 <p class="text-[14px] sm:text-[15px] font-bold text-base-content">
-                                    {{ $booking->guest_count ?? '--' }} {{ __('Guests') }}
+                                    {{ $booking->pax ?? '--' }} {{ $booking->is_buffet ? __('Guests (Buffet)') : __('Plates') }}
                                 </p>
                             </div>
                         </div>
@@ -180,8 +195,16 @@
                             <p class="text-[10px] font-bold text-base-content/60 uppercase tracking-widest mb-1 opacity-50">{{ __('Event Type') }}</p>
                             <x-badge type="ghost" class="mt-1">{{ $booking->event_type?->value ?? 'No Event Type' }}</x-badge>
                         </div>
+
+                        @if($booking->customer_notes)
+                            <div>
+                                <p class="text-[10px] font-bold text-base-content/60 uppercase tracking-widest mb-1 opacity-50">{{ __('Customer Notes') }}</p>
+                                <p class="text-[13px] text-base-content/70 font-medium leading-relaxed">{{ $booking->customer_notes }}</p>
+                            </div>
+                        @endif
                     </div>
                 </x-ui.card>
+                @endif
             </div>
 
             {{-- Packages / Invoice Table --}}
@@ -211,7 +234,9 @@
                     <x-ui.table>
                         <x-slot:header>
                             <x-ui.table.header>{{ __('Package description') }}</x-ui.table.header>
-                            <x-ui.table.header class="text-right">{{ __('Cost') }}</x-ui.table.header>
+                            @if($booking->booking_type !== \App\Enums\BookingType::Event)
+                                <x-ui.table.header class="text-right">{{ __('Cost') }}</x-ui.table.header>
+                            @endif
                         </x-slot:header>
 
                         @forelse ($booking->items as $item)
@@ -219,21 +244,27 @@
                                 <x-ui.table.cell>
                                     <div class="text-[13px] sm:text-[14px] font-bold text-base-content">{{ $item->package_name ?? $item->package?->name ?? 'Custom Package' }}</div>
                                 </x-ui.table.cell>
-                                <x-ui.table.cell class="text-right">
-                                    <span class="text-[13px] sm:text-[14px] font-bold text-base-content whitespace-nowrap">GHS {{ number_format($item->price, 2) }}</span>
-                                </x-ui.table.cell>
+                                @if($booking->booking_type !== \App\Enums\BookingType::Event)
+                                    <x-ui.table.cell class="text-right">
+                                        <span class="text-[13px] sm:text-[14px] font-bold text-base-content whitespace-nowrap">GHS {{ number_format($item->price, 2) }}</span>
+                                    </x-ui.table.cell>
+                                @endif
                             </x-ui.table.row>
                         @empty
                             <x-ui.table.row>
-                                <x-ui.table.cell colspan="2" class="text-center py-10 opacity-40 italic">{{ __('No packages assigned to this booking.') }}</x-ui.table.cell>
+                                <x-ui.table.cell colspan="{{ $booking->booking_type === \App\Enums\BookingType::Event ? 1 : 2 }}" class="text-center py-10 opacity-40 italic">{{ __('No packages assigned to this booking.') }}</x-ui.table.cell>
                             </x-ui.table.row>
                         @endforelse
 
                         <x-slot:footer>
                             <tr class="bg-base-200 border-t border-base-content/5">
                                 <td class="px-5 sm:px-8 py-4 sm:py-5 text-right text-[12px] sm:text-[13px] font-bold text-base-content/60 uppercase tracking-widest">{{ __('Total Amount') }}</td>
-                                <td class="px-5 sm:px-8 py-4 sm:py-5 text-right text-[18px] sm:text-[22px] font-bold text-[#F96015] whitespace-nowrap">
-                                    GHS {{ number_format($booking->total_amount, 2) }}
+                                <td class="px-5 sm:px-8 py-4 sm:py-5 text-right text-[18px] sm:text-[22px] font-bold whitespace-nowrap {{ $booking->booking_type === \App\Enums\BookingType::Event && $booking->total_amount == 0 ? 'text-warning' : 'text-[#F96015]' }}">
+                                    @if($booking->booking_type === \App\Enums\BookingType::Event && $booking->total_amount == 0)
+                                        {{ __('Quote Pending') }}
+                                    @else
+                                        GHS {{ number_format($booking->total_amount, 2) }}
+                                    @endif
                                 </td>
                             </tr>
                         </x-slot:footer>
@@ -265,6 +296,16 @@
                 </div>
 
                 <div class="relative space-y-4">
+                    @if($this->canEditEvent)
+                        <button class="group w-full flex items-center justify-center gap-2 py-4 px-5 rounded-lg bg-gradient-to-r from-[#F96015] to-[#e5520d] text-white text-[14px] font-bold shadow-[0_8px_16px_-4px_rgba(249,96,21,0.4)] hover:shadow-[0_12px_20px_-4px_rgba(249,96,21,0.5)] hover:-translate-y-1 transition-all duration-300 border border-white/10 overflow-hidden relative" wire:click="openEventEditModal">
+                            <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="relative z-10 w-5 h-5 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            <span class="relative z-10 tracking-wide">{{ __('Update Event Details') }}</span>
+                        </button>
+                    @endif
+
                     @if($this->canBeConfirmed)
                         <button class="group w-full flex items-center justify-center gap-2 py-4 px-5 rounded-lg bg-gradient-to-r from-[#18542A] to-[#206f38] text-white text-[14px] font-bold shadow-[0_8px_16px_-4px_rgba(24,84,42,0.4)] hover:shadow-[0_12px_20px_-4px_rgba(24,84,42,0.5)] hover:-translate-y-1 transition-all duration-300 border border-white/10 overflow-hidden relative" wire:click="promptAction('confirmBooking')">
                                 <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
@@ -485,6 +526,132 @@
             <x-ui.button variant="ghost" wire:click="closeVerifyModal">{{ __('Cancel') }}</x-ui.button>
             <x-ui.button type="success" variant="primary" wire:click="verifyPayment" class="bg-secondary border-dp-green hover:bg-secondary-hover">
                 {{ __('Confirm & Unlock Preparation') }}
+            </x-ui.button>
+        </x-slot:footer>
+    </x-ui.modal>
+
+    {{-- Quote Modal (kept for backward compatibility / non-event use) --}}
+    <x-ui.modal wire:model="showQuoteModal" title="Set Event Quote" icon="heroicon-o-currency-dollar" persistent>
+        <div class="space-y-6">
+            <p class="text-[14px] text-base-content leading-relaxed">
+                {{ __('Set the total quote for event booking') }} <strong class="text-primary">{{ $booking->reference }}</strong>. {{ __('The customer will be notified via email and SMS.') }}
+            </p>
+
+            @if($booking->total_amount > 0)
+                <div class="px-4 py-3 bg-base-200 rounded-xl border border-base-content/10">
+                    <p class="text-[11px] font-bold text-base-content/60 uppercase tracking-widest mb-1">{{ __('Current Amount') }}</p>
+                    <p class="text-[18px] font-bold text-base-content">GH₵ {{ number_format($booking->total_amount, 2) }}</p>
+                </div>
+            @endif
+
+            <div class="space-y-2">
+                <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Quote Amount (GH₵)') }}</label>
+                <input type="number" wire:model="quoteAmount" step="0.01" min="0" placeholder="e.g. 500.00"
+                    class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium placeholder:text-base-content/30">
+                @error('quoteAmount') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
+            </div>
+        </div>
+
+        <x-slot:footer>
+            <x-ui.button variant="ghost" wire:click="closeQuoteModal">{{ __('Cancel') }}</x-ui.button>
+            <x-ui.button variant="primary" wire:click="updateQuote" wire:loading.attr="disabled">
+                <span wire:loading.remove wire:target="updateQuote">{{ __('Send Quote') }}</span>
+                <span wire:loading wire:target="updateQuote">{{ __('Sending...') }}</span>
+            </x-ui.button>
+        </x-slot:footer>
+    </x-ui.modal>
+
+    {{-- Update Event Details Modal --}}
+    <x-ui.modal wire:model="showEventEditModal" title="Update Event Details" icon="heroicon-o-pencil-square" persistent>
+        <div class="space-y-5">
+            <p class="text-[14px] text-base-content leading-relaxed">
+                {{ __('Update the event details and quote for') }} <strong class="text-primary">{{ $booking->reference }}</strong>. {{ __('Enter your password to approve and notify the customer.') }}
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {{-- Event Date --}}
+                <div class="space-y-2">
+                    <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Event Date') }}</label>
+                    <input type="date" wire:model="editEventDate"
+                        class="w-full px-4 py-3 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[14px] font-medium">
+                    @error('editEventDate') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
+                </div>
+
+                {{-- Event Type --}}
+                <div class="space-y-2">
+                    <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Event Type') }}</label>
+                    <select wire:model="editEventType"
+                        class="w-full px-4 py-3 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[14px] font-medium">
+                        <option value="">{{ __('Select Type') }}</option>
+                        @foreach(\App\Enums\EventType::cases() as $type)
+                            <option value="{{ $type->value }}">{{ str($type->value)->title()->replace('_', ' ') }}</option>
+                        @endforeach
+                    </select>
+                    @error('editEventType') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
+                </div>
+
+                {{-- Start Time --}}
+                <div class="space-y-2">
+                    <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Start Time') }}</label>
+                    <input type="time" wire:model="editEventStartTime"
+                        class="w-full px-4 py-3 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[14px] font-medium">
+                    @error('editEventStartTime') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
+                </div>
+
+                {{-- End Time --}}
+                <div class="space-y-2">
+                    <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('End Time') }}</label>
+                    <input type="time" wire:model="editEventEndTime"
+                        class="w-full px-4 py-3 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[14px] font-medium">
+                    @error('editEventEndTime') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
+                </div>
+
+                {{-- Pax --}}
+                <div class="space-y-2">
+                    <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Number of Guests') }}</label>
+                    <input type="number" wire:model="editPax" min="1" placeholder="e.g. 100"
+                        class="w-full px-4 py-3 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[14px] font-medium placeholder:text-base-content/30">
+                    @error('editPax') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
+                </div>
+
+                {{-- Buffet Toggle --}}
+                <div class="space-y-2">
+                    <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Service Style') }}</label>
+                    <div class="flex items-center gap-4 py-3">
+                        <label class="inline-flex items-center gap-2 cursor-pointer">
+                            <input type="radio" wire:model="editIsBuffet" value="0" class="radio radio-sm radio-primary">
+                            <span class="text-[14px] font-medium text-base-content">{{ __('Plates') }}</span>
+                        </label>
+                        <label class="inline-flex items-center gap-2 cursor-pointer">
+                            <input type="radio" wire:model="editIsBuffet" value="1" class="radio radio-sm radio-primary">
+                            <span class="text-[14px] font-medium text-base-content">{{ __('Buffet') }}</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Quote Amount --}}
+            <div class="space-y-2 pt-2 border-t border-base-content/10">
+                <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Quote Amount (GH₵)') }}</label>
+                <input type="number" wire:model="editQuoteAmount" step="0.01" min="0" placeholder="e.g. 500.00"
+                    class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-bold placeholder:text-base-content/30">
+                @error('editQuoteAmount') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
+            </div>
+
+            {{-- Password Confirmation --}}
+            <div class="space-y-2 pt-2 border-t border-base-content/10">
+                <label class="text-[11px] font-bold uppercase tracking-widest text-error/80">{{ __('Enter Password to Approve') }}</label>
+                <input type="password" wire:model="confirmPassword" placeholder="Enter your password..."
+                    class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-error focus:ring-4 focus:ring-error/20 rounded-xl transition-all text-[15px] font-medium placeholder:text-base-content/30">
+                @error('confirmPassword') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
+            </div>
+        </div>
+
+        <x-slot:footer>
+            <x-ui.button variant="ghost" wire:click="closeEventEditModal">{{ __('Cancel') }}</x-ui.button>
+            <x-ui.button variant="primary" wire:click="updateEventDetails" wire:loading.attr="disabled">
+                <span wire:loading.remove wire:target="updateEventDetails">{{ __('Approve & Notify Customer') }}</span>
+                <span wire:loading wire:target="updateEventDetails">{{ __('Processing...') }}</span>
             </x-ui.button>
         </x-slot:footer>
     </x-ui.modal>

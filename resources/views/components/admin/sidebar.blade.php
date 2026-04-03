@@ -7,6 +7,7 @@
         ],
         'OPERATIONS' => [
             ['label' => 'Bookings', 'route' => 'admin.bookings.index', 'icon' => 'clipboard-document-list', 'badge' => auth()->user()->unreadBookingsCount() ?? 0, 'pattern' => 'admin.bookings.*'],
+            ['label' => 'Events', 'route' => 'admin.events.index', 'icon' => 'table-cells', 'pattern' => 'admin.events.*'],
             ['label' => 'Packages', 'route' => 'admin.manage-packages.index', 'icon' => 'cake', 'pattern' => 'admin.manage-packages.*'],
             ['label' => 'Collections', 'route' => 'admin.categories.index', 'icon' => 'tag', 'pattern' => 'admin.categories.*'],
             ['label' => 'Payments', 'route' => 'admin.payments.index', 'icon' => 'credit-card', 'badge' => auth()->user()->pendingPaymentsCount() ?? 0, 'pattern' => 'admin.payments.*'],

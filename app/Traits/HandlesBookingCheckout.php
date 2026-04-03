@@ -47,7 +47,7 @@ trait HandlesBookingCheckout
         $this->validate([
             'phone' => ['required', 'string', 'regex:/^(?:\+233|0)\d{9}$/'],
         ], [
-            'phone.regex' => 'Please enter a valid Ghana phone number (e.g. 0244000000).',
+            'phone.regex' => 'Please enter a valid phone number. This number will be used for payment.',
         ]);
 
         $user = User::query()->where('phone', $this->phone)->first();
@@ -187,7 +187,8 @@ trait HandlesBookingCheckout
             'phone' => ['required', 'regex:/^(?:\+233|0)\d{9}$/'],
             'email' => ['nullable', 'email', 'max:150'],
         ], [
-            'phone.regex' => 'Please enter a valid Ghanaian phone number (e.g. 024XXXXXXX or +23324XXXXXXX).',
+            'phone.required' => 'Please enter a valid phone number. This number will be used for payment and tracking your booking.',
+            'phone.regex' => 'Please enter a valid phone number. This number will be used for payment and tracking your booking.',
         ]);
     }
 

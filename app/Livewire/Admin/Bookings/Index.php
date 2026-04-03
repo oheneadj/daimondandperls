@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Admin\Bookings;
 
 use App\Enums\BookingStatus;
+use App\Enums\BookingType;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use Livewire\Attributes\Layout;
@@ -11,7 +14,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 
 #[Layout('layouts.admin')]
-#[Title('Bookings Management')]
+#[Title('Meal Bookings')]
 class Index extends Component
 {
     use WithPagination;
@@ -22,16 +25,10 @@ class Index extends Component
 
     public ?string $paymentStatus = null;
 
-    public ?string $startDate = null;
-
-    public ?string $endDate = null;
-
     protected $queryString = [
         'search' => ['except' => ''],
         'status' => ['except' => ''],
         'paymentStatus' => ['except' => ''],
-        'startDate' => ['except' => ''],
-        'endDate' => ['except' => ''],
     ];
 
     public function updatingSearch()
@@ -135,6 +132,7 @@ class Index extends Component
     public function render()
     {
         $query = Booking::with(['customer', 'items.package'])
+            ->where('booking_type', BookingType::Meal)
             ->when($this->search, function ($query) {
                 $query->where('reference', 'like', '%'.$this->search.'%')
                     ->orWhereHas('customer', function ($q) {
@@ -147,12 +145,6 @@ class Index extends Component
             })
             ->when($this->paymentStatus, function ($query) {
                 $query->where('payment_status', $this->paymentStatus);
-            })
-            ->when($this->startDate, function ($query) {
-                $query->whereDate('event_date', '>=', $this->startDate);
-            })
-            ->when($this->endDate, function ($query) {
-                $query->whereDate('event_date', '<=', $this->endDate);
             })
             ->latest();
 
