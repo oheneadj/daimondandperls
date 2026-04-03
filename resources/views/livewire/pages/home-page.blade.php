@@ -34,16 +34,28 @@
                     Experience authentic Ghanaian flavours and impeccable service.
                 </p>
 
-                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-12">
+                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
                     <x-ui.button href="{{ route('packages.browse') }}" size="lg" class="w-full h-14 sm:w-auto bg-primary text-white text-[15px] font-bold px-8 py-4 !rounded-full hover:bg-primary-hover hover:scale-105 transition-all shadow-md text-center">
                         Order Now
                     </x-ui.button>
-                    <x-ui.button href="{{ route('event-booking') }}" variant="outline" size="lg" class="w-full h-14 sm:w-auto text-primary border-2 border-primary/20 bg-primary/5 text-[15px] font-bold px-8 py-4 !rounded-full hover:bg-primary/10 hover:scale-105 transition-all text-center">
+                    <x-ui.button href="{{ route('event-booking') }}" variant="green" size="lg" class="w-full h-14 sm:w-auto text-white border-2 border-primary/20 bg-green-500 text-[15px] font-bold px-8 py-4 !rounded-full hover:bg-green-600 hover:scale-105 transition-all text-center">
                         Plan an Event
                     </x-ui.button>
-                    <x-ui.button href="{{ route('booking.track') }}" variant="black" size="lg" class="w-full h-14 sm:w-auto bg-base-100 text-base-content border border-base-content/10 text-[15px] font-bold px-8 py-4 !rounded-full hover:bg-base-200 hover:scale-105 transition-all shadow-sm text-center">
-                        Track Your Booking
-                    </x-ui.button>
+                </div>
+
+                <div class="flex items-center gap-3 mb-10 opacity-80 hover:opacity-100 transition-opacity flex-wrap">
+                    <span class="text-[10px] font-bold text-base-content/50 uppercase tracking-widest pl-1">{{ __('Trusted Payments') }}:</span>
+                    <div class="flex items-center gap-2.5">
+                        <div class="bg-white p-1.5 rounded-lg shadow-sm border border-base-content/10 hover:-translate-y-0.5 transition-transform">
+                            <img src="{{ asset('logos/mtn-momo.png') }}" alt="MTN MoMo" class="h-6 w-auto object-contain">
+                        </div>
+                        <div class="bg-white p-1.5 rounded-lg shadow-sm border border-base-content/10 hover:-translate-y-0.5 transition-transform">
+                            <img src="{{ asset('logos/Telecel-Cash.jpg') }}" alt="Telecel Cash" class="h-6 w-auto object-contain rounded-[4px]">
+                        </div>
+                        <div class="bg-white p-1.5 rounded-lg shadow-sm border border-base-content/10 hover:-translate-y-0.5 transition-transform">
+                            <img src="{{ asset('logos/airteltigo-money.png') }}" alt="AirtelTigo Money" class="h-6 w-auto object-contain">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="flex items-center gap-6 sm:gap-8 md:gap-12 pt-6 border-t border-base-content/10">

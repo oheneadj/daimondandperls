@@ -94,36 +94,31 @@
             </ul>
         </div>
 
-        <div class="flex gap-2">
+        <div class="flex items-stretch mt-auto">
             @if($isLivewireContext)
-                <button 
-                    @click.stop="openDetails({{ json_encode($package) }})"
-                    class="flex-1 py-2.5 text-[12px] font-bold text-base-content/70 bg-base-200 hover:bg-base-300 rounded-xl transition-all border border-base-content/5"
-                >
-                    {{ __('Details') }}
-                </button>
                 <button 
                     wire:click.stop="toggleSelection({{ $package->id }})"
                     @class([
-                        'flex-1 py-2.5 text-[12px] font-extrabold transition-all rounded-xl border',
-                        'bg-primary text-white border-primary shadow-sm' => $selected,
-                        'text-primary border-primary/20 hover:bg-primary/5 bg-transparent' => !$selected,
+                        'flex-1 py-3 px-4 text-[12px] sm:text-[13px] font-black uppercase tracking-widest transition-all rounded-full border flex items-center justify-center gap-2 leading-none whitespace-nowrap',
+                        'bg-base-content text-base-100 border-base-content shadow-md shadow-base-content/20 scale-[0.98]' => $selected,
+                        'bg-primary text-white border-primary hover:bg-primary/90 hover:border-primary/90 hover:shadow-sm' => !$selected,
                     ])
                 >
-                    {{ $selected ? __('Added') : __('Add to booking') }}
+                    @if($selected)
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        <span>{{ __('Added') }}</span>
+                    @else
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                        <span>{{ __('Add to Basket') }}</span>
+                    @endif
                 </button>
             @else
                 <a 
                     href="{{ route('packages.browse') }}"
-                    class="flex-1 py-2.5 text-[12px] font-bold text-center text-base-content/80 bg-base-200 hover:bg-base-300 rounded-xl transition-all border border-base-content/5 block"
+                    class="flex-1 py-3 px-4 text-[12px] sm:text-[13px] font-black uppercase tracking-widest text-center transition-all bg-primary text-white hover:bg-primary/90 rounded-full border border-primary hover:border-primary/90 hover:shadow-sm flex items-center justify-center gap-2 shadow-sm leading-none whitespace-nowrap"
                 >
-                    {{ __('Details') }}
-                </a>
-                <a 
-                    href="{{ route('packages.browse') }}"
-                    class="flex-1 py-2.5 text-[12px] font-extrabold text-center transition-all rounded-xl border text-primary border-primary/20 hover:bg-primary/5 bg-transparent block"
-                >
-                    {{ __('Add to booking') }}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    <span>{{ __('Add to Basket') }}</span>
                 </a>
             @endif
         </div>

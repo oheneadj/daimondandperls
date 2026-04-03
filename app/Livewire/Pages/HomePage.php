@@ -35,6 +35,14 @@ class HomePage extends Component
         $this->dispatch('cart-updated');
     }
 
+    public function orderNow(int $packageId, CartService $cart): void
+    {
+        if (!$cart->getCart()->has($packageId)) {
+            $cart->add($packageId);
+        }
+        $this->redirect(route('checkout'));
+    }
+
     public function render(CartService $cart): View
     {
         return view('livewire.pages.home-page', [

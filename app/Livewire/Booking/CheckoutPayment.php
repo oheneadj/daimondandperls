@@ -146,12 +146,6 @@ class CheckoutPayment extends Component
                 'payment_reference' => $response['data'] ?? null,
             ]);
 
-            if (\Illuminate\Support\Facades\Auth::check()) {
-                \Illuminate\Support\Facades\Auth::user()->update([
-                    'saved_momo_number' => $this->momoNumber,
-                    'saved_momo_network' => $this->momoNetwork,
-                ]);
-            }
 
             $this->isAwaitingPayment = true;
         } else {
@@ -188,6 +182,14 @@ class CheckoutPayment extends Component
                 $this->booking,
                 app(\App\Services\InvoiceService::class)->getDownloadUrl($this->booking)
             ));
+
+            // Save as default payment method for logged-in users
+            if (\Illuminate\Support\Facades\Auth::check()) {
+                \Illuminate\Support\Facades\Auth::user()->update([
+                    'saved_momo_number' => $this->momoNumber,
+                    'saved_momo_network' => $this->momoNetwork,
+                ]);
+            }
 
             return redirect()->route('booking.confirmation', ['booking' => $this->booking->reference]);
         }

@@ -18,6 +18,7 @@
         'outline' => 'bg-transparent text-base-content hover:bg-base-content/5 focus:ring-base-content/10',
         'ghost' => 'bg-transparent text-base-content/80 hover:bg-base-200 focus:ring-base-content/10',
         'black' => 'bg-black text-white hover:brightness-110 focus:ring-black/30',
+        'green' => 'bg-green-500 text-white hover:brightness-110 focus:ring-green-500/30',
     ];
 
     $sizes = [

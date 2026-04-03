@@ -84,7 +84,7 @@
                     @click="{{ $wire }}.toggleSelection(selectedPackage.id); showDetails = false"
                     class="flex-[2] py-4 bg-primary text-white font-black uppercase tracking-wider rounded-full shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform active:scale-95"
                 >
-                    {{ __('Add to my booking') }}
+                    {{ __('Add to Basket') }}
                 </button>
             </div>
         </div>

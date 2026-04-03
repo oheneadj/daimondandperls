@@ -33,6 +33,14 @@ class PackagesBrowse extends Component
         $this->dispatch('cart-updated');
     }
 
+    public function orderNow(int $packageId, \App\Services\CartService $cart): void
+    {
+        if (!$this->isInCart($packageId, $cart)) {
+            $cart->add($packageId);
+        }
+        $this->redirect(route('checkout'));
+    }
+
     public function isInCart(int $packageId, \App\Services\CartService $cart): bool
     {
         return $cart->getCart()->has($packageId);

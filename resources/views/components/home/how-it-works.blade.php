@@ -29,11 +29,11 @@
                 @endforeach
             </div>
 
-            <div class="mt-10 sm:mt-16 flex flex-wrap justify-center items-center gap-4 sm:gap-6 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+            <div class="mt-10 sm:mt-16 flex flex-wrap justify-center items-center gap-4 sm:gap-6  hover:grayscale-0 transition-all duration-500">
                 <span class="text-[10px] sm:text-[11px] font-bold text-base-content uppercase tracking-widest">Accepted Payments:</span>
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/MTN_Logo.svg/1024px-MTN_Logo.svg.png" class="h-6 sm:h-8 object-contain mix-blend-multiply" alt="MTN Momo" loading="lazy">
-                <img src="https://logos-world.net/wp-content/uploads/2020/09/Mastercard-Logo-2016-1024x576.png" class="h-6 sm:h-8 object-contain mix-blend-multiply" alt="Mastercard" loading="lazy">
-                <img src="https://logos-world.net/wp-content/uploads/2020/04/Visa-Logo-2014-present-800x450.png" class="h-6 sm:h-8 object-contain mix-blend-multiply" alt="Visa" loading="lazy">
+                <img src="{{ asset('logos/mtn-momo.png') }}" class="h-6 sm:h-8 object-contain" alt="MTN MoMo" loading="lazy">
+                <img src="{{ asset('logos/Telecel-Cash.jpg') }}" class="h-6 sm:h-8 object-contain rounded-md shadow-sm" alt="Telecel Cash" loading="lazy">
+                <img src="{{ asset('logos/airteltigo-money.png') }}" class="h-6 sm:h-8 object-contain" alt="AirtelTigo Money" loading="lazy">
             </div>
         </div>
     </div>
