@@ -2,8 +2,10 @@
     x-data="{ 
         showDetails: false, 
         selectedPackage: null,
-        openDetails(pkg) {
+        packageInCart: false,
+        openDetails(pkg, inCart = false) {
             this.selectedPackage = pkg;
+            this.packageInCart = inCart;
             this.showDetails = true;
         }
     }"
@@ -14,7 +16,7 @@
             @php
                 $inCart = $cartItems->has($package->id);
             @endphp
-            <div @click="openDetails({{ json_encode($package) }})">
+            <div @click="openDetails({{ json_encode($package) }}, {{ $inCart ? 'true' : 'false' }})">
                 <x-package-card 
                     :package="$package" 
                     :selected="$inCart" 

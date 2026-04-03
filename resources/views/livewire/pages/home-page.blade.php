@@ -2,8 +2,10 @@
     x-data="{
         showDetails: false,
         selectedPackage: null,
-        openDetails(pkg) {
+        packageInCart: false,
+        openDetails(pkg, inCart = false) {
             this.selectedPackage = pkg;
+            this.packageInCart = inCart;
             this.showDetails = true;
         }
     }"
@@ -173,7 +175,7 @@
             <div wire:loading.class="opacity-50 transition-opacity" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8 items-stretch">
                 @forelse($packages as $package)
                     @php $inCart = $cartItems->has($package->id); @endphp
-                    <div wire:key="home-pkg-{{ $package->id }}" @click="openDetails({{ json_encode($package) }})">
+                    <div wire:key="home-pkg-{{ $package->id }}" @click="openDetails({{ json_encode($package) }}, {{ $inCart ? 'true' : 'false' }})">
                         <x-package-card :package="$package" :selected="$inCart" />
                     </div>
                 @empty

@@ -9,13 +9,13 @@
 <div class="grid gap-6">
     <div class="space-y-2">
         <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Your Full Name</label>
-        <input type="text" wire:model="name" class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium placeholder:text-base-content/30" placeholder="e.g. Grace Ayensu">
+        <input type="text" wire:model="name" class="w-full max-w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium placeholder:text-base-content/30" placeholder="e.g. Grace Ayensu">
         @error('name') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
     </div>
 
     <div class="space-y-2">
         <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Phone Number</label>
-        <input type="tel" wire:model="phone" class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium placeholder:text-base-content/30" placeholder="024 XXX XXXX">
+        <input type="tel" wire:model="phone" class="w-full max-w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium placeholder:text-base-content/30" placeholder="024 XXX XXXX">
         @auth
             <p class="text-[11px] text-base-content/50 font-medium mt-1 ml-1">{{ __('This number will be used for payment.') }}</p>
         @endauth
@@ -24,7 +24,7 @@
 
     <div class="space-y-2">
         <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Email <span class="italic lowercase font-medium opacity-50">(Recommended)</span></label>
-        <input type="email" wire:model="email" class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium placeholder:text-base-content/30" placeholder="grace@example.com">
+        <input type="email" wire:model="email" class="w-full max-w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium placeholder:text-base-content/30" placeholder="grace@example.com">
         @error('email') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
     </div>
 

@@ -15,7 +15,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="md:col-span-2 space-y-2">
                             <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Event Date</label>
-                            <input type="date" wire:model.live="event_date" class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium">
+                            <input type="date" wire:model.live="event_date" class="w-full max-w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium">
                             @error('event_date') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
                         </div>
 
@@ -24,7 +24,7 @@
                             <input type="time" wire:model="event_start_time"
                                 @if(!$event_date) disabled @endif
                                 @class([
-                                    'w-full px-5 py-4 border rounded-xl transition-all text-[15px] font-medium',
+                                    'w-full max-w-full px-5 py-4 border rounded-xl transition-all text-[15px] font-medium',
                                     'bg-base-200 border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20' => $event_date,
                                     'bg-base-200/50 border-base-content/5 text-base-content/30 cursor-not-allowed' => !$event_date,
                                 ])>
@@ -39,7 +39,7 @@
                             <input type="time" wire:model="event_end_time"
                                 @if(!$event_date) disabled @endif
                                 @class([
-                                    'w-full px-5 py-4 border rounded-xl transition-all text-[15px] font-medium',
+                                    'w-full max-w-full px-5 py-4 border rounded-xl transition-all text-[15px] font-medium',
                                     'bg-base-200 border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20' => $event_date,
                                     'bg-base-200/50 border-base-content/5 text-base-content/30 cursor-not-allowed' => !$event_date,
                                 ])>
@@ -51,7 +51,7 @@
 
                         <div class="md:col-span-2 space-y-2">
                             <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Occasion Type</label>
-                            <select wire:model.live="event_type" class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium outline-none">
+                            <select wire:model.live="event_type" class="w-full max-w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium outline-none">
                                 <option value="">Select Event Type...</option>
                                 <option value="wedding">Wedding Reception</option>
                                 <option value="birthday">Birthday Party</option>
@@ -66,7 +66,7 @@
                         @if($event_type === 'other')
                             <div class="md:col-span-2 space-y-2 animate-fade-in">
                                 <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Specify Occasion</label>
-                                <input type="text" wire:model="event_type_other" class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium" placeholder="Describe the event...">
+                                <input type="text" wire:model="event_type_other" class="w-full max-w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium" placeholder="Describe the event...">
                                 @error('event_type_other') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
                             </div>
                         @endif
@@ -144,7 +144,7 @@
                             <span class="italic lowercase font-medium opacity-50">(Optional)</span>
                         </label>
                         <input type="number" wire:model="pax" min="1" max="10000"
-                            class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium placeholder:text-base-content/30"
+                            class="w-full max-w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium placeholder:text-base-content/30"
                             placeholder="e.g. 50">
                         @error('pax') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
                     </div>
@@ -155,7 +155,7 @@
                             Additional Notes <span class="italic lowercase font-medium opacity-50">(Optional)</span>
                         </label>
                         <textarea wire:model="notes" rows="4"
-                            class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium placeholder:text-base-content/30 resize-none"
+                            class="w-full max-w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium placeholder:text-base-content/30 resize-none"
                             placeholder="Any special requests, dietary requirements, or additional details..."></textarea>
                         @error('notes') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
                     </div>
