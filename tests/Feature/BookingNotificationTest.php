@@ -27,15 +27,11 @@ test('it sends notification to admin when booking is created', function () {
     $cart->add($package->id);
 
     Livewire::test(BookingWizard::class)
+        ->call('nextStep') // 1 (Review) → 2 (Contact)
         ->set('name', 'John Doe')
         ->set('phone', '0240000000')
         ->set('email', 'john@example.com')
-        ->call('nextStep') // to step 2
-        ->set('event_date', now()->addDays(7)->format('Y-m-d'))
-        ->set('event_start_time', '10:00')
-        ->set('event_end_time', '12:00')
-        ->set('event_type', 'wedding')
-        ->call('nextStep') // to step 3 (summary)
+        ->call('nextStep') // 2 → 3 (Summary)
         ->call('confirmBooking');
 
     Notification::assertSentTo(

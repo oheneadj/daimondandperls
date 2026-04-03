@@ -33,6 +33,7 @@ Route::middleware(['auth', 'customer'])
 
 // Customer Booking Flow
 Route::get('/checkout', App\Livewire\Booking\BookingWizard::class)->name('checkout');
+Route::get('/event-booking', App\Livewire\Booking\EventInquiryWizard::class)->name('event-booking');
 Route::get('/booking/track', App\Livewire\Booking\TrackBooking::class)->name('booking.track');
 Route::get('/booking/payment/{booking:reference}', App\Livewire\Booking\CheckoutPayment::class)->name('booking.payment');
 Route::get('/booking/confirmation/{booking:reference}', function (\App\Models\Booking $booking) {

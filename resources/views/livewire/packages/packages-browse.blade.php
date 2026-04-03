@@ -20,11 +20,9 @@
                 {{ __('Our culinary collections') }}
             </div>
             <h1 class="text-4xl lg:text-7xl font-bold text-base-content mb-6 leading-[1.1]">
-                {{ __('Choose your') }} <span class="text-primary">{{ __('menu package') }}</span>
+                {{ __('Order a') }} <span class="text-primary">{{ __('meal package') }}</span> {{ __('or cater your') }} <span class="text-primary">{{ __('event') }} </span>{{ __('with us.') }}
             </h1>
-            <p class="text-base-content/60 text-[16px] lg:text-[18px] font-medium max-w-2xl leading-relaxed italic">
-                {{ __('Select one or more packages for your event. Each package is crafted with Ghanaian tradition and modern elegance.') }}
-            </p>
+           
         </div>
     </header>
 

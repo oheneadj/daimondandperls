@@ -49,6 +49,9 @@
                     Contact
                     @if(request()->routeIs('contact')) <span class="absolute bottom-0 left-0 w-full h-[3px] bg-primary rounded-t-full"></span> @endif
                 </a>
+                <a href="{{ route('event-booking') }}" class="h-full flex items-center text-[13px] font-bold text-primary bg-primary/5 px-4 rounded-full border border-primary/20 hover:bg-primary/10 transition-all">
+                    Plan an Event
+                </a>
             </nav>
 
             <!-- Right Actions -->
@@ -151,6 +154,7 @@
                                 ['route' => 'about', 'label' => 'About Us'],
                                 ['route' => 'contact', 'label' => 'Contact'],
                             ];
+                            $eventBookingUrl = route('event-booking');
                         @endphp
                         
                         @foreach($mobileNavLinks as $link)
@@ -163,6 +167,12 @@
 
                     <div class="space-y-4">
                         <div class="h-px w-full bg-base-content/10 mt-2 mb-4"></div>
+                        <a href="{{ $eventBookingUrl }}" class="flex justify-center items-center gap-2 bg-primary/5 text-primary font-bold py-4 rounded-2xl text-[15px] border border-primary/20 hover:bg-primary/10 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                            </svg>
+                            Plan an Event
+                        </a>
                         <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" class="flex justify-center items-center gap-2 bg-[#25D366] text-white font-bold py-4 rounded-2xl shadow-md text-[15px] hover:bg-[#20bd5a] hover:-translate-y-0.5 transition-all">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.573-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.082 21.183c-1.653 0-3.331-.482-4.717-1.3l-5.365 1.488 1.474-5.26c-.822-1.391-1.309-3.093-1.309-4.821 0-5.319 4.316-9.635 9.636-9.635 5.316 0 9.632 4.316 9.632 9.635 0 5.317-4.316 9.631-9.351 9.631z"/>

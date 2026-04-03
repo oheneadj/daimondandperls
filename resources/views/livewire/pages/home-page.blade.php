@@ -38,6 +38,9 @@
                     <x-ui.button href="{{ route('packages.browse') }}" size="lg" class="w-full h-14 sm:w-auto bg-primary text-white text-[15px] font-bold px-8 py-4 !rounded-full hover:bg-primary-hover hover:scale-105 transition-all shadow-md text-center">
                         Order Now
                     </x-ui.button>
+                    <x-ui.button href="{{ route('event-booking') }}" variant="outline" size="lg" class="w-full h-14 sm:w-auto text-primary border-2 border-primary/20 bg-primary/5 text-[15px] font-bold px-8 py-4 !rounded-full hover:bg-primary/10 hover:scale-105 transition-all text-center">
+                        Plan an Event
+                    </x-ui.button>
                     <x-ui.button href="{{ route('booking.track') }}" variant="black" size="lg" class="w-full h-14 sm:w-auto bg-base-100 text-base-content border border-base-content/10 text-[15px] font-bold px-8 py-4 !rounded-full hover:bg-base-200 hover:scale-105 transition-all shadow-sm text-center">
                         Track Your Booking
                     </x-ui.button>

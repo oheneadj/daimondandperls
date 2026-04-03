@@ -2,6 +2,7 @@
 
 use App\Livewire\Booking\BookingWizard;
 use App\Livewire\Booking\CheckoutPayment;
+use App\Livewire\Booking\EventInquiryWizard;
 use App\Models\Booking;
 use App\Models\Package;
 use App\Services\CartService;
@@ -31,34 +32,31 @@ test('booking wizard requires valid contact info', function () {
         ->assertHasNoErrors(['phone']);
 });
 
-test('booking wizard requires valid event details', function () {
-    Livewire::test(BookingWizard::class)
-        ->set('currentStep', 3)
-        ->set('event_date', now()->subDay()->format('Y-m-d')) // Past date
+test('event wizard requires valid event details', function () {
+    Livewire::test(EventInquiryWizard::class)
+        ->set('currentStep', 1)
+        ->set('event_date', now()->subDay()->format('Y-m-d'))
         ->set('event_start_time', '12:00')
-        ->set('event_end_time', '11:00') // End before start
+        ->set('event_end_time', '11:00')
         ->set('event_type', 'wedding')
         ->call('nextStep')
         ->assertHasErrors(['event_date', 'event_end_time']);
+});
 
+test('meal wizard skips event details entirely', function () {
     Livewire::test(BookingWizard::class)
-        ->set('currentStep', 3)
-        ->set('event_date', '') // Required now
-        ->set('event_start_time', '')
-        ->set('event_end_time', '')
-        ->set('event_type', '')
+        ->set('currentStep', 2)
+        ->set('name', 'Test User')
+        ->set('phone', '0244123456')
         ->call('nextStep')
-        ->assertHasNoErrors(['event_date', 'event_start_time', 'event_end_time', 'event_type']);
+        ->assertSet('currentStep', 3);
 });
 
 test('booking remains pending before payment', function () {
-    $wizard = Livewire::test(BookingWizard::class)
+    $component = Livewire::test(BookingWizard::class)
+        ->set('currentStep', 3)
         ->set('name', 'John Doe')
         ->set('phone', '0244111222')
-        ->set('event_date', now()->addDays(7)->format('Y-m-d'))
-        ->set('event_start_time', '10:00')
-        ->set('event_end_time', '14:00')
-        ->set('event_type', 'corporate')
         ->call('confirmBooking');
 
     $booking = Booking::latest()->first();

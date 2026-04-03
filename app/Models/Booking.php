@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\BookingStatus;
+use App\Enums\BookingType;
 use App\Enums\EventType;
 use App\Enums\PaymentStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,12 +22,15 @@ class Booking extends Model
 
     protected $fillable = [
         'reference',
+        'booking_type',
         'customer_id',
         'event_date',
         'event_start_time',
         'event_end_time',
         'event_type',
         'event_type_other',
+        'pax',
+        'is_buffet',
         'total_amount',
         'status',
         'payment_status',
@@ -41,11 +45,13 @@ class Booking extends Model
     protected function casts(): array
     {
         return [
+            'booking_type' => BookingType::class,
             'event_date' => 'date',
             'total_amount' => 'decimal:2',
             'status' => BookingStatus::class,
             'payment_status' => PaymentStatus::class,
             'event_type' => EventType::class,
+            'is_buffet' => 'boolean',
             'confirmed_at' => 'datetime',
             'completed_at' => 'datetime',
             'cancelled_at' => 'datetime',
