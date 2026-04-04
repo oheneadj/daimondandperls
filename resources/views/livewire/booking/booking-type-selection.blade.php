@@ -11,11 +11,9 @@
                 {{ $cartCount }} {{ str('item')->plural($cartCount) }} selected
             </div>
             <h1 class="text-3xl lg:text-5xl font-semibold text-base-content tracking-tight mb-4">
-                {{ __('How would you like to book?') }}
-            </h1>
-            <p class="text-lg text-base-content/50 max-w-xl mx-auto leading-relaxed font-medium">
                 {{ __('Choose the option that best fits your needs.') }}
-            </p>
+            </h1>
+           
         </div>
 
         {{-- Selection Cards --}}
@@ -58,21 +56,21 @@
             {{-- Event Booking Card --}}
             <button
                 wire:click="selectEvent"
-                class="group relative flex flex-col h-full bg-base-100 border-2 border-base-content/10 hover:border-green-500 rounded-[28px] p-8 lg:p-10 text-left transition-all duration-300 hover:shadow-xl hover:shadow-green-500/5 hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-green-500/20"
+                class="group relative flex flex-col h-full bg-base-100 border-2 border-base-content/10 hover:border-success rounded-[28px] p-8 lg:p-10 text-left transition-all duration-300 hover:shadow-xl hover:shadow-success/5 hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-success/20"
             >
-                <div class="absolute top-6 right-6 size-10 rounded-full bg-green-500/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <div class="absolute top-6 right-6 size-10 rounded-full bg-success/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
                 </div>
 
-                <div class="size-16 rounded-2xl bg-green-500/10 flex items-center justify-center mb-6 group-hover:bg-green-500/20 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="size-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <div class="size-16 rounded-2xl bg-success/10 flex items-center justify-center mb-6 group-hover:bg-success/20 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                     </svg>
                 </div>
 
-                <h3 class="text-2xl font-bold text-base-content mb-3 group-hover:text-green-600 transition-colors">
+                <h3 class="text-2xl font-bold text-base-content mb-3 group-hover:text-success transition-colors">
                     {{ __('Event Catering') }}
                 </h3>
                 <p class="text-[14px] text-base-content/50 font-medium leading-relaxed mb-8">
@@ -80,7 +78,7 @@
                 </p>
 
                 <div class="mt-auto pt-4 w-full">
-                    <span class="inline-flex items-center justify-center w-full py-4 px-6 rounded-full bg-green-600 text-white font-black uppercase tracking-widest text-[13px] transition-all duration-300 shadow-lg shadow-green-600/20 group-hover:bg-green-700 group-hover:shadow-green-600/40 group-hover:-translate-y-1">
+                    <span class="inline-flex items-center justify-center w-full py-4 px-6 rounded-full bg-[#18542A] text-white font-black uppercase tracking-widest text-[13px] transition-all duration-300 shadow-lg shadow-[#18542A]/20 group-hover:bg-[#18542A]/90 group-hover:shadow-[#18542A]/40 group-hover:-translate-y-1">
                         {{ __('Request Quote') }}
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-5 ml-2 transition-transform group-hover:translate-x-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />

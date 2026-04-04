@@ -41,10 +41,11 @@ test('customer can add a mobile money payment method', function () {
         ->assertSet('showForm', true)
         ->set('type', 'mobile_money')
         ->set('label', 'My MTN MoMo')
-        ->set('provider', 'MTN')
+        ->set('provider', '13')
         ->set('accountNumber', '0241234567')
         ->set('accountName', 'John Doe')
         ->call('save')
+        ->assertHasNoErrors()
         ->assertSet('showForm', false)
         ->assertDispatched('toast');
 
@@ -61,6 +62,7 @@ test('first payment method is automatically set as default', function () {
         ->call('openForm')
         ->set('type', 'mobile_money')
         ->set('label', 'MoMo')
+        ->set('provider', '13')
         ->set('accountNumber', '0241234567')
         ->call('save');
 
@@ -128,12 +130,15 @@ test('customer can set a payment method as default', function () {
     expect($second->fresh()->is_default)->toBeTrue();
 });
 
-test('validation requires type, label, and account number', function () {
+test('validation requires label, provider, and account number', function () {
     Livewire::actingAs($this->user)
         ->test(PaymentMethods::class)
         ->call('openForm')
+        ->set('label', '')
+        ->set('provider', '')
+        ->set('accountNumber', '')
         ->call('save')
-        ->assertHasErrors(['type', 'label', 'accountNumber']);
+        ->assertHasErrors(['label', 'provider', 'accountNumber']);
 });
 
 test('customer can cancel the form', function () {

@@ -44,9 +44,9 @@ it('initiates mobile money payment via Moolre and enters awaiting state', functi
         ->assertHasNoErrors()
         ->assertSet('isAwaitingPayment', true);
 
-    $this->booking->refresh();
+    $this->booking = $this->booking->fresh();
 
-    expect($this->booking->payment_status->value)->toBe('pending')
+    expect($this->booking->payment_status)->toBe(\App\Enums\PaymentStatus::Pending)
         ->and($this->booking->payment_reference)->toBe('MOOLRE-TEST-123');
 });
 
@@ -105,6 +105,7 @@ it('does not dispatch notification for bank transfer', function () {
     Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
         ->set('paymentMethod', 'bank_transfer')
         ->set('senderName', 'John Doe Transfer')
+        ->set('senderPhone', '0241234567')
         ->call('submitBankTransfer')
         ->assertRedirect(route('booking.confirmation', ['booking' => $this->booking->reference]));
 
@@ -114,4 +115,48 @@ it('does not dispatch notification for bank transfer', function () {
         ->and($this->booking->payment_status->value)->toBe('unpaid');
 
     Notification::assertNothingSent();
+});
+
+it('validates mobile money network and number are required', function () {
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
+        ->set('momoNetwork', '')
+        ->set('momoNumber', '')
+        ->call('processMobileMoney')
+        ->assertHasErrors(['momoNetwork', 'momoNumber']);
+});
+
+it('validates mobile money number matches selected network prefix', function () {
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
+        ->set('momoNetwork', '13') // MTN
+        ->set('momoNumber', '0201234567') // Telecel prefix
+        ->call('processMobileMoney')
+        ->assertHasErrors(['momoNumber']);
+});
+
+it('validates bank transfer requires sender name and phone', function () {
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
+        ->set('paymentMethod', 'bank_transfer')
+        ->set('senderName', '')
+        ->set('senderPhone', '')
+        ->call('submitBankTransfer')
+        ->assertHasErrors(['senderName', 'senderPhone']);
+});
+
+it('validates bank transfer phone format', function () {
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
+        ->set('paymentMethod', 'bank_transfer')
+        ->set('senderName', 'John Doe')
+        ->set('senderPhone', '12345')
+        ->call('submitBankTransfer')
+        ->assertHasErrors(['senderPhone']);
+});
+
+it('accepts valid Ghana phone formats for bank transfer', function () {
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
+        ->set('paymentMethod', 'bank_transfer')
+        ->set('senderName', 'John Doe')
+        ->set('senderPhone', '0241234567')
+        ->call('submitBankTransfer')
+        ->assertHasNoErrors(['senderPhone'])
+        ->assertRedirect();
 });

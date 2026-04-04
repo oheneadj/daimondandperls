@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Customer;
 
 use App\Enums\PaymentMethod;
+use App\Traits\HandlesMomoValidation;
 use App\Traits\ResolvesCustomer;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
@@ -16,7 +17,7 @@ use Livewire\Component;
 #[Title('Payment Methods')]
 class PaymentMethods extends Component
 {
-    use ResolvesCustomer;
+    use HandlesMomoValidation, ResolvesCustomer;
 
     public bool $showForm = false;
 
@@ -36,14 +37,22 @@ class PaymentMethods extends Component
 
     public function rules(): array
     {
-        return [
+        $rules = [
             'type' => ['required', Rule::in(array_column($this->allowedTypes(), 'value'))],
             'label' => ['required', 'string', 'max:100'],
-            'provider' => ['nullable', 'string', 'max:50'],
-            'accountNumber' => ['required', 'string', 'max:50'],
-            'accountName' => ['nullable', 'string', 'max:100'],
             'isDefault' => ['boolean'],
+            'accountName' => ['nullable', 'string', 'max:100'],
         ];
+
+        if ($this->type === PaymentMethod::MobileMoney->value) {
+            $rules['provider'] = ['required', 'in:13,6,7'];
+            $rules['accountNumber'] = ['required', 'regex:'.$this->getNetworkPrefixPattern($this->provider)];
+        } else {
+            $rules['provider'] = ['nullable', 'string', 'max:50'];
+            $rules['accountNumber'] = ['required', 'string', 'max:50'];
+        }
+
+        return $rules;
     }
 
     public function messages(): array
@@ -51,8 +60,27 @@ class PaymentMethods extends Component
         return [
             'type.required' => 'Please select a payment type.',
             'label.required' => 'Please provide a label for this payment method.',
-            'accountNumber.required' => 'Please enter the account/phone number.',
+            'provider.required' => 'Please select your mobile network.',
+            'accountNumber.required' => 'Please enter the mobile money number.',
+            'accountNumber.regex' => 'This number doesn\'t match the selected network prefix.',
         ];
+    }
+
+    public function getIsMomoFormValidProperty(): bool
+    {
+        return $this->isValidMomoNumber($this->provider, $this->accountNumber);
+    }
+
+    public function getMomoPlaceholderProperty(): string
+    {
+        return $this->getMomoPlaceholder($this->provider);
+    }
+
+    public function updatedAccountNumber(string $value): void
+    {
+        if ($this->type === PaymentMethod::MobileMoney->value) {
+            $this->accountNumber = preg_replace('/[^0-9]/', '', $value);
+        }
     }
 
     public function openForm(): void
@@ -156,17 +184,18 @@ class PaymentMethods extends Component
     {
         return [
             PaymentMethod::MobileMoney,
-            PaymentMethod::Card,
-            PaymentMethod::BankTransfer,
+            // Card and Bank Transfer disabled for now as per user request
+            // PaymentMethod::Card,
+            // PaymentMethod::BankTransfer,
         ];
     }
 
     private function resetForm(): void
     {
         $this->editingId = null;
-        $this->type = '';
+        $this->type = PaymentMethod::MobileMoney->value;
         $this->label = '';
-        $this->provider = '';
+        $this->provider = '13'; // Default to MTN
         $this->accountNumber = '';
         $this->accountName = '';
         $this->isDefault = false;

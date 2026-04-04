@@ -37,7 +37,7 @@ class HomePage extends Component
 
     public function orderNow(int $packageId, CartService $cart): void
     {
-        if (!$cart->getCart()->has($packageId)) {
+        if (! $cart->getCart()->has($packageId)) {
             $cart->add($packageId);
         }
         $this->redirect(route('checkout'));

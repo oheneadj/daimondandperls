@@ -28,7 +28,10 @@ class MoolreWebhookController extends Controller
             return response()->json(['status' => 'ignored', 'message' => 'Invalid signature'], 401);
         }
 
-        $booking = Booking::where('reference', $data['externalref'] ?? '')->first();
+        /** @var \App\Models\Booking|null $booking */
+        $booking = Booking::query()
+            ->where(['reference' => (string) ($data['externalref'] ?? '')])
+            ->first();
 
         if (! $booking) {
             Log::info('Moolre Webhook: Booking not found', ['reference' => $data['externalref'] ?? '']);

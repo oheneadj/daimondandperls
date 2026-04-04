@@ -1,11 +1,9 @@
 <?php
 
-use App\Http\Controllers\PublicPackageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', \App\Livewire\Pages\HomePage::class)->name('home');
 Route::get('/all-packages', \App\Livewire\Packages\PackagesBrowse::class)->name('packages.browse');
-Route::get('/package/{package:slug}', [PublicPackageController::class, 'show'])->name('packages.show');
 
 Route::get('/about', function () {
     return view('public.about');
@@ -25,8 +23,23 @@ Route::middleware(['auth', 'customer'])
     ->name('dashboard.')
     ->group(function () {
         Route::get('/', \App\Livewire\Customer\Dashboard::class)->name('index');
-        Route::get('/bookings', \App\Livewire\Customer\Bookings\Index::class)->name('bookings.index');
-        Route::get('/bookings/{booking:reference}', \App\Livewire\Customer\Bookings\Show::class)->name('bookings.show');
+
+        // Meal Orders
+        Route::get('/meals', \App\Livewire\Customer\Meals\Index::class)->name('meals.index');
+        Route::get('/meals/{booking:reference}', \App\Livewire\Customer\Meals\Show::class)->name('meals.show');
+
+        // Events
+        Route::get('/events', \App\Livewire\Customer\Events\Index::class)->name('events.index');
+        Route::get('/events/{booking:reference}', \App\Livewire\Customer\Events\Show::class)->name('events.show');
+
+        // Legacy redirects
+        Route::get('/bookings', fn () => redirect()->route('dashboard.meals.index'))->name('bookings.index');
+        Route::get('/bookings/{booking:reference}', function (\App\Models\Booking $booking) {
+            return $booking->booking_type === \App\Enums\BookingType::Event
+                ? redirect()->route('dashboard.events.show', $booking->reference)
+                : redirect()->route('dashboard.meals.show', $booking->reference);
+        })->name('bookings.show');
+
         Route::get('/payments', \App\Livewire\Customer\Payments\Index::class)->name('payments.index');
         Route::get('/payment-methods', \App\Livewire\Customer\PaymentMethods::class)->name('payment-methods');
         Route::get('/profile', \App\Livewire\Customer\Profile::class)->name('profile');

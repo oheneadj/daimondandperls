@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Customer;
 
 use App\Enums\BookingStatus;
+use App\Enums\BookingType;
 use App\Enums\PaymentStatus;
 use App\Traits\ResolvesCustomer;
 use Illuminate\Contracts\View\View;
@@ -26,7 +27,8 @@ class Dashboard extends Component
         $upcomingBookings = 0;
         $totalSpent = 0;
         $pendingPayments = 0;
-        $recentBookings = collect();
+        $recentMeals = collect();
+        $recentEvents = collect();
 
         if ($customer) {
             $totalBookings = $customer->bookings()->count();
@@ -43,10 +45,18 @@ class Dashboard extends Component
                 ->where('payment_status', PaymentStatus::Unpaid)
                 ->count();
 
-            $recentBookings = $customer->bookings()
+            $recentMeals = $customer->bookings()
+                ->where('booking_type', BookingType::Meal)
                 ->with(['items.package', 'payment'])
                 ->latest()
-                ->take(5)
+                ->take(3)
+                ->get();
+
+            $recentEvents = $customer->bookings()
+                ->where('booking_type', BookingType::Event)
+                ->with(['payment'])
+                ->latest()
+                ->take(3)
                 ->get();
         }
 
@@ -55,7 +65,8 @@ class Dashboard extends Component
             'upcomingBookings' => $upcomingBookings,
             'totalSpent' => $totalSpent,
             'pendingPayments' => $pendingPayments,
-            'recentBookings' => $recentBookings,
+            'recentMeals' => $recentMeals,
+            'recentEvents' => $recentEvents,
         ]);
     }
 }

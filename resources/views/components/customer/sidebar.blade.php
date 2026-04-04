@@ -6,7 +6,8 @@
             ['label' => 'Dashboard', 'route' => 'dashboard.index', 'icon' => 'squares-2x2'],
         ],
         'BOOKINGS' => [
-            ['label' => 'My Bookings', 'route' => 'dashboard.bookings.index', 'icon' => 'clipboard-document-list', 'pattern' => 'dashboard.bookings.*'],
+            ['label' => 'Meal Orders', 'route' => 'dashboard.meals.index', 'icon' => 'cake', 'pattern' => 'dashboard.meals.*'],
+            ['label' => 'Events', 'route' => 'dashboard.events.index', 'icon' => 'clipboard-document-list', 'pattern' => 'dashboard.events.*'],
             ['label' => 'Payments', 'route' => 'dashboard.payments.index', 'icon' => 'banknotes', 'pattern' => 'dashboard.payments.*'],
         ],
         'ACCOUNT' => [

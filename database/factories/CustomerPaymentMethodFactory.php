@@ -19,7 +19,7 @@ class CustomerPaymentMethodFactory extends Factory
             'customer_id' => Customer::factory(),
             'type' => PaymentMethod::MobileMoney,
             'label' => 'My MTN MoMo',
-            'provider' => 'MTN',
+            'provider' => '13',
             'account_number' => '024'.fake()->numerify('#######'),
             'account_name' => fake()->name(),
             'is_default' => false,

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Booking;
 
 use App\Enums\PaymentStatus;
@@ -7,6 +9,7 @@ use App\Models\Booking;
 use App\Models\Payment;
 use App\Notifications\BookingConfirmedNotification;
 use App\Services\MoolrePaymentService;
+use App\Traits\HandlesMomoValidation;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -15,6 +18,8 @@ use Livewire\Component;
 #[Layout('components.guest-layout')]
 class CheckoutPayment extends Component
 {
+    use HandlesMomoValidation;
+
     public Booking $booking;
 
     public string $paymentMethod = 'mobile_money';
@@ -28,6 +33,8 @@ class CheckoutPayment extends Component
 
     // Form fields for Bank Transfer
     public string $senderName = '';
+
+    public string $senderPhone = '';
 
     public string $referenceNotes = '';
 
@@ -57,24 +64,12 @@ class CheckoutPayment extends Component
      */
     public function getIsMomoFormValidProperty(): bool
     {
-        if (empty($this->momoNetwork) || strlen($this->momoNumber) !== 10) {
-            return false;
-        }
-
-        return (bool) preg_match($this->getNetworkPrefixPattern(), $this->momoNumber);
+        return $this->isValidMomoNumber($this->momoNetwork, $this->momoNumber);
     }
 
-    /**
-     * Returns the regex pattern matching valid prefixes for the selected network.
-     */
-    private function getNetworkPrefixPattern(): string
+    public function getMomoPlaceholderProperty(): string
     {
-        return match ($this->momoNetwork) {
-            '13' => '/^0(24|54|55|59)\d{7}$/',  // MTN
-            '6' => '/^0(20|50)\d{7}$/',         // Telecel
-            '7' => '/^0(26|56|27|57)\d{7}$/',   // AT
-            default => '/^0\d{9}$/',
-        };
+        return $this->getMomoPlaceholder($this->momoNetwork);
     }
 
     public function mount(Booking $booking)
@@ -124,7 +119,7 @@ class CheckoutPayment extends Component
         $this->loading = 'processMobileMoney';
         $this->errorMessage = null;
 
-        $networkPrefixPattern = $this->getNetworkPrefixPattern();
+        $networkPrefixPattern = $this->getNetworkPrefixPattern($this->momoNetwork);
 
         $this->validate([
             'momoNetwork' => 'required|in:13,6,7',
@@ -145,7 +140,6 @@ class CheckoutPayment extends Component
                 'payment_status' => PaymentStatus::Pending,
                 'payment_reference' => $response['data'] ?? null,
             ]);
-
 
             $this->isAwaitingPayment = true;
         } else {
@@ -246,8 +240,13 @@ class CheckoutPayment extends Component
     {
         $this->loading = 'submitBankTransfer';
         $this->validate([
-            'senderName' => 'required|string|max:100',
-            'referenceNotes' => 'nullable|string|max:255',
+            'senderName' => ['required', 'string', 'max:100'],
+            'senderPhone' => ['required', 'regex:/^(?:\+233|0)\d{9}$/'],
+            'referenceNotes' => ['nullable', 'string', 'max:255'],
+        ], [
+            'senderName.required' => 'Please enter the name on your bank account.',
+            'senderPhone.required' => 'Please enter your phone number.',
+            'senderPhone.regex' => 'Enter a valid Ghana phone number (e.g. 0241234567).',
         ]);
 
         DB::transaction(function () {
@@ -261,6 +260,7 @@ class CheckoutPayment extends Component
                     'status' => 'pending',
                     'gateway_response' => json_encode([
                         'sender_name' => $this->senderName,
+                        'sender_phone' => $this->senderPhone,
                         'notes' => $this->referenceNotes,
                     ]),
                 ]

@@ -18,7 +18,10 @@
       "mcp__laravel-boost__database-schema",
       "Bash(grep -E \"\\\\.\\(php|blade\\\\.php\\)$\")",
       "Bash(xargs ls:*)",
-      "Bash(find /home/oheneadj/server/dpc/database/migrations -name *customer* -o -name *payment_method*)"
+      "Bash(find /home/oheneadj/server/dpc/database/migrations -name *customer* -o -name *payment_method*)",
+      "Bash(grep -r \"dp-info\\\\|dp-warning\\\\|dp-rose\\\\|dp-\" /home/oheneadj/server/dpc/resources --include=*.css --include=*.scss)",
+      "Bash(grep -r \"bg-\\\\|text-\\\\|border-\" /home/oheneadj/server/dpc/resources/views --include=*.blade.php)",
+      "Bash(cat /home/oheneadj/server/dpc/tailwind.config.*)"
     ],
     "additionalDirectories": [
       "/home/oheneadj/server/dpc/resources/views/components",

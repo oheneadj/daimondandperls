@@ -68,13 +68,37 @@ test('dashboard links unlinked customer on first visit', function () {
     expect($customer->fresh()->user_id)->toBe($user->id);
 });
 
-test('dashboard shows recent bookings limited to 5', function () {
+test('dashboard shows recent meals limited to 3', function () {
     $user = User::factory()->customer()->create();
     $customer = Customer::factory()->create(['user_id' => $user->id, 'phone' => $user->phone]);
 
-    Booking::factory()->count(7)->create(['customer_id' => $customer->id]);
+    Booking::factory()->count(5)->meal()->create(['customer_id' => $customer->id]);
 
     Livewire::actingAs($user)
         ->test(Dashboard::class)
-        ->assertViewHas('recentBookings', fn ($bookings) => $bookings->count() === 5);
+        ->assertViewHas('recentMeals', fn ($meals) => $meals->count() === 3);
+});
+
+test('dashboard shows recent events limited to 3', function () {
+    $user = User::factory()->customer()->create();
+    $customer = Customer::factory()->create(['user_id' => $user->id, 'phone' => $user->phone]);
+
+    Booking::factory()->count(5)->event()->create(['customer_id' => $customer->id]);
+
+    Livewire::actingAs($user)
+        ->test(Dashboard::class)
+        ->assertViewHas('recentEvents', fn ($events) => $events->count() === 3);
+});
+
+test('dashboard separates meals from events', function () {
+    $user = User::factory()->customer()->create();
+    $customer = Customer::factory()->create(['user_id' => $user->id, 'phone' => $user->phone]);
+
+    Booking::factory()->count(2)->meal()->create(['customer_id' => $customer->id]);
+    Booking::factory()->count(3)->event()->create(['customer_id' => $customer->id]);
+
+    Livewire::actingAs($user)
+        ->test(Dashboard::class)
+        ->assertViewHas('recentMeals', fn ($meals) => $meals->count() === 2)
+        ->assertViewHas('recentEvents', fn ($events) => $events->count() === 3);
 });

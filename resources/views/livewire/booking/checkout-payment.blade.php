@@ -12,7 +12,7 @@
                     <div class="flex flex-col items-center gap-3">
                         <div @class([
                             'size-10 rounded-full flex items-center justify-center  text-sm font-bold transition-all duration-500',
-                            'bg-primary text-white shadow-xl scale-110 ring-4 ring-dp-rose-soft' => 4 === $stepNum,
+                            'bg-primary text-white shadow-xl scale-110 ring-4 ring-primary/20' => 4 === $stepNum,
                             'bg-primary text-white' => 4 > $stepNum,
                             'bg-base-100 text-dp-text-disabled border-2 border-base-content/10' => 4 < $stepNum,
                         ])>
@@ -165,7 +165,7 @@
                                                     pattern="[0-9]*"
                                                     wire:model.live="momoNumber"
                                                     placeholder="{{ match($momoNetwork) { '13' => '024 / 054 / 055 / 059', '6' => '020 / 050', '7' => '026 / 056 / 027 / 057', default => 'Select a network first' } }}"
-                                                    class="w-full pl-12 pr-5 py-4 bg-base-100 border focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-lg tracking-widest text-base-content placeholder-base-content/20"
+                                                    class="w-full pl-12 pr-5 py-4 bg-base-100 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-lg tracking-widest text-base-content placeholder-base-content/20"
                                                     maxlength="10"
                                                     @if(empty($momoNetwork)) disabled @endif
                                                 >
@@ -283,7 +283,23 @@
                                         <div class="space-y-2">
                                             <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Sender's Full Name</label>
                                             <input type="text" wire:model="senderName" class="w-full px-5 py-4 bg-base-100 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-sm font-medium" placeholder="As it appears on your account">
-                                            @error('senderName') <span class="text-xs font-bold text-error">{{ $message }}</span> @enderror
+                                            @error('senderName') <span class="text-[11px] font-bold text-error mt-1 block ml-1 uppercase tracking-wider">{{ $message }}</span> @enderror
+                                        </div>
+
+                                        <div class="space-y-2">
+                                            <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Phone Number</label>
+                                            <div class="relative">
+                                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                                </div>
+                                                <input type="tel" inputmode="numeric" wire:model="senderPhone" class="w-full pl-12 pr-5 py-4 bg-base-100 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-sm font-medium" placeholder="0241234567" maxlength="10">
+                                            </div>
+                                            @error('senderPhone') <span class="text-[11px] font-bold text-error mt-1 block ml-1 uppercase tracking-wider">{{ $message }}</span> @enderror
+                                        </div>
+
+                                        <div class="space-y-2">
+                                            <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Reference Notes <span class="text-base-content/30">(Optional)</span></label>
+                                            <input type="text" wire:model="referenceNotes" class="w-full px-5 py-4 bg-base-100 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-sm font-medium" placeholder="Transaction ID or additional notes">
                                         </div>
 
                                         <x-ui.button type="submit" variant="primary" size="lg" :loading="$loading === 'submitBankTransfer'" class="w-full shadow-xl text-lg h-16">

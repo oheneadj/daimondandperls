@@ -35,7 +35,7 @@ class PackagesBrowse extends Component
 
     public function orderNow(int $packageId, \App\Services\CartService $cart): void
     {
-        if (!$this->isInCart($packageId, $cart)) {
+        if (! $this->isInCart($packageId, $cart)) {
             $cart->add($packageId);
         }
         $this->redirect(route('checkout'));

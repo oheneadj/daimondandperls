@@ -276,7 +276,7 @@
                         @endphp
                         @foreach($footerPackages as $pkg)
                             <li>
-                                <a href="{{ route('packages.show', $pkg) }}" class="text-[13px] text-white/50 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all duration-200">
+                                <a href="{{ route('packages.browse', ['categoryId' => $pkg->category_id]) }}" class="text-[13px] text-white/50 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all duration-200">
                                     <span class="size-1 rounded-full bg-primary/60 shrink-0"></span>
                                     {{ $pkg->name }}
                                 </a>
