@@ -1,22 +1,29 @@
 <div class="bg-base-200 min-h-screen py-6 lg:py-20 px-3 sm:px-4">
     <div class="container mx-auto max-w-6xl">
-        <!-- Progress Bar (5 Steps) -->
+        <!-- Progress Bar -->
+        @php
+            $isEvent = $booking->booking_type === \App\Enums\BookingType::Event;
+            $steps = $isEvent ? ['Review', 'Contact', 'Event', 'Payment', 'Done'] : ['Review', 'Contact', 'Payment', 'Done'];
+            $currentStep = $isEvent ? 4 : 3;
+            $totalSteps = count($steps);
+            $progressWidth = round(($currentStep - 1) / ($totalSteps - 1) * 100);
+        @endphp
         <div class="mb-12 lg:mb-16 max-w-4xl mx-auto">
             <div class="flex items-center justify-between relative max-w-3xl mx-auto">
                 {{-- Line connector --}}
                 <div class="absolute top-5 left-0 w-full h-0.5 border-base-content/10 -z-10"></div>
-                <div class="absolute top-5 left-0 h-0.5 bg-primary -z-10 transition-all duration-700" style="width: 75%"></div>
+                <div class="absolute top-5 left-0 h-0.5 bg-primary -z-10 transition-all duration-700" style="width: {{ $progressWidth }}%"></div>
 
-                @foreach(['Review', 'Contact', 'Event', 'Payment', 'Done'] as $index => $label)
+                @foreach($steps as $index => $label)
                     @php $stepNum = $index + 1; @endphp
                     <div class="flex flex-col items-center gap-3">
                         <div @class([
-                            'size-10 rounded-full flex items-center justify-center  text-sm font-bold transition-all duration-500',
-                            'bg-primary text-white shadow-xl scale-110 ring-4 ring-primary/20' => 4 === $stepNum,
-                            'bg-primary text-white' => 4 > $stepNum,
-                            'bg-base-100 text-dp-text-disabled border-2 border-base-content/10' => 4 < $stepNum,
+                            'size-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500',
+                            'bg-primary text-white shadow-xl scale-110 ring-4 ring-primary/20' => $currentStep === $stepNum,
+                            'bg-primary text-white' => $currentStep > $stepNum,
+                            'bg-base-100 text-dp-text-disabled border-2 border-base-content/10' => $currentStep < $stepNum,
                         ])>
-                            @if(4 > $stepNum)
+                            @if($currentStep > $stepNum)
                                 <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                                 </svg>
@@ -26,8 +33,8 @@
                         </div>
                         <span @class([
                             'text-[10px] uppercase tracking-[0.15em] font-bold hidden sm:block',
-                            'text-primary' => 4 === $stepNum,
-                            'text-base-content/60' => 4 !== $stepNum,
+                            'text-primary' => $currentStep === $stepNum,
+                            'text-base-content/60' => $currentStep !== $stepNum,
                         ])>{{ $label }}</span>
                     </div>
                 @endforeach
@@ -41,7 +48,7 @@
                     <div class="p-5 sm:p-8 lg:p-12">
                         <div class="mb-10">
                             <h1 class=" text-3xl font-semibold text-base-content mb-2">Secure Payment</h1>
-                            <p class="text-base-content/60 text-[14px] font-medium">Coordinate your catering preference for: <span class="text-primary font-bold">{{ $booking->reference }}</span></p>
+                            <p class="text-base-content/60 text-[14px] font-medium">Complete your payment for booking <span class="text-primary font-bold">{{ $booking->reference }}</span></p>
                         </div>
 
                         @if ($errorMessage)
@@ -62,27 +69,7 @@
                             </div>
                         @endif
 
-                        {{-- Method Selector (hidden — only MoMo is active for now) --}}
-                        @if(false)
-                        <div class="flex items-center gap-3 p-1.5 bg-base-200 border border-base-content/10 rounded-2xl mb-12 overflow-x-auto scrollbar-hide">
-                            @foreach([
-                                'mobile_money' => 'Mobile Money',
-                                'card' => 'Credit/Debit Card',
-                                'bank_transfer' => 'Bank Transfer'
-                            ] as $value => $label)
-                                <button wire:click="$set('paymentMethod', '{{ $value }}')" @class([
-                                    'flex-1 min-w-[140px] py-4 px-6 rounded-xl font-bold text-xs whitespace-nowrap transition-all uppercase tracking-widest',
-                                    'bg-base-100 text-primary shadow-sm border border-base-content/10' => $paymentMethod === $value,
-                                    'text-base-content/60 hover:text-base-content' => $paymentMethod !== $value,
-                                ])>
-                                    {{ $label }}
-                                </button>
-                            @endforeach
-                        </div>
-                        @endif
-
                         <div class="min-h-[400px]">
-                            @if ($paymentMethod === 'mobile_money')
                                 <div class="animate-fade-in space-y-8">
                                     @if ($isAwaitingPayment)
                                         <div wire:poll.3s="checkPaymentStatus" class="bg-base-200/50 border border-base-content/10 rounded-3xl p-10 text-center relative overflow-hidden transition-all duration-500 mt-2">
@@ -213,69 +200,33 @@
                                         </div>
                                     @endif
                                 </div>
-                            @endif
-
-                            @if ($paymentMethod === 'card')
-                                <div class="animate-fade-in space-y-10">
-                                    <div class="bg-base-200 rounded-3xl p-8 lg:p-10 border border-base-content/10 max-w-md mx-auto relative overflow-hidden">
-                                        {{-- Simulated Card Graphic --}}
-                                        <div class="absolute -right-8 -bottom-8 size-40 bg-primary/5 rounded-full blur-3xl"></div>
-                                        <div class="absolute -left-8 -top-8 size-40 bg-primary/5 rounded-full blur-3xl"></div>
-                                        <div class="space-y-6 relative z-10">
-                                            <div class="flex justify-between items-center mb-8">
-                                                <div class="size-12 bg-base-200-mid rounded-lg"></div>
-                                                <div class="font-black text-base-content/60/30 italic">VISA</div>
-                                            </div>
-                                            <div class="space-y-2">
-                                                <label class="text-[10px] font-bold text-base-content/60 uppercase tracking-widest">Card Number</label>
-                                                <div class="bg-base-100 border border-base-content/10 rounded-xl px-5 py-4 font-mono text-lg tracking-widest text-dp-text-disabled">4242 4242 4242 4242</div>
-                                            </div>
-                                            <div class="grid grid-cols-2 gap-6">
-                                                <div class="space-y-2">
-                                                    <label class="text-[10px] font-bold text-base-content/60 uppercase tracking-widest">Expiry</label>
-                                                    <div class="bg-base-100 border border-base-content/10 rounded-xl px-5 py-4 font-mono text-lg text-dp-text-disabled text-center">12 / 28</div>
-                                                </div>
-                                                <div class="space-y-2">
-                                                    <label class="text-[10px] font-bold text-base-content/60 uppercase tracking-widest">CVC</label>
-                                                    <div class="bg-base-100 border border-base-content/10 rounded-xl px-5 py-4 font-mono text-lg text-dp-text-disabled text-center">***</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="text-center max-w-sm mx-auto">
-                                        <x-ui.button wire:click="processCard" wire:loading.attr="disabled" :loading="$loading === 'processCard'" variant="primary" size="lg" class="w-full shadow-xl text-lg h-16">
-                                            {{ __('Securely Pay GH₵') }} {{ number_format($booking->total_amount, 0) }}
-                                        </x-ui.button>
-                                        <p class="mt-4 text-[11px] text-base-content/60 font-medium uppercase tracking-[0.2em]">Ensuring 256-bit AES encryption</p>
-                                    </div>
-                                </div>
-                            @endif
 
                             @if ($paymentMethod === 'bank_transfer')
                                 <div class="animate-fade-in space-y-10">
-                                    <div class="bg-primary/5 border border-dp-rose/20 rounded-3xl p-8 lg:p-10">
-                                        <div class="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-6">Transfer Credentials</div>
-                                        <div class="grid gap-6">
-                                            <div class="flex justify-between items-center bg-white/50 p-4 rounded-xl">
-                                                <span class="text-base-content/60 font-bold text-xs uppercase tracking-wide">Institution</span>
-                                                <span class="text-base-content font-bold">{{ $bankName }}</span>
-                                            </div>
-                                            <div class="flex justify-between items-center bg-white/50 p-4 rounded-xl">
-                                                <span class="text-base-content/60 font-bold text-xs uppercase tracking-wide">Account Name</span>
-                                                <span class="text-base-content font-bold">{{ $accountName }}</span>
-                                            </div>
-                                            @if($branchCode)
-                                            <div class="flex justify-between items-center bg-white/50 p-4 rounded-xl">
-                                                <span class="text-base-content/60 font-bold text-xs uppercase tracking-wide">Branch/Sort Code</span>
-                                                <span class="text-base-content font-bold">{{ $branchCode }}</span>
-                                            </div>
-                                            @endif
-                                            <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-primary text-white p-6 rounded-2xl shadow-md">
-                                                <span class="font-bold text-xs uppercase tracking-[0.2em] opacity-80 mb-2 sm:mb-0">Account Number</span>
-                                                <span class="text-2xl font-black tracking-[0.3em]">{{ $accountNumber }}</span>
+                                    <div class="bg-base-200 border border-base-content/5 rounded-3xl p-8 lg:p-10 relative overflow-hidden">
+                                        <div class="absolute top-0 right-0 p-8">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-20 text-primary/10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                                        </div>
+                                        
+                                        <div class="relative z-10 space-y-8">
+                                            <div>
+                                                <div class="text-[11px] font-bold text-primary uppercase tracking-[0.2em] mb-6">Payment Destination</div>
+                                                <div class="grid gap-4">
+                                                    <div class="flex justify-between items-center bg-base-100/80 p-5 rounded-2xl border border-base-content/5">
+                                                        <span class="text-base-content/50 font-bold text-[11px] uppercase tracking-wider">Bank Name</span>
+                                                        <span class="text-base-content font-bold">{{ $bankName }}</span>
+                                                    </div>
+                                                    <div class="flex justify-between items-center bg-base-100/80 p-5 rounded-2xl border border-base-content/5">
+                                                        <span class="text-base-content/50 font-bold text-[11px] uppercase tracking-wider">Account Holder</span>
+                                                        <span class="text-base-content font-bold">{{ $accountName }}</span>
+                                                    </div>
+                                                </div>
                                             </div>
 
+                                            <div class="bg-primary p-8 rounded-[2rem] shadow-2xl shadow-primary/20 flex flex-col items-center justify-center text-center space-y-2 group cursor-pointer" onclick="navigator.clipboard.writeText('{{ $accountNumber }}')">
+                                                <span class="text-[10px] text-white/50 font-bold uppercase tracking-[0.3em]">Account Number (Tap to Copy)</span>
+                                                <span class="text-3xl lg:text-4xl font-black text-white tracking-[0.2em]">{{ $accountNumber }}</span>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -303,7 +254,7 @@
                                         </div>
 
                                         <x-ui.button type="submit" variant="primary" size="lg" :loading="$loading === 'submitBankTransfer'" class="w-full shadow-xl text-lg h-16">
-                                            {{ __('Confirm Transfer Initiation') }}
+                                            {{ __('Submit Transfer Details') }}
                                         </x-ui.button>
                                         <p class="text-[11px] text-base-content/60 font-medium text-center italic">Transfer verification is handled manually by our concierge team.</p>
                                     </form>

@@ -7,7 +7,7 @@
 ])
 
 @php
-    $baseClasses = 'btn border-none inline-flex items-center justify-center font-medium rounded-lg transition-all duration-150 focus:outline-none focus:ring-3 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap decoration-none';
+    $baseClasses = 'btn border-none inline-flex items-center justify-center font-medium rounded-xl transition-all duration-150 focus:outline-none focus:ring-3 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap decoration-none';
     
     $variants = [
         'primary' => 'bg-primary text-primary-content hover:brightness-110 focus:ring-primary/30',
@@ -18,7 +18,7 @@
         'outline' => 'bg-transparent text-base-content hover:bg-base-content/5 focus:ring-base-content/10',
         'ghost' => 'bg-transparent text-base-content/80 hover:bg-base-200 focus:ring-base-content/10',
         'black' => 'bg-black text-white hover:brightness-110 focus:ring-black/30',
-        'green' => 'bg-green-500 text-white hover:brightness-110 focus:ring-green-500/30',
+        'green' => 'bg-[#18542A] text-white hover:brightness-110 focus:ring-[#18542A]/30',
     ];
 
     $sizes = [

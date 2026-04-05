@@ -44,7 +44,7 @@
                 </p>
 
                 <div class="mt-auto pt-4 w-full">
-                    <span class="inline-flex items-center justify-center w-full py-4 px-6 rounded-full bg-primary text-white font-black uppercase tracking-widest text-[13px] transition-all duration-300 shadow-lg shadow-primary/20 group-hover:bg-primary/90 group-hover:shadow-primary/40 group-hover:-translate-y-1">
+                    <span class="inline-flex items-center justify-center w-full py-4 px-6 rounded-xl bg-primary text-white font-black uppercase tracking-widest text-[13px] transition-all duration-300 shadow-lg shadow-primary/20 group-hover:bg-primary/90 group-hover:shadow-primary/40 group-hover:-translate-y-1">
                         {{ __('Checkout Now') }}
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-5 ml-2 transition-transform group-hover:translate-x-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -78,7 +78,7 @@
                 </p>
 
                 <div class="mt-auto pt-4 w-full">
-                    <span class="inline-flex items-center justify-center w-full py-4 px-6 rounded-full bg-[#18542A] text-white font-black uppercase tracking-widest text-[13px] transition-all duration-300 shadow-lg shadow-[#18542A]/20 group-hover:bg-[#18542A]/90 group-hover:shadow-[#18542A]/40 group-hover:-translate-y-1">
+                    <span class="inline-flex items-center justify-center w-full py-4 px-6 rounded-xl bg-[#18542A] text-white font-black uppercase tracking-widest text-[13px] transition-all duration-300 shadow-lg shadow-[#18542A]/20 group-hover:bg-[#18542A]/90 group-hover:shadow-[#18542A]/40 group-hover:-translate-y-1">
                         {{ __('Request Quote') }}
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-5 ml-2 transition-transform group-hover:translate-x-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />

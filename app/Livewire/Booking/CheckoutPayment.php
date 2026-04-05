@@ -7,13 +7,19 @@ namespace App\Livewire\Booking;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Models\Setting;
 use App\Notifications\BookingConfirmedNotification;
+use App\Services\InvoiceService;
 use App\Services\MoolrePaymentService;
 use App\Traits\HandlesMomoValidation;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\Features\SupportRedirects\Redirector;
 
 #[Layout('components.guest-layout')]
 class CheckoutPayment extends Component
@@ -51,17 +57,11 @@ class CheckoutPayment extends Component
 
     public ?string $loading = null;
 
-    /**
-     * Strip non-numeric characters as user types.
-     */
     public function updatedMomoNumber(string $value): void
     {
         $this->momoNumber = preg_replace('/[^0-9]/', '', $value);
     }
 
-    /**
-     * Computed: is the MoMo form valid enough to enable the Pay button?
-     */
     public function getIsMomoFormValidProperty(): bool
     {
         return $this->isValidMomoNumber($this->momoNetwork, $this->momoNumber);
@@ -72,7 +72,7 @@ class CheckoutPayment extends Component
         return $this->getMomoPlaceholder($this->momoNetwork);
     }
 
-    public function mount(Booking $booking)
+    public function mount(Booking $booking): void
     {
         $this->booking = $booking->load(['items.package', 'customer']);
 
@@ -81,7 +81,9 @@ class CheckoutPayment extends Component
         }
 
         if ($this->booking->payment_status === PaymentStatus::Paid) {
-            return redirect()->route('booking.confirmation', ['booking' => $this->booking->reference]);
+            $this->redirect(route('booking.confirmation', ['booking' => $this->booking->reference]));
+
+            return;
         }
 
         // Auto-resume polling if already initialized (e.g., page refresh)
@@ -93,28 +95,28 @@ class CheckoutPayment extends Component
         }
 
         // Prefill from user if applicable
-        if (\Illuminate\Support\Facades\Auth::check()) {
-            $user = \Illuminate\Support\Facades\Auth::user();
+        if (Auth::check()) {
+            $user = Auth::user();
             $this->momoNumber = $user->saved_momo_number ?? $this->momoNumber;
             $this->momoNetwork = $user->saved_momo_network ?? $this->momoNetwork;
         }
 
         // Load Bank Details from Settings
-        $settings = \App\Models\Setting::where('group', 'bank')->get()->keyBy('key');
+        $settings = Setting::where('group', 'bank')->get()->keyBy('key');
         $this->bankName = $settings->get('bank_name')?->value ?? 'Ecobank Ghana';
         $this->accountName = $settings->get('account_name')?->value ?? 'Diamonds & Pearls';
         $this->accountNumber = $settings->get('account_number')?->value ?? '144100XXXXXXX';
         $this->branchCode = $settings->get('branch_code')?->value ?? '';
     }
 
-    public function retry()
+    public function retry(): void
     {
         $this->errorMessage = null;
         session()->forget('error');
         $this->isAwaitingPayment = false;
     }
 
-    public function processMobileMoney(MoolrePaymentService $moolre)
+    public function processMobileMoney(MoolrePaymentService $moolre): void
     {
         $this->loading = 'processMobileMoney';
         $this->errorMessage = null;
@@ -150,13 +152,12 @@ class CheckoutPayment extends Component
         $this->loading = null;
     }
 
-    public function checkPaymentStatus()
+    public function checkPaymentStatus(): void
     {
         $this->booking->refresh();
 
         if ($this->booking->payment_status === PaymentStatus::Paid) {
 
-            // Generate robust Payment record mirroring dummy card model logic
             Payment::updateOrCreate(
                 ['booking_id' => $this->booking->id],
                 [
@@ -171,21 +172,22 @@ class CheckoutPayment extends Component
                 ]
             );
 
-            // Notify customer of paid success
             $this->booking->customer->notify(new BookingConfirmedNotification(
                 $this->booking,
-                app(\App\Services\InvoiceService::class)->getDownloadUrl($this->booking)
+                app(InvoiceService::class)->getDownloadUrl($this->booking)
             ));
 
             // Save as default payment method for logged-in users
-            if (\Illuminate\Support\Facades\Auth::check()) {
-                \Illuminate\Support\Facades\Auth::user()->update([
+            if (Auth::check()) {
+                Auth::user()->update([
                     'saved_momo_number' => $this->momoNumber,
                     'saved_momo_network' => $this->momoNetwork,
                 ]);
             }
 
-            return redirect()->route('booking.confirmation', ['booking' => $this->booking->reference]);
+            $this->redirect(route('booking.confirmation', ['booking' => $this->booking->reference]));
+
+            return;
         }
 
         if ($this->booking->payment_status === PaymentStatus::Failed) {
@@ -195,7 +197,7 @@ class CheckoutPayment extends Component
         }
     }
 
-    public function cancelPayment()
+    public function cancelPayment(): void
     {
         $this->isAwaitingPayment = false;
         $this->booking->update([
@@ -204,41 +206,10 @@ class CheckoutPayment extends Component
         ]);
     }
 
-    public function processCard()
-    {
-        $this->loading = 'processCard';
-        DB::transaction(function () {
-            Payment::updateOrCreate(
-                ['booking_id' => $this->booking->id],
-                [
-                    'gateway' => 'paystack',
-                    'method' => 'card',
-                    'amount' => $this->booking->total_amount,
-                    'currency' => 'GHS',
-                    'status' => 'successful',
-                    'paid_at' => now(),
-                    'gateway_reference' => 'CARD-SIM-'.uniqid(),
-                    'gateway_response' => json_encode(['status' => 'success', 'message' => 'Simulated Card Payment']),
-                ]
-            );
-
-            $this->booking->update([
-                'status' => 'confirmed',
-                'payment_status' => PaymentStatus::Paid,
-            ]);
-
-            $this->booking->customer->notify(new BookingConfirmedNotification(
-                $this->booking,
-                app(\App\Services\InvoiceService::class)->getDownloadUrl($this->booking)
-            ));
-        });
-
-        return redirect()->route('booking.confirmation', ['booking' => $this->booking->reference]);
-    }
-
-    public function submitBankTransfer()
+    public function submitBankTransfer(): Redirector|RedirectResponse
     {
         $this->loading = 'submitBankTransfer';
+
         $this->validate([
             'senderName' => ['required', 'string', 'max:100'],
             'senderPhone' => ['required', 'regex:/^(?:\+233|0)\d{9}$/'],
@@ -265,13 +236,19 @@ class CheckoutPayment extends Component
                     ]),
                 ]
             );
+
+            $this->booking->update([
+                'payment_status' => PaymentStatus::Pending,
+            ]);
         });
+
+        $this->loading = null;
 
         return redirect()->route('booking.confirmation', ['booking' => $this->booking->reference]);
     }
 
     #[Title('Payment Processing')]
-    public function render()
+    public function render(): View
     {
         return view('livewire.booking.checkout-payment');
     }

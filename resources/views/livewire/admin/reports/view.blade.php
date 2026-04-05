@@ -55,7 +55,7 @@
     {{-- Custom Date Picker --}}
     <div x-show="showCustomDates" x-collapse x-cloak>
         <x-ui.card class="bg-base-200-mid/30 border-base-content/10">
-            <div class="flex flex-wrap items-end gap-6 p-2 sm:w-full">
+            <div class="flex flex-wrap items-end gap-6 p-2 ">
                 <div>
                     <label class="text-[11px] font-bold uppercase tracking-[0.2em] text-base-content/60 mb-2 block">{{ __('From') }}</label>
                     <x-ui.input type="date" wire:model.live="startDate" class="bg-base-100 sm:w-full" />

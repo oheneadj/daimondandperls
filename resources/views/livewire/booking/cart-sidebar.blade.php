@@ -104,7 +104,7 @@
                 <span class=" text-3xl sm:text-4xl font-bold text-primary tracking-tight"><span class="text-[18px] mr-1">GHS</span>{{ number_format($cartTotal, 2) }}</span>
             </div>
             <div class="space-y-4">
-                <x-ui.button :href="route('booking.select-type')" class="w-full h-16 text-[15px] shadow-md !rounded-full" variant="primary" wire:navigate>
+                <x-ui.button :href="route('booking.select-type')" class="w-full h-16 text-[15px] shadow-md" variant="primary" wire:navigate>
                     {{ __('Begin Secure Checkout') }}
                 </x-ui.button>
                 <p class="text-center text-[10px] text-dp-text-disabled font-bold uppercase tracking-[0.2em]">

@@ -8,9 +8,9 @@
     'wireModel' => null,
 ])
 
-<div class="space-y-2.5">
+<div class="form-control w-full space-y-1.5">
     @if($label)
-        <label class="text-[10px] font-black uppercase tracking-[0.2em] text-base-content/40 ml-1">
+        <label class="text-dp-sm font-medium text-base-content block">
             {{ $label }}
             @if($required)
                 <span class="text-error">*</span>
@@ -18,9 +18,9 @@
         </label>
     @endif
 
-    <div class="relative group">
+    <div class="relative">
         @if($icon)
-            <span class="absolute inset-y-0 left-5 flex items-center text-base-content/50 group-focus-within:text-primary transition-colors">
+            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-base-content/40 pointer-events-none">
                 {!! $icon !!}
             </span>
         @endif
@@ -30,7 +30,7 @@
                 wire:model="{{ $wireModel }}"
                 type="{{ $type }}"
                 {{ $attributes->merge([
-                    'class' => 'block w-full ' . ($icon ? 'pl-16' : 'px-6') . ' rounded-full h-14 bg-[#F4F4F6]/70 border-transparent text-[15px] font-medium focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary/20 shadow-inner group-focus-within:shadow-none transition-all placeholder:text-base-content/30',
+                    'class' => 'w-full ' . ($icon ? 'pl-12 pr-[14px]' : 'px-[14px]') . ' py-[10px] text-[15px] bg-base-100 border rounded-lg transition-all duration-120 outline-none placeholder:text-base-content/40 disabled:bg-base-200 disabled:cursor-not-allowed border-base-content/10 focus:border-primary focus:ring-3 focus:ring-primary/20',
                     'name' => $name,
                 ]) }}
             >
@@ -38,7 +38,7 @@
             <input
                 type="{{ $type }}"
                 {{ $attributes->merge([
-                    'class' => 'block w-full ' . ($icon ? 'pl-16' : 'px-6') . ' rounded-full h-14 bg-[#F4F4F6]/70 border-transparent text-[15px] font-medium focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary/20 shadow-inner group-focus-within:shadow-none transition-all placeholder:text-base-content/30',
+                    'class' => 'w-full ' . ($icon ? 'pl-12 pr-[14px]' : 'px-[14px]') . ' py-[10px] text-[15px] bg-base-100 border rounded-lg transition-all duration-120 outline-none placeholder:text-base-content/40 disabled:bg-base-200 disabled:cursor-not-allowed border-base-content/10 focus:border-primary focus:ring-3 focus:ring-primary/20',
                     'name' => $name,
                 ]) }}
             >
@@ -46,10 +46,12 @@
     </div>
 
     @if($hint)
-        <p class="text-[10px] text-base-content/30 font-medium ml-1 italic">{{ $hint }}</p>
+        <p class="text-xs text-base-content/60 mt-1">{{ $hint }}</p>
     @endif
 
     @error($name)
-        <p class="text-[11px] font-bold text-error mt-2 ml-1">{{ $message }}</p>
+        <p class="text-xs text-error flex items-center gap-1">
+            <span>⚠</span> {{ $message }}
+        </p>
     @enderror
 </div>

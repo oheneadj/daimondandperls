@@ -5,7 +5,7 @@
             <h1 class="text-2xl sm:text-[28px] font-semibold text-base-content leading-tight">My Meal Orders</h1>
             <p class="text-[14px] text-base-content/50 mt-1">Track and manage your catering meal orders.</p>
         </div>
-        <a href="{{ route('packages.browse') }}" wire:navigate class="btn btn-primary btn-sm gap-2 shrink-0">
+        <a href="{{ route('packages.browse') }}" wire:navigate class="btn btn-primary btn-sm rounded-xl gap-2 shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
@@ -60,7 +60,7 @@
                 @endif
             </p>
             @unless($search || $status || $paymentStatus)
-                <a href="{{ route('packages.browse') }}" wire:navigate class="btn btn-primary btn-sm">Browse Packages</a>
+                <a href="{{ route('packages.browse') }}" wire:navigate class="btn btn-primary btn-sm rounded-xl">Browse Packages</a>
             @endunless
         </div>
     @else

@@ -1,23 +1,17 @@
-<x-layouts::auth :title="__('Register')" :maxWidth="'max-w-[550px]'">
-    <div class="space-y-10">
+<x-layouts::auth :title="__('Register')" :maxWidth="'max-w-[460px]'">
+    <div class="space-y-8">
         <!-- Header -->
-        <div class="text-center space-y-3">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest mb-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-                {{ __('Client Portal') }}
-            </div>
-            <h1 class="text-4xl font-black tracking-tight text-base-content leading-tight">
-                {{ __('Client Registration') }}
-            </h1>
-            <p class="text-[14px] text-base-content/50 font-medium max-w-[320px] mx-auto leading-relaxed italic">
-                {{ __('Create your client account to start planning your next exquisite event.') }}
+        <div class="text-center space-y-2">
+            <h1 class="text-xl font-semibold text-base-content">{{ __('Create an account') }}</h1>
+            <p class="text-[14px] text-base-content/50 font-medium leading-relaxed">
+                {{ __('Sign up to start planning your next event.') }}
             </p>
         </div>
 
-        <form method="POST" action="{{ route('register.store') }}" class="space-y-8">
+        <form method="POST" action="{{ route('register.store') }}" class="space-y-6">
             @csrf
 
-            <div class="space-y-6">
+            <div class="space-y-5">
                 <!-- Name -->
                 <x-auth.input
                     name="name"
@@ -94,18 +88,16 @@
                 </x-auth.input>
             </div>
 
-            <div class="pt-4">
-                <x-auth.button type="submit">
-                    {{ __('Create Account') }}
-                </x-auth.button>
-            </div>
+            <x-auth.button type="submit">
+                {{ __('Create Account') }}
+            </x-auth.button>
         </form>
 
-        <div class="text-center pt-8 border-t border-base-content/5">
-            <p class="text-[12px] text-base-content/40 font-medium tracking-tight">
+        <div class="text-center pt-6 border-t border-base-content/5">
+            <p class="text-[13px] text-base-content/40 font-medium">
                 {{ __('Already have an account?') }}
-                <a href="{{ route('login') }}" class="text-primary font-black uppercase tracking-widest ml-1.5 hover:text-primary-dark transition-colors" wire:navigate>
-                    {{ __('Sign In') }}
+                <a href="{{ route('login') }}" class="text-primary font-semibold hover:text-primary/80 transition-colors ml-1" wire:navigate>
+                    {{ __('Sign in') }}
                 </a>
             </p>
         </div>

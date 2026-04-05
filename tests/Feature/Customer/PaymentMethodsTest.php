@@ -5,6 +5,7 @@ use App\Livewire\Customer\PaymentMethods;
 use App\Models\Customer;
 use App\Models\CustomerPaymentMethod;
 use App\Models\User;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
@@ -46,7 +47,7 @@ test('customer can add a mobile money payment method', function () {
         ->set('accountName', 'John Doe')
         ->call('save')
         ->assertHasNoErrors()
-        ->assertSet('showForm', false)
+        ->assertSet('showOtpModal', true)
         ->assertDispatched('toast');
 
     expect($this->customer->paymentMethods)->toHaveCount(1);
@@ -149,4 +150,72 @@ test('customer can cancel the form', function () {
         ->call('cancel')
         ->assertSet('showForm', false)
         ->assertSet('editingId', null);
+});
+
+test('customer can add and verify a mobile money payment method', function () {
+    Notification::fake();
+
+    Livewire::actingAs($this->user)
+        ->test(PaymentMethods::class)
+        ->call('openForm')
+        ->set('type', 'mobile_money')
+        ->set('label', 'My Verified MoMo')
+        ->set('provider', '13')
+        ->set('accountNumber', '0241234567')
+        ->call('save')
+        ->assertSet('showOtpModal', true);
+
+    $method = CustomerPaymentMethod::where('label', 'My Verified MoMo')->first();
+    expect($method->verified_at)->toBeNull();
+    expect($method->verification_code)->not->toBeNull();
+
+    // Extract the OTP from the notification (verification_code is now hashed)
+    $otp = null;
+    Notification::assertSentTo($this->customer, \App\Notifications\OtpNotification::class, function ($notification) use (&$otp) {
+        $otp = $notification->otp;
+
+        return true;
+    });
+
+    Livewire::actingAs($this->user)
+        ->test(PaymentMethods::class)
+        ->set('verifyingId', $method->id)
+        ->set('otpCode', $otp)
+        ->call('verifyOtp')
+        ->assertSet('showOtpModal', false)
+        ->assertDispatched('toast');
+
+    expect($method->refresh()->verified_at)->not->toBeNull();
+});
+
+test('existing payment method can be verified later', function () {
+    Notification::fake();
+
+    $method = CustomerPaymentMethod::factory()->create([
+        'customer_id' => $this->customer->id,
+        'verified_at' => null,
+        'verification_code' => \Illuminate\Support\Facades\Hash::make('123456'),
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(PaymentMethods::class)
+        ->call('resendOtp', $method->id)
+        ->assertSet('showOtpModal', true);
+
+    // Extract OTP from notification
+    $otp = null;
+    Notification::assertSentTo($this->customer, \App\Notifications\OtpNotification::class, function ($notification) use (&$otp) {
+        $otp = $notification->otp;
+
+        return true;
+    });
+
+    Livewire::actingAs($this->user)
+        ->test(PaymentMethods::class)
+        ->set('verifyingId', $method->id)
+        ->set('otpCode', $otp)
+        ->call('verifyOtp')
+        ->assertSet('showOtpModal', false);
+
+    expect($method->refresh()->isVerified())->toBeTrue();
 });

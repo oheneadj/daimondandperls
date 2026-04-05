@@ -76,29 +76,6 @@ it('redirects to confirmation and notifies customer when polling detects success
     );
 });
 
-it('dispatches confirmed notification upon successful card payment', function () {
-    Notification::fake();
-
-    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
-        ->set('paymentMethod', 'card')
-        ->assertStatus(200)
-        ->call('processCard')
-        ->assertRedirect(route('booking.confirmation', ['booking' => $this->booking->reference]));
-
-    $this->booking->refresh();
-
-    expect($this->booking->status->value)->toBe('confirmed')
-        ->and($this->booking->payment_status->value)->toBe('paid');
-
-    Notification::assertSentTo(
-        [$this->customer],
-        BookingConfirmedNotification::class,
-        function ($notification, $channels) {
-            return $notification->booking->id === $this->booking->id;
-        }
-    );
-});
-
 it('does not dispatch notification for bank transfer', function () {
     Notification::fake();
 
@@ -112,7 +89,7 @@ it('does not dispatch notification for bank transfer', function () {
     $this->booking->refresh();
 
     expect($this->booking->status->value)->toBe('pending')
-        ->and($this->booking->payment_status->value)->toBe('unpaid');
+        ->and($this->booking->payment_status->value)->toBe('pending');
 
     Notification::assertNothingSent();
 });

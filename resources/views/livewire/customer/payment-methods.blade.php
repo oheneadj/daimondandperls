@@ -6,7 +6,7 @@
             <p class="text-base-content/60 text-[15px] font-medium">Manage your saved payment methods for faster checkout.</p>
         </div>
         @if(!$showForm)
-            <button wire:click="openForm" class="btn btn-primary btn-sm gap-2">
+            <button wire:click="openForm" class="btn btn-primary btn-sm rounded-xl gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
@@ -20,8 +20,8 @@
         <div class="bg-white border border-base-content/10 rounded-[24px] p-6 md:p-10 shadow-sm mb-12 animate-in fade-in slide-in-from-top-4 duration-500">
             <div class="flex items-center justify-between mb-10">
                 <div>
-                    <h2 class="text-2xl font-semibold text-base-content">{{ $editingId ? 'Edit Payment Method' : 'Add New MoMo Account' }}</h2>
-                    <p class="text-[13px] text-base-content/40 font-medium mt-1">Securely save your mobile money details for faster checkout.</p>
+                    <h2 class="text-2xl font-semibold text-base-content">{{ $editingId ? 'Edit Payment Method' : 'Add New Payment Method' }}</h2>
+                    <p class="text-[13px] text-base-content/40 font-medium mt-1">Securely save your payment method details for faster checkout.</p>
                 </div>
                 <button wire:click="cancel" class="size-10 rounded-full bg-base-200 hover:bg-base-300 flex items-center justify-center transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-base-content/60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -32,7 +32,7 @@
                 <!-- Label -->
                 <div class="space-y-2">
                     <label class="text-[11px] font-bold text-base-content/60 uppercase tracking-widest ml-1">Account Label</label>
-                    <input wire:model="label" type="text" placeholder="e.g. My Primary MTN, Business MoMo" class="w-full bg-base-100 border border-base-content/10 px-5 py-4 rounded-xl text-sm font-medium focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all" />
+                    <input wire:model="label" type="text" placeholder="e.g. My Primary MTN, Business Telecel" class="w-full bg-base-100 border border-base-content/10 px-5 py-4 rounded-xl text-sm font-medium focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all" />
                     @error('label') <span class="text-[11px] font-bold text-error mt-1 block ml-1 uppercase tracking-wider">{{ $message }}</span> @enderror
                 </div>
 
@@ -47,7 +47,7 @@
                             'bg-base-100 border-base-content/10 hover:border-primary/40' => $provider != '13',
                         ])>
                             <img src="{{ asset('logos/mtn-momo.png') }}" class="size-7 object-contain rounded-md" alt="MTN">
-                            <span @class(['text-[13px] font-bold', 'text-primary' => $provider == '13', 'text-base-content/60' => $provider != '13'])>MTN</span>
+                            <span @class(['text-[13px] font-bold', 'text-primary' => $provider == '13', 'text-base-content/60' => $provider != '13'])>MTN Mobile Money</span>
                             @if($provider == '13')
                                 <div class="ml-auto size-4 rounded-full bg-primary flex items-center justify-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -62,7 +62,7 @@
                             'bg-base-100 border-base-content/10 hover:border-primary/40' => $provider != '6',
                         ])>
                             <img src="{{ asset('logos/Telecel-Cash.jpg') }}" class="size-7 object-contain rounded-md" alt="Telecel">
-                            <span @class(['text-[13px] font-bold', 'text-primary' => $provider == '6', 'text-base-content/60' => $provider != '6'])>Telecel</span>
+                            <span @class(['text-[13px] font-bold', 'text-primary' => $provider == '6', 'text-base-content/60' => $provider != '6'])>Telecel Cash</span>
                             @if($provider == '6')
                                 <div class="ml-auto size-4 rounded-full bg-primary flex items-center justify-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -77,7 +77,7 @@
                             'bg-base-100 border-base-content/10 hover:border-primary/40' => $provider != '7',
                         ])>
                             <img src="{{ asset('logos/airteltigo-money.png') }}" class="size-7 object-contain rounded-md" alt="AT">
-                            <span @class(['text-[13px] font-bold', 'text-primary' => $provider == '7', 'text-base-content/60' => $provider != '7'])>AT</span>
+                            <span @class(['text-[13px] font-bold', 'text-primary' => $provider == '7', 'text-base-content/60' => $provider != '7'])>AirtelTigo Money</span>
                             @if($provider == '7')
                                 <div class="ml-auto size-4 rounded-full bg-primary flex items-center justify-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -101,8 +101,8 @@
                         
                         {{-- Validation Hint --}}
                         @if($provider && strlen($accountNumber) > 0 && strlen($accountNumber) < 10)
-                            <p class="text-[11px] font-medium text-base-content/40 ml-1 italic animate-pulse">
-                                Matches: 024, 054, 055...
+                            <p class="text-[11px] font-medium text-base-content/40 ml-1 italic">
+                                Expected: {{ $this->momoPlaceholder }}
                             </p>
                         @endif
 
@@ -157,88 +157,183 @@
             </div>
             <h3 class="text-2xl font-bold text-base-content mb-3">No saved accounts</h3>
             <p class="text-base-content/50 text-[15px] max-w-sm mx-auto font-medium mb-10 leading-relaxed">
-                Save your mobile money accounts here to speed up your future bookings.
+                Save your payment methods here to speed up your future bookings.
             </p>
-            <button wire:click="openForm" class="bg-primary text-white px-8 py-4 rounded-full font-black uppercase tracking-widest text-[13px] shadow-xl shadow-primary/20 hover:-translate-y-1 transition-all">
-                Add Your First Account
+            <button wire:click="openForm" class="bg-primary text-white px-8 py-4 rounded-xl font-black uppercase tracking-widest text-[13px] shadow-xl shadow-primary/20 hover:-translate-y-1 transition-all">
+                Add Your First Payment Method
             </button>
         </div>
     @elseif($methods->isNotEmpty())
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             @foreach($methods as $method)
                 <div wire:key="pm-{{ $method->id }}" @class([
-                    'bg-white border-2 rounded-[28px] p-6 shadow-sm flex items-start gap-5 transition-all hover:shadow-lg hover:-translate-y-1',
-                    'border-primary/20 ring-4 ring-primary/5' => $method->is_default,
+                    'bg-white border-2 rounded-xl p-6 flex flex-col transition-all hover:shadow-lg hover:-translate-y-1',
+                    'border-primary ring-4 ring-primary/5' => $method->is_default,
                     'border-base-content/5' => !$method->is_default,
                 ])>
-                    <!-- Icon/Logo -->
-                    <div class="flex-shrink-0">
-                        <div class="size-16 rounded-2xl bg-base-100 border border-base-content/5 flex items-center justify-center p-3 shadow-inner">
-                            @if($method->type === \App\Enums\PaymentMethod::MobileMoney)
-                                @php
-                                    $logo = match($method->provider) {
-                                        '13' => asset('logos/mtn-momo.png'),
-                                        '6' => asset('logos/Telecel-Cash.jpg'),
-                                        '7' => asset('logos/airteltigo-money.png'),
-                                        default => null
-                                    };
-                                @endphp
-                                @if($logo)
-                                    <img src="{{ $logo }}" class="size-full object-contain" alt="MoMo">
+                    <!-- Details Section -->
+                    <div class="flex items-start gap-5 flex-1">
+                        <!-- Icon/Logo -->
+                        <div class="flex-shrink-0">
+                            <div class="size-16 rounded-2xl flex items-center justify-center p-3">
+                                @if($method->type === \App\Enums\PaymentMethod::MobileMoney)
+                                    @php
+                                        $logo = match($method->provider) {
+                                            '13' => asset('logos/mtn-momo.png'),
+                                            '6' => asset('logos/Telecel-Cash.jpg'),
+                                            '7' => asset('logos/airteltigo-money.png'),
+                                            default => null
+                                        };
+                                    @endphp
+                                    @if($logo)
+                                        <img src="{{ $logo }}" class="size-full object-contain" alt="MoMo">
+                                    @else
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-8 text-primary/40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg>
+                                    @endif
                                 @else
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-8 text-primary/40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg>
-                                @endif
-                            @else
-                                <svg xmlns="http://www.w3.org/2000/svg" class="size-8 text-base-content/20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" /></svg>
-                            @endif
-                        </div>
-                    </div>
-
-                    <!-- Details -->
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="text-lg font-bold text-base-content truncate">{{ $method->label }}</span>
-                            @if($method->is_default)
-                                <span class="px-2 py-0.5 rounded-full bg-primary text-white text-[9px] font-black uppercase tracking-wider">Default</span>
-                            @endif
-                        </div>
-                        <div class="space-y-1.5">
-                            <div class="text-[15px] font-mono font-bold tracking-widest text-base-content/80">
-                                {{ $method->account_number }}
-                            </div>
-                            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-bold text-base-content/40 uppercase tracking-widest leading-none">
-                                <span>
-                                    @switch($method->provider)
-                                        @case('13') MTN MoMo @break
-                                        @case('6') Telecel Cash @break
-                                        @case('7') AT Money @break
-                                        @default Mobile Money
-                                    @endswitch
-                                </span>
-                                @if($method->account_name)
-                                    <span>&bull;</span>
-                                    <span class="truncate">{{ $method->account_name }}</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-8 text-base-content/20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" /></svg>
                                 @endif
                             </div>
                         </div>
+
+                        <!-- Info -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center flex-wrap gap-2 mb-2">
+                                <span class="text-lg font-bold text-base-content truncate">{{ $method->label }}</span>
+                                @if($method->is_default)
+                                    <span class="px-2 py-0.5 rounded-full bg-black text-white text-[9px] font-black uppercase tracking-wider">Default</span>
+                                @endif
+
+                                {{-- Verification Badge --}}
+                                @if($method->isVerified())
+                                    <span class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[9px] font-black uppercase tracking-wider">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                        </svg>
+                                        Verified
+                                    </span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded-full bg-warning/10 text-warning text-[9px] font-black uppercase tracking-wider">Unverified</span>
+                                @endif
+                            </div>
+                            <div class="space-y-1.5">
+                                <div class="text-[15px] font-mono font-bold tracking-widest text-base-content/80">
+                                    {{ $method->account_number }}
+                                </div>
+                                <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-bold text-base-content/40 uppercase tracking-widest leading-none">
+                                    <span>
+                                        @switch($method->provider)
+                                            @case('13') MTN Mobile Money @break
+                                            @case('6') Telecel Cash @break
+                                            @case('7') AirtelTigo Money @break
+                                            @default Mobile Money
+                                        @endswitch
+                                    </span>
+                                    @if($method->account_name)
+                                        <span>&bull;</span>
+                                        <span class="truncate">{{ $method->account_name }}</span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Actions -->
-                    <div class="flex flex-col gap-2 ml-2">
-                        @if(!$method->is_default)
-                            <button wire:click="setDefault({{ $method->id }})" class="size-10 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white flex items-center justify-center transition-all group shadow-sm active:scale-95" title="Set Default">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                    <!-- Actions Section -->
+                    <div class="flex flex-wrap gap-2 mt-6 pt-5 border-t border-base-content/5">
+                        @if(!$method->isVerified())
+                            <button wire:click="resendOtp({{ $method->id }})" class="btn btn-sm border-2 border-primary rounded-lg bg-primary text-white hover:bg-primary hover:text-white flex items-center justify-center transition-all group shadow-sm active:scale-95" title="Verify Now">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A3.333 3.333 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                </svg>
+                                Verify
+                            </button>
+                        @elseif(!$method->is_default)
+                            <button wire:click="setDefault({{ $method->id }})" class="btn btn-sm border-2 rounded-lg bg-black text-white hover:bg-black/80 hover:text-white flex items-center justify-center transition-all group shadow-sm active:scale-95" title="Set Default">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Set Default
                             </button>
                         @endif
-                        <button wire:click="edit({{ $method->id }})" class="size-10 rounded-xl bg-orange-500/10 text-orange-600 hover:bg-orange-600 hover:text-white flex items-center justify-center transition-all group shadow-sm active:scale-95" title="Edit">
+                        <button wire:click="edit({{ $method->id }})" class="btn btn-sm border-2 border-green-600 rounded-lg bg-green-600 text-white hover:bg-green-600 hover:text-white flex items-center justify-center transition-all group shadow-sm active:scale-95" title="Edit">
                             <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" /></svg>
+                       Edit
                         </button>
-                        <button wire:click="delete({{ $method->id }})" wire:confirm="Are you sure you want to remove this account?" class="size-10 rounded-xl bg-error/10 text-error hover:bg-error hover:text-white flex items-center justify-center transition-all group shadow-sm active:scale-95" title="Remove">
+                        <button wire:click="delete({{ $method->id }})" wire:confirm="Are you sure you want to remove this account?" class="btn btn-sm border-2 border-primary rounded-lg bg-primary text-white hover:bg-primary hover:text-white flex items-center justify-center transition-all group shadow-sm active:scale-95" title="Remove">
                             <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                        Remove
                         </button>
                     </div>
                 </div>
+                
             @endforeach
+        </div>
+    @endif
+ 
+    {{-- OTP Verification Modal --}}
+    @if($showOtpModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-200">
+            <div class="bg-base-100 w-full max-w-[400px] rounded-lg shadow-dp-lg overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+                {{-- Header --}}
+                <div class="px-6 py-5 border-b border-base-content/10 flex items-center justify-between">
+                    <h3 class="text-xl font-semibold text-base-content">Verify Payment Account</h3>
+                    <button wire:click="cancel" class="p-1 rounded-md transition-colors hover:bg-base-200 text-base-content/60 hover:text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                {{-- Body --}}
+                <div class="p-6">
+                    <div class="text-center mb-8">
+                        <div class="size-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-5 text-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                            </svg>
+                        </div>
+                        <p class="text-[14px] text-base-content/50 font-medium leading-relaxed max-w-xs mx-auto">
+                            Enter the 6-digit code sent to your mobile number to verify this payment account.
+                        </p>
+                    </div>
+
+                    <form wire:submit="verifyOtp" class="space-y-6">
+                        <div class="space-y-1.5">
+                            <label class="text-dp-sm font-medium text-base-content block">Verification Code</label>
+                            <input
+                                wire:model="otpCode"
+                                type="text"
+                                inputmode="numeric"
+                                maxlength="6"
+                                autofocus
+                                placeholder="000000"
+                                class="w-full px-[14px] py-[10px] text-center text-2xl font-bold tracking-[0.4em] bg-base-100 border border-base-content/10 rounded-lg transition-all duration-120 outline-none placeholder:text-base-content/20 placeholder:tracking-[0.4em] focus:border-primary focus:ring-3 focus:ring-primary/20"
+                            />
+                            @error('otpCode')
+                                <p class="text-xs text-error flex items-center gap-1">
+                                    <span>⚠</span> {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <div class="flex items-center justify-between pt-2">
+                            <button type="button" wire:click="resendOtp({{ $verifyingId }})" class="text-[13px] font-medium text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+                                </svg>
+                                Resend Code
+                            </button>
+                            <x-ui.button type="submit" variant="primary" size="md" :loading="false" wire:loading.attr="disabled" wire:target="verifyOtp">
+                                <span wire:loading.remove wire:target="verifyOtp">Verify Account</span>
+                                <span wire:loading wire:target="verifyOtp" class="flex items-center gap-2">
+                                    <span class="loading loading-spinner loading-xs"></span>
+                                    Verifying...
+                                </span>
+                            </x-ui.button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     @endif
 </div>

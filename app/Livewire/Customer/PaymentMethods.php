@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Livewire\Customer;
 
 use App\Enums\PaymentMethod;
+use App\Notifications\OtpNotification;
 use App\Traits\HandlesMomoValidation;
 use App\Traits\ResolvesCustomer;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -21,7 +24,13 @@ class PaymentMethods extends Component
 
     public bool $showForm = false;
 
+    public bool $showOtpModal = false;
+
     public ?int $editingId = null;
+
+    public ?int $verifyingId = null;
+
+    public string $otpCode = '';
 
     public string $type = '';
 
@@ -124,19 +133,129 @@ class PaymentMethods extends Component
         ];
 
         if ($this->editingId) {
-            $customer->paymentMethods()->where('id', $this->editingId)->update($data);
-            $message = 'Payment method updated.';
+            /** @var \App\Models\CustomerPaymentMethod $existing */
+            $existing = $customer->paymentMethods()->findOrFail($this->editingId);
+            $accountChanged = $existing->account_number !== $this->accountNumber
+                || $existing->provider !== ($this->provider ?: null);
+
+            if ($accountChanged) {
+                $otp = (string) random_int(100000, 999999);
+                $data['verification_code'] = Hash::make($otp);
+                $data['verified_at'] = null;
+                $existing->update($data);
+
+                $customer->notify(new OtpNotification($otp, 'payment_method'));
+
+                $this->verifyingId = $existing->id;
+                $this->showOtpModal = true;
+                $message = 'Account changed. Please re-verify with OTP.';
+            } else {
+                $existing->update($data);
+                $message = 'Payment method updated.';
+            }
         } else {
             if ($customer->paymentMethods()->count() === 0) {
                 $data['is_default'] = true;
+                $this->isDefault = true;
             }
-            $customer->paymentMethods()->create($data);
-            $message = 'Payment method added.';
+
+            $otp = (string) random_int(100000, 999999);
+            $data['verification_code'] = Hash::make($otp);
+            $method = $customer->paymentMethods()->create($data);
+
+            $customer->notify(new OtpNotification($otp, 'payment_method'));
+
+            $this->verifyingId = $method->id;
+            $this->showOtpModal = true;
+            $message = 'Payment method added. Please verify with OTP.';
         }
 
-        $this->showForm = false;
-        $this->resetForm();
-        $this->dispatch('toast', type: 'success', message: $message);
+        if (! $this->showOtpModal) {
+            $this->showForm = false;
+            $this->resetForm();
+        }
+
+        $this->dispatch('toast', [
+            'type' => 'success',
+            'message' => $message,
+        ]);
+    }
+
+    public function verifyOtp(): void
+    {
+        $this->validate(['otpCode' => ['required', 'string', 'size:6']]);
+
+        $customer = $this->resolveCustomer();
+
+        $key = 'verify-otp:'.$customer->id;
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            $seconds = RateLimiter::availableIn($key);
+            $this->addError('otpCode', "Too many attempts. Try again in {$seconds} seconds.");
+
+            return;
+        }
+
+        /** @var \App\Models\CustomerPaymentMethod $method */
+        $method = $customer->paymentMethods()->findOrFail($this->verifyingId);
+
+        if (Hash::check($this->otpCode, $method->verification_code ?? '')) {
+            RateLimiter::clear($key);
+
+            $method->update([
+                'verified_at' => now(),
+                'verification_code' => null,
+            ]);
+
+            $this->showOtpModal = false;
+            $this->showForm = false;
+            $this->verifyingId = null;
+            $this->otpCode = '';
+            $this->resetForm();
+
+            $this->dispatch('toast', [
+                'type' => 'success',
+                'message' => 'Payment method verified successfully!',
+            ]);
+        } else {
+            RateLimiter::hit($key, 300);
+            $remaining = 5 - RateLimiter::attempts($key);
+            $this->addError('otpCode', "Incorrect code. {$remaining} attempts remaining.");
+        }
+    }
+
+    public function resendOtp(int $id): void
+    {
+        $customer = $this->resolveCustomer();
+
+        $key = 'resend-otp:'.$customer->id;
+        if (RateLimiter::tooManyAttempts($key, 1)) {
+            $seconds = RateLimiter::availableIn($key);
+            $this->dispatch('toast', [
+                'type' => 'error',
+                'message' => "Please wait {$seconds} seconds before resending.",
+            ]);
+
+            return;
+        }
+
+        RateLimiter::hit($key, 60);
+
+        /** @var \App\Models\CustomerPaymentMethod $method */
+        $method = $customer->paymentMethods()->findOrFail($id);
+
+        $newCode = (string) random_int(100000, 999999);
+        $method->update(['verification_code' => Hash::make($newCode)]);
+
+        $customer->notify(new OtpNotification($newCode, 'payment_method'));
+
+        $this->verifyingId = $method->id;
+        $this->otpCode = '';
+        $this->showOtpModal = true;
+
+        $this->dispatch('toast', [
+            'type' => 'info',
+            'message' => 'New verification code sent.',
+        ]);
     }
 
     public function setDefault(int $id): void
@@ -145,7 +264,10 @@ class PaymentMethods extends Component
         $customer->paymentMethods()->update(['is_default' => false]);
         $customer->paymentMethods()->where('id', $id)->update(['is_default' => true]);
 
-        $this->dispatch('toast', type: 'success', message: 'Default payment method updated.');
+        $this->dispatch('toast', [
+            'type' => 'success',
+            'message' => 'Default payment method updated.',
+        ]);
     }
 
     public function delete(int $id): void
@@ -159,12 +281,18 @@ class PaymentMethods extends Component
             $customer->paymentMethods()->oldest()->first()?->update(['is_default' => true]);
         }
 
-        $this->dispatch('toast', type: 'success', message: 'Payment method removed.');
+        $this->dispatch('toast', [
+            'type' => 'success',
+            'message' => 'Payment method removed.',
+        ]);
     }
 
     public function cancel(): void
     {
         $this->showForm = false;
+        $this->showOtpModal = false;
+        $this->verifyingId = null;
+        $this->otpCode = '';
         $this->resetForm();
         $this->resetValidation();
     }
@@ -184,7 +312,7 @@ class PaymentMethods extends Component
     {
         return [
             PaymentMethod::MobileMoney,
-            // Card and Bank Transfer disabled for now as per user request
+            // Card and Bank Transfer disabled for now
             // PaymentMethod::Card,
             // PaymentMethod::BankTransfer,
         ];

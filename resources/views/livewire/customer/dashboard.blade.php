@@ -78,7 +78,7 @@
             </div>
             <h3 class="text-lg sm:text-xl font-semibold text-base-content mb-3">No meal orders yet</h3>
             <p class="text-base-content/60 text-[14px] max-w-md mx-auto mb-6 font-medium">Browse our premium catering packages to place your first order.</p>
-            <a href="{{ route('packages.browse') }}" wire:navigate class="btn btn-primary btn-sm">Browse Packages</a>
+            <a href="{{ route('packages.browse') }}" wire:navigate class="btn btn-primary btn-sm rounded-xl">Browse Packages</a>
         </div>
     @else
         <div class="space-y-3 mb-8 sm:mb-10">
@@ -142,7 +142,7 @@
             </div>
             <h3 class="text-lg sm:text-xl font-semibold text-base-content mb-3">No events yet</h3>
             <p class="text-base-content/60 text-[14px] max-w-md mx-auto mb-6 font-medium">Let us cater your next event — weddings, birthdays, corporate events and more.</p>
-            <a href="{{ route('event-booking') }}" wire:navigate class="btn btn-primary btn-sm">Book an Event</a>
+            <a href="{{ route('event-booking') }}" wire:navigate class="btn btn-primary btn-sm rounded-xl">Book an Event</a>
         </div>
     @else
         <div class="space-y-3">

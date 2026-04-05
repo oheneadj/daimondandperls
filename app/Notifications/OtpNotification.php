@@ -11,7 +11,10 @@ class OtpNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public string $otp) {}
+    public function __construct(
+        public string $otp,
+        public string $purpose = 'login',
+    ) {}
 
     public function via(object $notifiable): array
     {
@@ -20,6 +23,11 @@ class OtpNotification extends Notification implements ShouldQueue
 
     public function toGaintSms(object $notifiable): string
     {
-        return "Your Diamonds & Pearls login code is: {$this->otp}. It expires in 10 minutes.";
+        $label = match ($this->purpose) {
+            'payment_method' => 'verification',
+            default => 'login',
+        };
+
+        return "Your Diamonds & Pearls {$label} code is: {$this->otp}. It expires in 10 minutes.";
     }
 }

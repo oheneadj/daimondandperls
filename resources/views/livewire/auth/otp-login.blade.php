@@ -1,13 +1,13 @@
 <div>
-    <div class="text-center mb-8">
-        <h2 class="text-2xl font-bold text-base-content">{{ $step === 1 ? 'Login with Phone' : 'Verify Code' }}</h2>
-        <p class="text-[14px] text-base-content/60 mt-2 font-medium">
-            {{ $step === 1 ? 'Enter your phone number to receive a secure login code.' : "We've sent a 6-digit code to {$phone}." }}
+    <div class="text-center mb-6">
+        <h2 class="text-xl font-semibold text-base-content">{{ $step === 1 ? 'Login with Phone' : 'Verify Code' }}</h2>
+        <p class="text-[14px] text-base-content/50 mt-2 font-medium leading-relaxed">
+            {{ $step === 1 ? 'Enter your phone number to receive a login code.' : "We've sent a 6-digit code to {$phone}." }}
         </p>
     </div>
 
     @if($error)
-        <div class="mb-6 p-4 bg-error/10 text-error text-[13px] font-bold rounded-xl border border-error/10 flex items-center gap-3">
+        <div class="mb-6 p-4 bg-error/10 text-error text-[13px] font-medium rounded-lg border border-error/15 flex items-center gap-3">
             <svg xmlns="http://www.w3.org/2000/svg" class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -15,7 +15,7 @@
         </div>
     @endif
 
-    <div class="space-y-6">
+    <div class="space-y-5">
         @if($step === 1)
             <!-- Step 1: Phone -->
             <x-auth.input
@@ -42,7 +42,7 @@
 
             <x-auth.resend-timer wireResend="resendOtp" :seconds="60" />
 
-            <div class="space-y-4">
+            <div class="space-y-3">
                 <x-auth.button type="button" variant="primary" wireClick="verifyOtp" wireTarget="verifyOtp" loadingText="Verifying...">
                     Verify & Login
                 </x-auth.button>

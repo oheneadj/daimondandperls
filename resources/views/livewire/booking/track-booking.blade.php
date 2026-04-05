@@ -28,18 +28,18 @@
                 <form wire:submit.prevent="track" class="space-y-6">
                     <div class="space-y-2">
                         <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Booking Reference</label>
-                        <input type="text" wire:model="reference" class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-dp-rose focus:ring-4 focus:ring-primary/20 rounded-full transition-all text-[15px] font-medium placeholder:text-dp-text-disabled" placeholder="e.g. CAT-2026-00001">
+                        <input type="text" wire:model="reference" class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium placeholder:text-base-content/30" placeholder="e.g. CAT-2026-00001">
                         @error('reference') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="space-y-2">
                         <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Phone Number</label>
-                        <input type="tel" wire:model="phone" class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-dp-rose focus:ring-4 focus:ring-primary/20 rounded-full transition-all text-[15px] font-medium placeholder:text-dp-text-disabled" placeholder="024 XXX XXXX">
+                        <input type="tel" wire:model="phone" class="w-full px-5 py-4 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[15px] font-medium placeholder:text-base-content/30" placeholder="024 XXX XXXX">
                         @error('phone') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="pt-4">
-                        <x-ui.button type="submit" variant="primary" class="w-full !rounded-full h-12">
+                        <x-ui.button type="submit" variant="primary" class="w-full h-12">
                             {{ __('Resume Booking') }}
                         </x-ui.button>
                     </div>

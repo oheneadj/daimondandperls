@@ -22,6 +22,8 @@ class CustomerPaymentMethod extends Model
         'account_number',
         'account_name',
         'is_default',
+        'verified_at',
+        'verification_code',
     ];
 
     protected function casts(): array
@@ -29,7 +31,13 @@ class CustomerPaymentMethod extends Model
         return [
             'type' => PaymentMethod::class,
             'is_default' => 'boolean',
+            'verified_at' => 'datetime',
         ];
+    }
+
+    public function isVerified(): bool
+    {
+        return ! is_null($this->verified_at);
     }
 
     public function customer(): BelongsTo
