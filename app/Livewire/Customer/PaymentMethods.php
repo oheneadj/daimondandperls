@@ -53,12 +53,20 @@ class PaymentMethods extends Component
             'accountName' => ['nullable', 'string', 'max:100'],
         ];
 
+        $customer = $this->resolveCustomer();
+        $uniqueRule = Rule::unique('customer_payment_methods', 'account_number')
+            ->where('customer_id', $customer?->id);
+
+        if ($this->editingId) {
+            $uniqueRule->ignore($this->editingId);
+        }
+
         if ($this->type === PaymentMethod::MobileMoney->value) {
             $rules['provider'] = ['required', 'in:13,6,7'];
-            $rules['accountNumber'] = ['required', 'regex:'.$this->getNetworkPrefixPattern($this->provider)];
+            $rules['accountNumber'] = ['required', 'regex:'.$this->getNetworkPrefixPattern($this->provider), $uniqueRule];
         } else {
             $rules['provider'] = ['nullable', 'string', 'max:50'];
-            $rules['accountNumber'] = ['required', 'string', 'max:50'];
+            $rules['accountNumber'] = ['required', 'string', 'max:50', $uniqueRule];
         }
 
         return $rules;
@@ -72,6 +80,7 @@ class PaymentMethods extends Component
             'provider.required' => 'Please select your mobile network.',
             'accountNumber.required' => 'Please enter the mobile money number.',
             'accountNumber.regex' => 'This number doesn\'t match the selected network prefix.',
+            'accountNumber.unique' => 'This number is already saved in your payment methods.',
         ];
     }
 

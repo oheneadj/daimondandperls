@@ -219,3 +219,39 @@ test('existing payment method can be verified later', function () {
 
     expect($method->refresh()->isVerified())->toBeTrue();
 });
+
+test('customer cannot add duplicate phone number', function () {
+    CustomerPaymentMethod::factory()->create([
+        'customer_id' => $this->customer->id,
+        'account_number' => '0241234567',
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(PaymentMethods::class)
+        ->call('openForm')
+        ->set('type', 'mobile_money')
+        ->set('label', 'Duplicate MoMo')
+        ->set('provider', '13')
+        ->set('accountNumber', '0241234567')
+        ->call('save')
+        ->assertHasErrors(['accountNumber']);
+});
+
+test('editing a method allows keeping the same number', function () {
+    $method = CustomerPaymentMethod::factory()->create([
+        'customer_id' => $this->customer->id,
+        'account_number' => '0241234567',
+        'provider' => '13',
+        'label' => 'Original',
+        'verified_at' => now(),
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(PaymentMethods::class)
+        ->call('edit', $method->id)
+        ->set('label', 'Updated Label')
+        ->call('save')
+        ->assertHasNoErrors(['accountNumber']);
+
+    expect($method->refresh()->label)->toBe('Updated Label');
+});

@@ -96,44 +96,50 @@
                                         <!-- Network Selection -->
                                         <div>
                                             <div class="text-[11px] font-bold text-base-content/60 uppercase tracking-widest mb-4 ml-1">Select Network</div>
-                                            <div class="bg-base-100 border border-base-content/10 rounded-2xl overflow-hidden divide-y divide-base-content/10">
-                                                {{-- MTN MoMo --}}
-                                                <button type="button" wire:click="$set('momoNetwork', '13')" class="w-full flex items-center justify-between px-5 py-4 transition-colors duration-150 hover:bg-base-200/50 {{ $momoNetwork == '13' ? 'bg-primary/5' : '' }}">
-                                                    <div class="flex items-center gap-4">
-                                                        <img src="{{ asset('logos/mtn-momo.png') }}" class="size-9 object-contain rounded-lg" alt="MTN MoMo" onerror="this.style.display='none'">
-                                                        <span class="text-[15px] font-semibold text-base-content">MTN Mobile Money</span>
-                                                    </div>
-                                                    <div class="size-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200 {{ $momoNetwork == '13' ? 'border-primary' : 'border-base-content/20' }}">
-                                                        @if($momoNetwork == '13')
-                                                            <div class="size-3.5 rounded-full bg-primary"></div>
-                                                        @endif
-                                                    </div>
+                                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                {{-- MTN --}}
+                                                <button type="button" wire:click="$set('momoNetwork', '13')" @class([
+                                                    'flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left group',
+                                                    'bg-primary/5 border-primary shadow-sm' => $momoNetwork == '13',
+                                                    'bg-base-100 border-base-content/10 hover:border-primary/40' => $momoNetwork != '13',
+                                                ])>
+                                                    <img src="{{ asset('logos/mtn-momo.png') }}" class="size-7 object-contain rounded-md" alt="MTN">
+                                                    <span @class(['text-[13px] font-bold', 'text-primary' => $momoNetwork == '13', 'text-base-content/60' => $momoNetwork != '13'])>MTN Mobile Money</span>
+                                                    @if($momoNetwork == '13')
+                                                        <div class="ml-auto size-4 rounded-full bg-primary flex items-center justify-center">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                                        </div>
+                                                    @endif
                                                 </button>
 
-                                                {{-- Telecel Cash --}}
-                                                <button type="button" wire:click="$set('momoNetwork', '6')" class="w-full flex items-center justify-between px-5 py-4 transition-colors duration-150 hover:bg-base-200/50 {{ $momoNetwork == '6' ? 'bg-primary/5' : '' }}">
-                                                    <div class="flex items-center gap-4">
-                                                        <img src="{{ asset('logos/Telecel-Cash.jpg') }}" class="size-9 object-contain rounded-lg" alt="Telecel Cash" onerror="this.style.display='none'">
-                                                        <span class="text-[15px] font-semibold text-base-content">Telecel Cash</span>
-                                                    </div>
-                                                    <div class="size-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200 {{ $momoNetwork == '6' ? 'border-primary' : 'border-base-content/20' }}">
-                                                        @if($momoNetwork == '6')
-                                                            <div class="size-3.5 rounded-full bg-primary"></div>
-                                                        @endif
-                                                    </div>
+                                                {{-- Telecel --}}
+                                                <button type="button" wire:click="$set('momoNetwork', '6')" @class([
+                                                    'flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left group',
+                                                    'bg-primary/5 border-primary shadow-sm' => $momoNetwork == '6',
+                                                    'bg-base-100 border-base-content/10 hover:border-primary/40' => $momoNetwork != '6',
+                                                ])>
+                                                    <img src="{{ asset('logos/Telecel-Cash.jpg') }}" class="size-7 object-contain rounded-md" alt="Telecel">
+                                                    <span @class(['text-[13px] font-bold', 'text-primary' => $momoNetwork == '6', 'text-base-content/60' => $momoNetwork != '6'])>Telecel Cash</span>
+                                                    @if($momoNetwork == '6')
+                                                        <div class="ml-auto size-4 rounded-full bg-primary flex items-center justify-center">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                                        </div>
+                                                    @endif
                                                 </button>
 
-                                                {{-- AT Money --}}
-                                                <button type="button" wire:click="$set('momoNetwork', '7')" class="w-full flex items-center justify-between px-5 py-4 transition-colors duration-150 hover:bg-base-200/50 {{ $momoNetwork == '7' ? 'bg-primary/5' : '' }}">
-                                                    <div class="flex items-center gap-4">
-                                                        <img src="{{ asset('logos/airteltigo-money.png') }}" class="size-9 object-contain rounded-lg" alt="AirtelTigo Money" onerror="this.style.display='none'">
-                                                        <span class="text-[15px] font-semibold text-base-content">AirtelTigo Money</span>
-                                                    </div>
-                                                    <div class="size-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200 {{ $momoNetwork == '7' ? 'border-primary' : 'border-base-content/20' }}">
-                                                        @if($momoNetwork == '7')
-                                                            <div class="size-3.5 rounded-full bg-primary"></div>
-                                                        @endif
-                                                    </div>
+                                                {{-- AT --}}
+                                                <button type="button" wire:click="$set('momoNetwork', '7')" @class([
+                                                    'flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left group',
+                                                    'bg-primary/5 border-primary shadow-sm' => $momoNetwork == '7',
+                                                    'bg-base-100 border-base-content/10 hover:border-primary/40' => $momoNetwork != '7',
+                                                ])>
+                                                    <img src="{{ asset('logos/airteltigo-money.png') }}" class="size-7 object-contain rounded-md" alt="AT">
+                                                    <span @class(['text-[13px] font-bold', 'text-primary' => $momoNetwork == '7', 'text-base-content/60' => $momoNetwork != '7'])>AirtelTigo Money</span>
+                                                    @if($momoNetwork == '7')
+                                                        <div class="ml-auto size-4 rounded-full bg-primary flex items-center justify-center">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                                        </div>
+                                                    @endif
                                                 </button>
                                             </div>
                                             @error('momoNetwork') <span class="text-[11px] font-bold text-error mt-2 block ml-1 uppercase tracking-wider">{{ $message }}</span> @enderror
