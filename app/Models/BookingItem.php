@@ -13,7 +13,15 @@ class BookingItem extends Model
         'package_description',
         'price',
         'quantity',
+        'scheduled_date',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'scheduled_date' => 'date',
+        ];
+    }
 
     public function booking()
     {

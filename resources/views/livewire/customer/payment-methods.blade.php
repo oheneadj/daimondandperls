@@ -30,91 +30,70 @@
 
             <form wire:submit="save" class="space-y-8 max-w-2xl">
                 <!-- Label -->
-                <div class="space-y-2">
-                    <label class="text-[11px] font-bold text-base-content/60 uppercase tracking-widest ml-1">Account Label</label>
-                    <input wire:model="label" type="text" placeholder="e.g. My Primary MTN, Business Telecel" class="w-full bg-base-100 border border-base-content/10 px-5 py-4 rounded-xl text-sm font-medium focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all" />
-                    @error('label') <span class="text-[11px] font-bold text-error mt-1 block ml-1 uppercase tracking-wider">{{ $message }}</span> @enderror
-                </div>
+                <x-app.input
+                    name="label"
+                    type="text"
+                    label="Account Label"
+                    wire:model="label"
+                    placeholder="e.g. My Primary MTN, Business Telecel"
+                />
 
                 <!-- Network Selection -->
                 <div>
-                    <div class="text-[11px] font-bold text-base-content/60 uppercase tracking-widest mb-4 ml-1">Select Network</div>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        {{-- MTN --}}
-                        <button type="button" wire:click="$set('provider', '13')" @class([
-                            'flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left group',
-                            'bg-primary/5 border-primary shadow-sm' => $provider == '13',
-                            'bg-base-100 border-base-content/10 hover:border-primary/40' => $provider != '13',
-                        ])>
-                            <img src="{{ asset('logos/mtn-momo.png') }}" class="size-7 object-contain rounded-md" alt="MTN">
-                            <span @class(['text-[13px] font-bold', 'text-primary' => $provider == '13', 'text-base-content/60' => $provider != '13'])>MTN Mobile Money</span>
-                            @if($provider == '13')
-                                <div class="ml-auto size-4 rounded-full bg-primary flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    <label class="text-dp-sm font-medium text-base-content block mb-3">Select Network</label>
+                    <div class="divide-y divide-base-content/5">
+                        @php
+                            $networks = [
+                                ['id' => '13', 'name' => 'MTN Mobile Money', 'logo' => 'logos/mtn-momo.png'],
+                                ['id' => '6',  'name' => 'Telecel Cash',      'logo' => 'logos/Telecel-Cash.jpg'],
+                                ['id' => '7',  'name' => 'AirtelTigo Money',  'logo' => 'logos/airteltigo-money.png'],
+                            ];
+                        @endphp
+                        @foreach($networks as $network)
+                            <button type="button" wire:click="$set('provider', '{{ $network['id'] }}')"
+                                class="w-full flex items-center gap-4 px-2 py-4 text-left transition-colors hover:bg-base-200/50 group">
+                                <img src="{{ asset($network['logo']) }}" class="size-8 object-contain rounded-md shrink-0" alt="{{ $network['name'] }}">
+                                <span class="text-[15px] font-medium text-base-content flex-1">{{ $network['name'] }}</span>
+                                <div @class([
+                                    'size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all',
+                                    'border-primary' => $provider == $network['id'],
+                                    'border-base-content/20 group-hover:border-base-content/40' => $provider != $network['id'],
+                                ])>
+                                    @if($provider == $network['id'])
+                                        <div class="size-2.5 rounded-full bg-primary"></div>
+                                    @endif
                                 </div>
-                            @endif
-                        </button>
-
-                        {{-- Telecel --}}
-                        <button type="button" wire:click="$set('provider', '6')" @class([
-                            'flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left group',
-                            'bg-primary/5 border-primary shadow-sm' => $provider == '6',
-                            'bg-base-100 border-base-content/10 hover:border-primary/40' => $provider != '6',
-                        ])>
-                            <img src="{{ asset('logos/Telecel-Cash.jpg') }}" class="size-7 object-contain rounded-md" alt="Telecel">
-                            <span @class(['text-[13px] font-bold', 'text-primary' => $provider == '6', 'text-base-content/60' => $provider != '6'])>Telecel Cash</span>
-                            @if($provider == '6')
-                                <div class="ml-auto size-4 rounded-full bg-primary flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                                </div>
-                            @endif
-                        </button>
-
-                        {{-- AT --}}
-                        <button type="button" wire:click="$set('provider', '7')" @class([
-                            'flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left group',
-                            'bg-primary/5 border-primary shadow-sm' => $provider == '7',
-                            'bg-base-100 border-base-content/10 hover:border-primary/40' => $provider != '7',
-                        ])>
-                            <img src="{{ asset('logos/airteltigo-money.png') }}" class="size-7 object-contain rounded-md" alt="AT">
-                            <span @class(['text-[13px] font-bold', 'text-primary' => $provider == '7', 'text-base-content/60' => $provider != '7'])>AirtelTigo Money</span>
-                            @if($provider == '7')
-                                <div class="ml-auto size-4 rounded-full bg-primary flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                                </div>
-                            @endif
-                        </button>
+                            </button>
+                        @endforeach
                     </div>
-                    @error('provider') <span class="text-[11px] font-bold text-error mt-2 block ml-1 uppercase tracking-wider">{{ $message }}</span> @enderror
+                    @error('provider') <p class="text-xs text-error flex items-center gap-1 mt-2"><span>⚠</span> {{ $message }}</p> @enderror
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <!-- Phone Number -->
-                    <div class="space-y-2">
-                        <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Phone Number</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                            </div>
-                            <input wire:model.live="accountNumber" type="tel" inputmode="numeric" maxlength="10" placeholder="{{ $this->momoPlaceholder }}" class="w-full pl-12 pr-5 py-4 bg-base-100 border border-base-content/10 rounded-xl text-[17px] font-bold tracking-widest focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all placeholder:font-medium placeholder:tracking-normal placeholder:text-sm" />
-                        </div>
-                        
-                        {{-- Validation Hint --}}
-                        @if($provider && strlen($accountNumber) > 0 && strlen($accountNumber) < 10)
-                            <p class="text-[11px] font-medium text-base-content/40 ml-1 italic">
-                                Expected: {{ $this->momoPlaceholder }}
-                            </p>
-                        @endif
-
-                        @error('accountNumber') <span class="text-[11px] font-bold text-error mt-1 block ml-1 uppercase tracking-wider">{{ $message }}</span> @enderror
-                    </div>
+                    <x-app.input
+                        name="accountNumber"
+                        type="tel"
+                        label="Phone Number"
+                        wire:model.live="accountNumber"
+                        inputmode="numeric"
+                        maxlength="10"
+                        :placeholder="$this->momoPlaceholder"
+                        :hint="($provider && strlen($accountNumber) > 0 && strlen($accountNumber) < 10) ? 'Expected: ' . $this->momoPlaceholder : null"
+                    >
+                        <x-slot:icon>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                        </x-slot:icon>
+                    </x-app.input>
 
                     <!-- Account Name -->
-                    <div class="space-y-2">
-                        <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Account Name <span class="text-base-content/30 lowercase">(optional)</span></label>
-                        <input wire:model="accountName" type="text" placeholder="e.g. John Doe" class="w-full bg-base-100 border border-base-content/10 px-5 py-4 rounded-xl text-sm font-medium focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all" />
-                        @error('accountName') <span class="text-[11px] font-bold text-error mt-1 block ml-1 uppercase tracking-wider">{{ $message }}</span> @enderror
-                    </div>
+                    <x-app.input
+                        name="accountName"
+                        type="text"
+                        label="Account Name (optional)"
+                        wire:model="accountName"
+                        placeholder="e.g. John Doe"
+                    />
                 </div>
 
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-4 border-t border-base-content/5">

@@ -71,6 +71,12 @@
                         <div class="text-[11px] font-bold text-base-content/40 uppercase tracking-wide mb-1">Service Style</div>
                         <div class="text-[15px] font-semibold text-base-content">{{ $booking->is_buffet ? 'Buffet' : 'Plates' }}</div>
                     </div>
+                    @if($booking->event_location)
+                    <div class="col-span-2 sm:col-span-3">
+                        <div class="text-[11px] font-bold text-base-content/40 uppercase tracking-wide mb-1">Location</div>
+                        <div class="text-[15px] font-semibold text-base-content">{{ $booking->event_location }}</div>
+                    </div>
+                    @endif
                     <div>
                         <div class="text-[11px] font-bold text-base-content/40 uppercase tracking-wide mb-1">Booked On</div>
                         <div class="text-[15px] font-semibold text-base-content">{{ $booking->created_at->format('M j, Y') }}</div>
@@ -78,36 +84,6 @@
                 </div>
             </div>
 
-            {{-- Packages (if any) --}}
-            @if($booking->items->isNotEmpty())
-                <div class="bg-white border border-base-content/10 rounded-2xl shadow-sm overflow-hidden">
-                    <div class="p-5 sm:p-6 border-b border-base-content/10">
-                        <h2 class="text-[11px] font-bold text-primary uppercase tracking-widest">Packages</h2>
-                    </div>
-                    <div class="divide-y divide-base-content/10">
-                        @foreach($booking->items as $item)
-                            <div class="px-5 sm:px-6 py-4 flex items-center justify-between gap-4">
-                                <div class="flex-1 min-w-0">
-                                    <div class="text-[14px] font-semibold text-base-content truncate">{{ $item->package_name }}</div>
-                                    @if($item->package_description)
-                                        <div class="text-[12px] text-base-content/50 font-medium mt-0.5 truncate">{{ Str::limit($item->package_description, 80) }}</div>
-                                    @endif
-                                </div>
-                                <div class="text-right shrink-0">
-                                    <div class="text-[13px] font-bold text-base-content">GH&#8373; {{ number_format($item->price * $item->quantity, 2) }}</div>
-                                    <div class="text-[11px] text-base-content/50 font-medium">{{ $item->quantity }} x GH&#8373; {{ number_format($item->price, 2) }}</div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                    @if($booking->total_amount > 0)
-                        <div class="px-5 sm:px-6 py-4 bg-base-200/30 border-t border-base-content/10 flex items-center justify-between">
-                            <span class="text-[13px] font-bold text-base-content/60 uppercase tracking-wide">Total</span>
-                            <span class="text-lg font-bold text-base-content">GH&#8373; {{ number_format($booking->total_amount, 2) }}</span>
-                        </div>
-                    @endif
-                </div>
-            @endif
         </div>
 
         {{-- Sidebar --}}

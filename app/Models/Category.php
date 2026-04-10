@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +17,28 @@ class Category extends Model
     protected $fillable = [
         'name',
         'slug',
+        'booking_window_enabled',
+        'delivery_day',
+        'cutoff_day',
+        'cutoff_time',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'booking_window_enabled' => 'boolean',
+            'delivery_day' => 'integer',
+            'cutoff_day' => 'integer',
+        ];
+    }
+
+    public function hasBookingWindow(): bool
+    {
+        return $this->booking_window_enabled
+            && $this->delivery_day !== null
+            && $this->cutoff_day !== null
+            && $this->cutoff_time !== null;
+    }
 
     public function packages(): HasMany
     {

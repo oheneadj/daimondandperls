@@ -6,6 +6,7 @@ namespace App\Livewire\Packages;
 
 use App\Models\Category;
 use App\Models\Package;
+use App\Services\BookingWindowService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Layout;
@@ -23,20 +24,33 @@ class PackagesBrowse extends Component
     #[Url(history: true)]
     public ?int $categoryId = null;
 
-    public function toggleSelection(int $packageId, \App\Services\CartService $cart): void
+    public function toggleSelection(int $packageId, \App\Services\CartService $cart, BookingWindowService $windowService): void
     {
         if ($this->isInCart($packageId, $cart)) {
             $cart->remove($packageId);
         } else {
-            $cart->add($packageId);
+            $package = Package::with('category')->findOrFail($packageId);
+            $scheduledDate = $windowService->getScheduledDeliveryForPackage($package);
+            $cart->add($packageId, scheduledDate: $scheduledDate);
+
+            // Always notify customer of their scheduled delivery date for windowed packages
+            if ($scheduledDate !== null) {
+                $status = $windowService->getStatus($package->category);
+                $this->dispatch('window-booking-info',
+                    date: $scheduledDate->format('D, M j, Y'),
+                    isNextWeek: ! $status['open'],
+                );
+            }
         }
         $this->dispatch('cart-updated');
     }
 
-    public function orderNow(int $packageId, \App\Services\CartService $cart): void
+    public function orderNow(int $packageId, \App\Services\CartService $cart, BookingWindowService $windowService): void
     {
         if (! $this->isInCart($packageId, $cart)) {
-            $cart->add($packageId);
+            $package = Package::with('category')->findOrFail($packageId);
+            $scheduledDate = $windowService->getScheduledDeliveryForPackage($package);
+            $cart->add($packageId, scheduledDate: $scheduledDate);
         }
         $this->redirect(route('checkout'));
     }
@@ -51,13 +65,18 @@ class PackagesBrowse extends Component
         return $cart->getCart();
     }
 
-    public function render(\App\Services\CartService $cart): View
+    public function render(\App\Services\CartService $cart, BookingWindowService $windowService): View
     {
+        $categories = Category::whereHas('packages', function ($query) {
+            $query->where('is_active', true);
+        })->orderBy('name')->get();
+
+        $windowStatuses = $categories->keyBy('id')->map(fn (Category $category) => $windowService->getStatus($category));
+
         return view('livewire.packages.packages-browse', [
             'packages' => $this->getPackages(),
-            'categories' => Category::whereHas('packages', function ($query) {
-                $query->where('is_active', true);
-            })->orderBy('name')->get(),
+            'categories' => $categories,
+            'windowStatuses' => $windowStatuses,
             'cartItems' => $cart->getCart(),
             'cartCount' => $cart->count(),
         ]);

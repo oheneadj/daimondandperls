@@ -5,7 +5,7 @@
     'hideOnMobile' => false,
 ])
 
-<div @class(['lg:col-span-5 space-y-8', 'hidden lg:block' => $hideOnMobile])>
+<div @class(['space-y-8', 'hidden lg:block' => $hideOnMobile])>
     <div class="bg-base-100 border border-base-content/10 rounded-lg p-5 sm:p-8 lg:p-10 shadow-dp-lg">
         <h4 class="text-lg font-semibold text-base-content mb-8 pb-4 border-b border-base-content/10">Order Summary</h4>
 

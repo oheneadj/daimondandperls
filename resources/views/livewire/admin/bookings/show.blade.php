@@ -152,6 +152,25 @@
                 </x-ui.card>
 
                 {{-- Event Details Card (only for event bookings) --}}
+                {{-- Delivery Location Card (meal bookings only) --}}
+                @if($booking->booking_type === \App\Enums\BookingType::Meal && $booking->delivery_location)
+                <x-ui.card>
+                    <div class="flex items-center gap-2.5 mb-6">
+                        <div class="w-8 h-8 rounded-full bg-secondary/10 text-secondary flex items-center justify-center flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
+                        <h2 class="text-[11px] font-bold uppercase tracking-[0.2em] text-base-content">{{ __('Delivery Details') }}</h2>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-base-content/60 uppercase tracking-widest mb-1 opacity-50">{{ __('Delivery Location') }}</p>
+                        <p class="text-[15px] font-bold text-base-content">{{ $booking->delivery_location }}</p>
+                    </div>
+                </x-ui.card>
+                @endif
+
                 @if($booking->booking_type === \App\Enums\BookingType::Event)
                 <x-ui.card>
                     <div class="flex items-center gap-2.5 mb-6">
@@ -196,6 +215,16 @@
                             <p class="text-[10px] font-bold text-base-content/60 uppercase tracking-widest mb-1 opacity-50">{{ __('Event Type') }}</p>
                             <x-badge type="ghost" class="mt-1">{{ $booking->event_type?->value ?? 'No Event Type' }}</x-badge>
                         </div>
+
+                        @if($booking->event_location)
+                            <div>
+                                <p class="text-[10px] font-bold text-base-content/60 uppercase tracking-widest mb-1 opacity-50">{{ __('Location') }}</p>
+                                <p class="text-[14px] sm:text-[15px] font-bold text-base-content flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    {{ $booking->event_location }}
+                                </p>
+                            </div>
+                        @endif
 
                         @if($booking->customer_notes)
                             <div>
@@ -292,6 +321,12 @@
                             <x-ui.table.row>
                                 <x-ui.table.cell>
                                     <div class="text-[13px] sm:text-[14px] font-bold text-base-content">{{ $item->package_name ?? $item->package?->name ?? 'Custom Package' }}</div>
+                                    @if($item->scheduled_date && $booking->booking_type === \App\Enums\BookingType::Meal)
+                                        <div class="flex items-center gap-1 mt-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            <span class="text-[11px] text-primary font-semibold">Delivery: {{ $item->scheduled_date->format('D, M j, Y') }}</span>
+                                        </div>
+                                    @endif
                                 </x-ui.table.cell>
                                 @if($booking->booking_type !== \App\Enums\BookingType::Event)
                                     <x-ui.table.cell class="text-right">
@@ -673,6 +708,14 @@
                     <input type="number" wire:model="editPax" min="1" placeholder="e.g. 100"
                         class="w-full px-4 py-3 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[14px] font-medium placeholder:text-base-content/30">
                     @error('editPax') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
+                </div>
+
+                {{-- Event Location --}}
+                <div class="sm:col-span-2 space-y-2">
+                    <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Event Location') }}</label>
+                    <input type="text" wire:model="editEventLocation" placeholder="e.g. Kempinski Hotel, Accra"
+                        class="w-full px-4 py-3 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[14px] font-medium placeholder:text-base-content/30">
+                    @error('editEventLocation') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 {{-- Buffet Toggle --}}

@@ -4,28 +4,11 @@ use App\Enums\BookingType;
 use App\Enums\UserType;
 use App\Livewire\Booking\EventInquiryWizard;
 use App\Models\Booking;
-use App\Models\Category;
-use App\Models\Package;
 use App\Models\User;
-use App\Services\CartService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
-
-// ── Helpers ──────────────────────────────────────────────────
-
-function setupEventCart(int $count = 1, float $price = 100): array
-{
-    $category = Category::factory()->create();
-    $packages = [];
-    for ($i = 0; $i < $count; $i++) {
-        $packages[] = Package::factory()->create(['category_id' => $category->id, 'price' => $price]);
-        app(CartService::class)->add($packages[$i]->id, 1);
-    }
-
-    return $packages;
-}
 
 /**
  * Progress event wizard to summary (Step 4).
@@ -44,6 +27,7 @@ function progressEventToSummary(\Livewire\Features\SupportTesting\Testable $comp
         'event_start_time' => '14:00',
         'event_end_time' => '18:00',
         'event_type' => 'wedding',
+        'event_location' => 'Kempinski Hotel, Accra',
     ], $event);
 
     return $component
@@ -51,51 +35,40 @@ function progressEventToSummary(\Livewire\Features\SupportTesting\Testable $comp
         ->set('event_start_time', $event['event_start_time'])
         ->set('event_end_time', $event['event_end_time'])
         ->set('event_type', $event['event_type'])
+        ->set('event_location', $event['event_location'])
         ->call('nextStep') // 1 → 2
         ->assertSet('currentStep', 2)
-        ->call('nextStep') // 2 → 3
-        ->assertSet('currentStep', 3)
         ->set('name', $contact['name'])
         ->set('phone', $contact['phone'])
         ->set('email', $contact['email'])
-        ->call('nextStep') // 3 → 4
-        ->assertSet('currentStep', 4);
+        ->call('nextStep') // 2 → 3
+        ->assertSet('currentStep', 3);
 }
 
 // ── Core Flow Tests ──────────────────────────────────────────
 
-it('allows empty cart for event bookings', function () {
+it('renders the event booking form', function () {
     Livewire::test(EventInquiryWizard::class)
         ->assertStatus(200)
         ->assertSet('currentStep', 1);
 });
 
-it('renders with items in cart', function () {
-    setupEventCart();
-
-    Livewire::test(EventInquiryWizard::class)
-        ->assertStatus(200);
-});
-
-it('follows 4-step progression', function () {
+it('follows 3-step progression: Event Details → Contact → Summary', function () {
     Livewire::test(EventInquiryWizard::class)
         ->assertSet('currentStep', 1)
         ->set('event_date', now()->addDays(5)->format('Y-m-d'))
         ->set('event_start_time', '14:00')
         ->set('event_end_time', '18:00')
+        ->set('event_location', 'Accra International Conference Centre')
         ->call('nextStep') // 1 → 2
         ->assertSet('currentStep', 2)
-        ->call('nextStep') // 2 → 3
-        ->assertSet('currentStep', 3)
         ->set('name', 'Step Test')
         ->set('phone', '0241234567')
-        ->call('nextStep') // 3 → 4
-        ->assertSet('currentStep', 4);
+        ->call('nextStep') // 2 → 3
+        ->assertSet('currentStep', 3);
 });
 
 it('can complete an event booking', function () {
-    setupEventCart(1, 500);
-
     $component = Livewire::test(EventInquiryWizard::class);
     progressEventToSummary($component)
         ->call('confirmBooking')
@@ -106,20 +79,6 @@ it('can complete an event booking', function () {
         ->and($booking->booking_type)->toBe(BookingType::Event)
         ->and((float) $booking->total_amount)->toEqual(0.0)
         ->and($booking->event_type->value)->toBe('wedding')
-        ->and($booking->pax)->toBeNull()
-        ->and($booking->is_buffet)->toBeFalse();
-});
-
-it('can complete an event booking without cart items', function () {
-    $component = Livewire::test(EventInquiryWizard::class);
-    progressEventToSummary($component)
-        ->call('confirmBooking')
-        ->assertRedirect();
-
-    $booking = Booking::first();
-    expect($booking)->not->toBeNull()
-        ->and($booking->booking_type)->toBe(BookingType::Event)
-        ->and((float) $booking->total_amount)->toEqual(0.0)
         ->and($booking->items)->toHaveCount(0);
 });
 
@@ -130,16 +89,15 @@ it('saves pax and buffet fields', function () {
         ->set('event_start_time', '10:00')
         ->set('event_end_time', '15:00')
         ->set('event_type', 'corporate')
-        ->call('nextStep') // 1 → 2
-        ->assertSet('currentStep', 2)
+        ->set('event_location', 'La Palm Royal Beach Hotel')
         ->set('pax', 150)
         ->set('is_buffet', true)
-        ->call('nextStep') // 2 → 3
-        ->assertSet('currentStep', 3)
+        ->call('nextStep') // 1 → 2
+        ->assertSet('currentStep', 2)
         ->set('name', 'Pax Test')
         ->set('phone', '0241234567')
-        ->call('nextStep') // 3 → 4
-        ->assertSet('currentStep', 4)
+        ->call('nextStep') // 2 → 3
+        ->assertSet('currentStep', 3)
         ->call('confirmBooking')
         ->assertRedirect();
 

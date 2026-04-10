@@ -7,8 +7,6 @@ test('example', function () {
 });
 
 use App\Livewire\Admin\Settings\AdminSettings;
-use App\Livewire\Booking\CheckoutPayment;
-use App\Models\Booking;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -30,15 +28,19 @@ test('admin can save bank details', function () {
     ]);
 });
 
-test('checkout payment displays saved bank details', function () {
-    \App\Models\Setting::updateOrCreate(['key' => 'bank_name'], ['value' => 'Dynamic Bank', 'group' => 'bank', 'type' => \App\Enums\SettingType::String]);
-    \App\Models\Setting::updateOrCreate(['key' => 'account_name'], ['value' => 'Dynamic Account', 'group' => 'bank', 'type' => \App\Enums\SettingType::String]);
-    \App\Models\Setting::updateOrCreate(['key' => 'account_number'], ['value' => '987654321', 'group' => 'bank', 'type' => \App\Enums\SettingType::String]);
+test('admin bank details are persisted to settings table', function () {
+    $admin = User::factory()->create();
+    $this->actingAs($admin);
 
-    $booking = Booking::factory()->create(['payment_status' => \App\Enums\PaymentStatus::Unpaid]);
+    Livewire::test(AdminSettings::class)
+        ->set('bank_name', 'Dynamic Bank')
+        ->set('account_name', 'Dynamic Account')
+        ->set('account_number', '987654321')
+        ->set('branch_code', '')
+        ->call('saveBankDetails')
+        ->assertHasNoErrors();
 
-    Livewire::test(CheckoutPayment::class, ['booking' => $booking])
-        ->assertSet('bankName', 'Dynamic Bank')
-        ->assertSet('accountName', 'Dynamic Account')
-        ->assertSet('accountNumber', '987654321');
+    $this->assertDatabaseHas('settings', ['key' => 'bank_name', 'value' => 'Dynamic Bank'])
+        ->assertDatabaseHas('settings', ['key' => 'account_name', 'value' => 'Dynamic Account'])
+        ->assertDatabaseHas('settings', ['key' => 'account_number', 'value' => '987654321']);
 });

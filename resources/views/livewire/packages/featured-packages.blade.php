@@ -1,11 +1,13 @@
-<div 
-    x-data="{ 
-        showDetails: false, 
+<div
+    x-data="{
+        showDetails: false,
         selectedPackage: null,
         packageInCart: false,
-        openDetails(pkg, inCart = false) {
+        selectedWindowInfo: null,
+        openDetails(pkg, inCart = false, windowInfo = null) {
             this.selectedPackage = pkg;
             this.packageInCart = inCart;
+            this.selectedWindowInfo = windowInfo;
             this.showDetails = true;
         }
     }"
@@ -15,11 +17,24 @@
         @foreach($packages as $package)
             @php
                 $inCart = $cartItems->has($package->id);
+                $ws = $windowStatuses[$package->category_id] ?? null;
+                $wi = null;
+                if ($ws && $ws['enabled'] && !$package->window_exempt) {
+                    $wi = [
+                        'open'          => $ws['open'],
+                        'cutoffTs'      => $ws['cutoff']->timestamp * 1000,
+                        'cutoffLabel'   => $ws['cutoffLabel'],
+                        'cutoffTime'    => substr($ws['cutoff']->format('H:i'), 0, 5),
+                        'deliveryLabel' => $ws['deliveryDayLabel'],
+                        'deliveryDate'  => $ws['scheduledDelivery']->format('D, M j'),
+                    ];
+                }
             @endphp
-            <div @click="openDetails({{ json_encode($package) }}, {{ $inCart ? 'true' : 'false' }})">
-                <x-package-card 
-                    :package="$package" 
-                    :selected="$inCart" 
+            <div @click="openDetails({{ json_encode($package) }}, {{ $inCart ? 'true' : 'false' }}, {{ $wi ? json_encode($wi) : 'null' }})">
+                <x-package-card
+                    :package="$package"
+                    :selected="$inCart"
+                    :windowStatus="$ws"
                 />
             </div>
         @endforeach

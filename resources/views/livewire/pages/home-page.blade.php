@@ -3,9 +3,11 @@
         showDetails: false,
         selectedPackage: null,
         packageInCart: false,
-        openDetails(pkg, inCart = false) {
+        selectedWindowInfo: null,
+        openDetails(pkg, inCart = false, windowInfo = null) {
             this.selectedPackage = pkg;
             this.packageInCart = inCart;
+            this.selectedWindowInfo = windowInfo;
             this.showDetails = true;
         }
     }"
@@ -38,7 +40,7 @@
 
                 <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
                     <x-ui.button href="{{ route('packages.browse') }}" size="lg" class="w-full h-14 sm:w-auto bg-primary text-white text-[15px] font-bold px-8 py-4 !rounded-full hover:bg-primary-hover hover:scale-105 transition-all shadow-md text-center">
-                        Order Now
+                        Order Simple Meal
                     </x-ui.button>
                     <x-ui.button href="{{ route('event-booking') }}" variant="green" size="lg" class="w-full h-14 sm:w-auto text-white border-2 border-primary/20 bg-green-500 text-[15px] font-bold px-8 py-4 !rounded-full hover:bg-green-600 hover:scale-105 transition-all text-center">
                         Plan an Event
@@ -175,8 +177,26 @@
             <div wire:loading.class="opacity-50 transition-opacity" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8 items-stretch">
                 @forelse($packages as $package)
                     @php $inCart = $cartItems->has($package->id); @endphp
-                    <div wire:key="home-pkg-{{ $package->id }}" @click="openDetails({{ json_encode($package) }}, {{ $inCart ? 'true' : 'false' }})">
-                        <x-package-card :package="$package" :selected="$inCart" />
+                    @php
+                        $ws = $windowStatuses[$package->category_id] ?? null;
+                        $wi = null;
+                        if ($ws && $ws['enabled'] && !$package->window_exempt) {
+                            $wi = [
+                                'open'          => $ws['open'],
+                                'cutoffTs'      => $ws['cutoff']->timestamp * 1000,
+                                'cutoffLabel'   => $ws['cutoffLabel'],
+                                'cutoffTime'    => substr($ws['cutoff']->format('H:i'), 0, 5),
+                                'deliveryLabel' => $ws['deliveryDayLabel'],
+                                'deliveryDate'  => $ws['scheduledDelivery']->format('D, M j'),
+                            ];
+                        }
+                    @endphp
+                    <div wire:key="home-pkg-{{ $package->id }}" @click="openDetails({{ json_encode($package) }}, {{ $inCart ? 'true' : 'false' }}, {{ $wi ? json_encode($wi) : 'null' }})">
+                        <x-package-card
+                            :package="$package"
+                            :selected="$inCart"
+                            :windowStatus="$ws"
+                        />
                     </div>
                 @empty
                     <div class="col-span-full text-center py-16">

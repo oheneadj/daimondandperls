@@ -1,4 +1,4 @@
-<div class="bg-base-200 min-h-screen py-6 lg:py-20 px-3 sm:px-4">
+<div class="bg-base-200 min-h-screen py-6 lg:py-20 px-3 sm:px-4" @if($autoInitiate) wire:init="processMobileMoney" @endif>
     <div class="container mx-auto max-w-6xl">
         <!-- Progress Bar -->
         @php
@@ -12,7 +12,8 @@
             <div class="flex items-center justify-between relative max-w-3xl mx-auto">
                 {{-- Line connector --}}
                 <div class="absolute top-5 left-0 w-full h-0.5 border-base-content/10 -z-10"></div>
-                <div class="absolute top-5 left-0 h-0.5 bg-primary -z-10 transition-all duration-700" style="width: {{ $progressWidth }}%"></div>
+                <div class="absolute top-5 left-0 h-0.5 bg-primary -z-10 transition-all duration-700"
+                    style="width: {{ $progressWidth }}%"></div>
 
                 @foreach($steps as $index => $label)
                     @php $stepNum = $index + 1; @endphp
@@ -25,7 +26,9 @@
                         ])>
                             @if($currentStep > $stepNum)
                                 <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
                                 </svg>
                             @else
                                 {{ $stepNum }}
@@ -41,27 +44,37 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <!-- Main Content Column -->
-            <div class="lg:col-span-8">
-                <div class="bg-base-100 border border-base-content/10 rounded-[24px] overflow-hidden shadow-sm">
-                    <div class="p-5 sm:p-8 lg:p-12">
-                        <div class="mb-10">
-                            <h1 class=" text-3xl font-semibold text-base-content mb-2">Secure Payment</h1>
-                            <p class="text-base-content/60 text-[14px] font-medium">Complete your payment for booking <span class="text-primary font-bold">{{ $booking->reference }}</span></p>
+            <div class="lg:col-span-8 order-2 lg:order-1">
+                <div class="bg-base-100 border border-base-content/10 rounded-lg overflow-hidden shadow-dp-lg">
+                    <div class="p-5 sm:p-8 lg:p-10">
+                        <div class="mb-8">
+                            <h1 class="text-xl font-semibold text-base-content mb-2">Secure Payment</h1>
+                            <p class="text-[14px] text-base-content/50 font-medium">Complete your payment for booking
+                                <span class="text-primary font-semibold">{{ $booking->reference }}</span>
+                            </p>
                         </div>
 
                         @if ($errorMessage)
-                            <div class="mb-8 sm:mb-10 animate-fade-in">
-                                <div class="bg-error/5 border border-error/15 p-5 sm:p-6 rounded-2xl flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 text-center sm:text-left">
-                                    <div class="bg-error/10 size-12 sm:size-10 rounded-full shrink-0 flex items-center justify-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                            <div class="mb-8 animate-fade-in">
+                                <div class="p-4 bg-error/10 border border-error/15 rounded-lg flex items-start gap-3">
+                                    <div class="size-8 bg-error/10 rounded-full flex items-center justify-center shrink-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-error" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <h3 class="text-[11px] font-bold uppercase tracking-widest text-error mb-1">Transaction Failed</h3>
-                                        <p class="text-sm font-medium text-base-content leading-relaxed">{{ $errorMessage }}</p>
-                                        <button wire:click="retry" class="inline-flex items-center gap-1.5 mt-3 text-sm font-bold text-error hover:text-error/80 transition-colors">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                        <p class="text-[13px] font-medium text-error">{{ $errorMessage }}</p>
+                                        <button wire:click="retry"
+                                            class="inline-flex items-center gap-1.5 mt-2 text-[13px] font-semibold text-error hover:text-error/80 transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                            </svg>
                                             Try again
                                         </button>
                                     </div>
@@ -69,251 +82,305 @@
                             </div>
                         @endif
 
-                        <div class="min-h-[400px]">
-                                <div class="animate-fade-in space-y-8">
-                                    @if ($isAwaitingPayment)
-                                        <div wire:poll.3s="checkPaymentStatus" class="bg-base-200/50 border border-base-content/10 rounded-3xl p-10 text-center relative overflow-hidden transition-all duration-500 mt-2">
-                                            <div class="absolute inset-0 bg-primary/5 animate-pulse"></div>
-                                            <div class="relative z-10">
-                                                <div class="flex justify-center mb-6">
-                                                    <span class="loading loading-ring loading-lg text-primary scale-150"></span>
-                                                </div>
-                                                <h3 class="text-xl font-bold text-base-content mb-2">Awaiting Authorization</h3>
-                                                <p class="text-[14px] text-base-content/60 font-medium max-w-sm mx-auto mb-8 leading-relaxed">
-                                                    Please check your handset ({{ $momoNumber }}). A payment prompt has been sent. Enter your PIN to authorize the transaction.
-                                                </p>
-                                                <div class="flex items-center justify-center gap-4">
-                                                    <x-ui.button wire:click="checkPaymentStatus" variant="outline" size="sm" class="font-bold border-base-content/20 bg-white shadow-sm hover:border-primary">
-                                                        Check Status Now
-                                                    </x-ui.button>
-                                                    <x-ui.button wire:click="cancelPayment" variant="ghost" size="sm" class="text-error font-bold hover:bg-error/10">
-                                                        Cancel & Try Again
-                                                    </x-ui.button>
-                                                </div>
+                        <div class="space-y-8">
+                            <div class="animate-fade-in space-y-6">
+                                @if ($paymentStep === 'awaiting')
+                                    <div wire:poll.3s="checkPaymentStatus"
+                                        class="bg-base-200/50 border border-base-content/10 rounded-lg p-8 text-center relative overflow-hidden transition-all duration-500">
+                                        <div class="absolute inset-0 bg-primary/5 animate-pulse"></div>
+                                        <div class="relative z-10">
+                                            <div class="flex justify-center mb-5">
+                                                <span class="loading loading-ring loading-lg text-primary scale-150"></span>
                                             </div>
-                                        </div>
-                                    @else
-                                        <!-- Network Selection -->
-                                        <div>
-                                            <div class="text-[11px] font-bold text-base-content/60 uppercase tracking-widest mb-4 ml-1">Select Network</div>
-                                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                                {{-- MTN --}}
-                                                <button type="button" wire:click="$set('momoNetwork', '13')" @class([
-                                                    'flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left group',
-                                                    'bg-primary/5 border-primary shadow-sm' => $momoNetwork == '13',
-                                                    'bg-base-100 border-base-content/10 hover:border-primary/40' => $momoNetwork != '13',
-                                                ])>
-                                                    <img src="{{ asset('logos/mtn-momo.png') }}" class="size-7 object-contain rounded-md" alt="MTN">
-                                                    <span @class(['text-[13px] font-bold', 'text-primary' => $momoNetwork == '13', 'text-base-content/60' => $momoNetwork != '13'])>MTN Mobile Money</span>
-                                                    @if($momoNetwork == '13')
-                                                        <div class="ml-auto size-4 rounded-full bg-primary flex items-center justify-center">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                                                        </div>
-                                                    @endif
-                                                </button>
-
-                                                {{-- Telecel --}}
-                                                <button type="button" wire:click="$set('momoNetwork', '6')" @class([
-                                                    'flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left group',
-                                                    'bg-primary/5 border-primary shadow-sm' => $momoNetwork == '6',
-                                                    'bg-base-100 border-base-content/10 hover:border-primary/40' => $momoNetwork != '6',
-                                                ])>
-                                                    <img src="{{ asset('logos/Telecel-Cash.jpg') }}" class="size-7 object-contain rounded-md" alt="Telecel">
-                                                    <span @class(['text-[13px] font-bold', 'text-primary' => $momoNetwork == '6', 'text-base-content/60' => $momoNetwork != '6'])>Telecel Cash</span>
-                                                    @if($momoNetwork == '6')
-                                                        <div class="ml-auto size-4 rounded-full bg-primary flex items-center justify-center">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                                                        </div>
-                                                    @endif
-                                                </button>
-
-                                                {{-- AT --}}
-                                                <button type="button" wire:click="$set('momoNetwork', '7')" @class([
-                                                    'flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left group',
-                                                    'bg-primary/5 border-primary shadow-sm' => $momoNetwork == '7',
-                                                    'bg-base-100 border-base-content/10 hover:border-primary/40' => $momoNetwork != '7',
-                                                ])>
-                                                    <img src="{{ asset('logos/airteltigo-money.png') }}" class="size-7 object-contain rounded-md" alt="AT">
-                                                    <span @class(['text-[13px] font-bold', 'text-primary' => $momoNetwork == '7', 'text-base-content/60' => $momoNetwork != '7'])>AirtelTigo Money</span>
-                                                    @if($momoNetwork == '7')
-                                                        <div class="ml-auto size-4 rounded-full bg-primary flex items-center justify-center">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                                                        </div>
-                                                    @endif
-                                                </button>
-                                            </div>
-                                            @error('momoNetwork') <span class="text-[11px] font-bold text-error mt-2 block ml-1 uppercase tracking-wider">{{ $message }}</span> @enderror
-                                        </div>
-
-                                        <!-- Phone Number -->
-                                        <div class="space-y-2">
-                                            <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Mobile Money Number</label>
-                                            <div class="relative">
-                                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                                                </div>
-                                                <input
-                                                    type="tel"
-                                                    inputmode="numeric"
-                                                    pattern="[0-9]*"
-                                                    wire:model.live="momoNumber"
-                                                    placeholder="{{ match($momoNetwork) { '13' => '024 / 054 / 055 / 059', '6' => '020 / 050', '7' => '026 / 056 / 027 / 057', default => 'Select a network first' } }}"
-                                                    class="w-full pl-12 pr-5 py-4 bg-base-100 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-lg tracking-widest text-base-content placeholder-base-content/20"
-                                                    maxlength="10"
-                                                    @if(empty($momoNetwork)) disabled @endif
-                                                >
-                                            </div>
-
-                                            {{-- Prefix hint --}}
-                                            @if($momoNetwork && strlen($momoNumber) > 0 && strlen($momoNumber) < 10)
-                                                <p class="text-[11px] font-medium text-base-content/40 ml-1">
-                                                    @switch($momoNetwork)
-                                                        @case('13') Accepted prefixes: 024, 054, 055, 059 @break
-                                                        @case('6')  Accepted prefixes: 020, 050 @break
-                                                        @case('7')  Accepted prefixes: 026, 056, 027, 057 @break
-                                                    @endswitch
-                                                </p>
-                                            @endif
-
-                                            @if($momoNumber && strlen($momoNumber) === 10 && !$this->isMomoFormValid)
-                                                <span class="text-[11px] font-bold text-error mt-1 block ml-1 uppercase tracking-wider">This number doesn't match the selected network</span>
-                                            @endif
-
-                                            @error('momoNumber') <span class="text-[11px] font-bold text-error mt-1 block ml-1 uppercase tracking-wider">{{ $message }}</span> @enderror
-                                        </div>
-
-                                        <!-- Action -->
-                                        <div class="pt-2 border-t border-base-content/5 mt-4">
-                                            <button
-                                                type="button"
-                                                wire:click="processMobileMoney"
-                                                wire:loading.attr="disabled"
-                                                @if(!$this->isMomoFormValid) disabled @endif
-                                                class="w-full h-16 rounded-xl text-lg font-bold flex items-center justify-center gap-2 transition-all duration-300 shadow-xl
-                                                    {{ $this->isMomoFormValid
-                                                        ? 'bg-primary text-white hover:bg-primary/90 cursor-pointer'
-                                                        : 'bg-base-content/10 text-base-content/30 cursor-not-allowed' }}"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-5 {{ $this->isMomoFormValid ? 'text-white/70' : 'text-base-content/20' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                                <span wire:loading.remove wire:target="processMobileMoney">
-                                                    Pay GH₵ {{ number_format($booking->total_amount, 2) }}
-                                                </span>
-                                                <span wire:loading wire:target="processMobileMoney" class="flex items-center gap-2">
-                                                    <span class="loading loading-spinner loading-sm"></span>
-                                                    Processing...
-                                                </span>
-                                            </button>
-                                        </div>
-                                    @endif
-                                </div>
-
-                            @if ($paymentMethod === 'bank_transfer')
-                                <div class="animate-fade-in space-y-10">
-                                    <div class="bg-base-200 border border-base-content/5 rounded-3xl p-8 lg:p-10 relative overflow-hidden">
-                                        <div class="absolute top-0 right-0 p-8">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-20 text-primary/10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                                        </div>
-                                        
-                                        <div class="relative z-10 space-y-8">
-                                            <div>
-                                                <div class="text-[11px] font-bold text-primary uppercase tracking-[0.2em] mb-6">Payment Destination</div>
-                                                <div class="grid gap-4">
-                                                    <div class="flex justify-between items-center bg-base-100/80 p-5 rounded-2xl border border-base-content/5">
-                                                        <span class="text-base-content/50 font-bold text-[11px] uppercase tracking-wider">Bank Name</span>
-                                                        <span class="text-base-content font-bold">{{ $bankName }}</span>
-                                                    </div>
-                                                    <div class="flex justify-between items-center bg-base-100/80 p-5 rounded-2xl border border-base-content/5">
-                                                        <span class="text-base-content/50 font-bold text-[11px] uppercase tracking-wider">Account Holder</span>
-                                                        <span class="text-base-content font-bold">{{ $accountName }}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="bg-primary p-8 rounded-[2rem] shadow-2xl shadow-primary/20 flex flex-col items-center justify-center text-center space-y-2 group cursor-pointer" onclick="navigator.clipboard.writeText('{{ $accountNumber }}')">
-                                                <span class="text-[10px] text-white/50 font-bold uppercase tracking-[0.3em]">Account Number (Tap to Copy)</span>
-                                                <span class="text-3xl lg:text-4xl font-black text-white tracking-[0.2em]">{{ $accountNumber }}</span>
+                                            <h3 class="text-lg font-semibold text-base-content mb-2">Awaiting Authorization
+                                            </h3>
+                                            <p
+                                                class="text-[14px] text-base-content/50 font-medium max-w-sm mx-auto mb-6 leading-relaxed">
+                                                Please check your handset ({{ $momoNumber }}). A payment prompt has been
+                                                sent. Enter your PIN to authorize the transaction.
+                                            </p>
+                                            <div class="flex items-center justify-center gap-3">
+                                                <x-app.button wire:click="checkPaymentStatus" variant="outline" size="sm">
+                                                    Check Status Now
+                                                </x-app.button>
+                                                <x-app.button wire:click="cancelPayment" variant="ghost" size="sm"
+                                                    class="text-error hover:bg-error/10">
+                                                    Cancel & Try Again
+                                                </x-app.button>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <form wire:submit.prevent="submitBankTransfer" class="space-y-6 max-w-lg mx-auto">
-                                        <div class="space-y-2">
-                                            <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Sender's Full Name</label>
-                                            <input type="text" wire:model="senderName" class="w-full px-5 py-4 bg-base-100 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-sm font-medium" placeholder="As it appears on your account">
-                                            @error('senderName') <span class="text-[11px] font-bold text-error mt-1 block ml-1 uppercase tracking-wider">{{ $message }}</span> @enderror
-                                        </div>
-
-                                        <div class="space-y-2">
-                                            <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Phone Number</label>
-                                            <div class="relative">
-                                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                @elseif ($paymentStep === 'otp')
+                                    <div
+                                        class="bg-base-200/50 border border-base-content/10 rounded-lg p-8 text-center relative overflow-hidden">
+                                        <div class="relative z-10 space-y-6">
+                                            <div>
+                                                <div class=" flex items-center justify-center mx-auto mb-4">
+                                                    <div class=" rounded-full bg-primary/10">
+                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                            class="size-8 m-3 rounded-full text-primary" fill="none"
+                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                        </svg>
+                                                    </div>
                                                 </div>
-                                                <input type="tel" inputmode="numeric" wire:model="senderPhone" class="w-full pl-12 pr-5 py-4 bg-base-100 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-sm font-medium" placeholder="0241234567" maxlength="10">
+                                                <h3 class="text-lg font-semibold text-base-content mb-2">Verification
+                                                    Required</h3>
+                                                <p
+                                                    class="text-[14px] text-base-content/50 font-medium max-w-sm mx-auto leading-relaxed">
+                                                    {{ $otpMessage ?? 'A verification code has been sent to ' . $momoNumber . '.' }}
+                                                </p>
                                             </div>
-                                            @error('senderPhone') <span class="text-[11px] font-bold text-error mt-1 block ml-1 uppercase tracking-wider">{{ $message }}</span> @enderror
-                                        </div>
 
-                                        <div class="space-y-2">
-                                            <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60 ml-1">Reference Notes <span class="text-base-content/30">(Optional)</span></label>
-                                            <input type="text" wire:model="referenceNotes" class="w-full px-5 py-4 bg-base-100 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-sm font-medium" placeholder="Transaction ID or additional notes">
-                                        </div>
+                                            <div class="max-w-xs mx-auto text-left">
+                                                <x-app.input name="otpCode" type="text" label="Verification Code"
+                                                    wire:model="otpCode" inputmode="numeric" maxlength="6"
+                                                    placeholder="Enter code" required />
+                                            </div>
 
-                                        <x-ui.button type="submit" variant="primary" size="lg" :loading="$loading === 'submitBankTransfer'" class="w-full shadow-xl text-lg h-16">
-                                            {{ __('Submit Transfer Details') }}
-                                        </x-ui.button>
-                                        <p class="text-[11px] text-base-content/60 font-medium text-center italic">Transfer verification is handled manually by our concierge team.</p>
-                                    </form>
-                                </div>
-                            @endif
+                                            <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                                                <x-app.button type="button" variant="primary" size="md"
+                                                    wireClick="submitOtp" wireTarget="submitOtp" loadingText="Verifying..."
+                                                    class="w-full sm:w-auto">
+                                                    Verify & Pay
+                                                </x-app.button>
+                                                <x-app.button type="button" variant="ghost" size="md" wireClick="resendOtp"
+                                                    wireTarget="resendOtp" loadingText="Sending..."
+                                                    class="w-full sm:w-auto">
+                                                    Resend Code
+                                                </x-app.button>
+                                                <button type="button" wire:click="cancelPayment"
+                                                    class="text-[13px] text-base-content/50 hover:text-base-content transition-colors font-medium">
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                @else
+                                    @php
+                                        $networks = [
+                                            ['id' => '13', 'name' => 'MTN Mobile Money', 'logo' => 'logos/mtn-momo.png'],
+                                            ['id' => '6', 'name' => 'Telecel Cash', 'logo' => 'logos/Telecel-Cash.jpg'],
+                                            ['id' => '7', 'name' => 'AirtelTigo Money', 'logo' => 'logos/airteltigo-money.png'],
+                                        ];
+                                        $networkLogos = collect($networks)->keyBy('id');
+                                    @endphp
+
+                                    {{-- Saved payment methods (logged-in users only) --}}
+                                    @auth
+                                        @if($savedMethods->isNotEmpty())
+                                            <div>
+                                                <label class="text-dp-sm font-medium text-base-content block mb-3">Your Payment
+                                                    Methods</label>
+                                                <div class="divide-y divide-base-content/5">
+                                                    @foreach($savedMethods as $method)
+                                                        @php $logo = $networkLogos->get($method->provider); @endphp
+                                                        <button type="button" wire:click="selectPaymentMethod({{ $method->id }})"
+                                                            class="w-full flex items-center gap-4 px-2 py-4 text-left transition-colors hover:bg-base-200/50 group">
+                                                            @if($logo)
+                                                                <img src="{{ asset($logo['logo']) }}"
+                                                                    class="size-8 object-contain rounded-md shrink-0"
+                                                                    alt="{{ $logo['name'] }}">
+                                                            @endif
+                                                            <div class="flex-1 min-w-0">
+                                                                <span
+                                                                    class="text-[15px] font-medium text-base-content block truncate">{{ $method->label }}</span>
+                                                                <span
+                                                                    class="text-[12px] text-base-content/50">{{ $method->account_number }}</span>
+                                                            </div>
+                                                            @if($method->is_default)
+                                                                <span
+                                                                    class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[9px] font-black uppercase tracking-wider shrink-0">Default</span>
+                                                            @endif
+                                                            <div @class([
+                                                                'size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all',
+                                                                'border-primary' => $selectedMethodId === $method->id && !$useNewNumber,
+                                                                'border-base-content/20 group-hover:border-base-content/40' => $selectedMethodId !== $method->id || $useNewNumber,
+                                                            ])>
+                                                                @if($selectedMethodId === $method->id && !$useNewNumber)
+                                                                    <div class="size-2.5 rounded-full bg-primary"></div>
+                                                                @endif
+                                                            </div>
+                                                        </button>
+                                                    @endforeach
+
+                                                    {{-- Use a different number option --}}
+                                                    <button type="button" wire:click="useNewPaymentMethod"
+                                                        class="w-full flex items-center gap-4 px-2 py-4 text-left transition-colors hover:bg-base-200/50 group">
+                                                        <div
+                                                            class="size-8 bg-base-200 rounded-md flex items-center justify-center shrink-0">
+                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                class="size-4 text-base-content/40" fill="none" viewBox="0 0 24 24"
+                                                                stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2" d="M12 4v16m8-8H4" />
+                                                            </svg>
+                                                        </div>
+                                                        <span class="text-[15px] font-medium text-base-content flex-1">Use a
+                                                            different number</span>
+                                                        <div @class([
+                                                            'size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all',
+                                                            'border-primary' => $useNewNumber,
+                                                            'border-base-content/20 group-hover:border-base-content/40' => !$useNewNumber,
+                                                        ])>
+                                                            @if($useNewNumber)
+                                                                <div class="size-2.5 rounded-full bg-primary"></div>
+                                                            @endif
+                                                        </div>
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {{-- Pay directly with selected saved method --}}
+                                            @if(!$useNewNumber)
+                                                <div class="pt-4 border-t border-base-content/5">
+                                                    <x-app.button type="button" variant="primary" size="lg" class="w-full"
+                                                        wireClick="processMobileMoney" wireTarget="processMobileMoney"
+                                                        :loadingText="'Processing...'" :disabled="!$this->isMomoFormValid">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none"
+                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                        </svg>
+                                                        Pay GH₵ {{ number_format($booking->total_amount, 2) }}</ x-app.button>
+                                                                </div>
+                                            @endif
+                                        @endif
+                                    @endauth
+
+                                        {{-- Manual network + number entry (guests, or auth users choosing a new number) --}}
+                                        @if($useNewNumber)
+                                            <!-- Network Selection -->
+                                            <div>
+                                                <label class="text-dp-sm font-medium text-base-content block mb-3">Select
+                                                    Network</label>
+                                                <div class="divide-y divide-base-content/5">
+                                                    @foreach($networks as $network)
+                                                        <button type="button" wire:click="$set('momoNetwork', '{{ $network['id'] }}')"
+                                                            class="w-full flex items-center gap-4 px-2 py-4 text-left transition-colors hover:bg-base-200/50 group">
+                                                            <img src="{{ asset($network['logo']) }}"
+                                                                class="size-8 object-contain rounded-md shrink-0"
+                                                                alt="{{ $network['name'] }}">
+                                                            <span
+                                                                class="text-[15px] font-medium text-base-content flex-1">{{ $network['name'] }}</span>
+                                                            <div @class([
+                                                                'size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all',
+                                                                'border-primary' => $momoNetwork == $network['id'],
+                                                                'border-base-content/20 group-hover:border-base-content/40' => $momoNetwork != $network['id'],
+                                                            ])>
+                                                                @if($momoNetwork == $network['id'])
+                                                                    <div class="size-2.5 rounded-full bg-primary"></div>
+                                                                @endif
+                                                            </div>
+                                                        </button>
+                                                    @endforeach
+                                                </div>
+                                                @error('momoNetwork') <p class="text-xs text-error flex items-center gap-1 mt-2">
+                                                    <span>⚠</span> {{ $message }}
+                                                </p> @enderror
+                                            </div>
+
+                                            <!-- Phone Number -->
+                                            <x-app.input name="momoNumber" type="tel" label="Mobile Money Number"
+                                                wire:model.live="momoNumber" inputmode="numeric" pattern="[0-9]*" maxlength="10"
+                                                :placeholder="match ($momoNetwork) { '13' => '024 / 054 / 055 / 059', '6' => '020 / 050', '7' => '026 / 056 / 027 / 057', default => 'Select a network first'}"
+                                                :disabled="empty($momoNetwork)" :hint="($momoNetwork && strlen($momoNumber) > 0 && strlen($momoNumber) < 10) ? match ($momoNetwork) { '13' => 'Accepted prefixes: 024, 054, 055, 059', '6' => 'Accepted prefixes: 020, 050', '7' => 'Accepted prefixes: 026, 056, 027, 057', default => null} : null">
+                                                <x-slot:icon>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                    </svg>
+                                                </x-slot:icon>
+                                            </x-app.input>
+
+                                            @if($momoNumber && strlen($momoNumber) === 10 && !$this->isMomoFormValid)
+                                                <p class="text-xs text-error flex items-center gap-1 -mt-4"><span>⚠</span> This number
+                                                    doesn't match the selected network</p>
+                                            @endif
+
+                                            <!-- Action -->
+                                            <div class="pt-4 border-t border-base-content/5">
+                                                <x-app.button type="button" variant="primary" size="lg" class="w-full"
+                                                    wireClick="processMobileMoney" wireTarget="processMobileMoney"
+                                                    :loadingText="'Processing...'" :disabled="!$this->isMomoFormValid">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                    </svg>
+                                                    Pay GH₵ {{ number_format($booking->total_amount, 2) }}
+                                                </x-app.button>
+                                            </div>
+                                        @endif
+                                @endif
+                            </div>
+
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Sidebar Summary -->
-            <div class="lg:col-span-4 space-y-8">
-                <div class="bg-base-100 border border-base-content/10 rounded-[24px] p-8 lg:p-10 shadow-sm">
-                    <h4 class=" text-2xl font-semibold text-base-content mb-8 pb-4 border-b border-base-content/10">Order Summary</h4>
-                    
-                    <div class="space-y-6 mb-10">
+            <div class="lg:col-span-4 space-y-6 order-1 lg:order-2">
+                <div class="bg-base-100 border border-base-content/10 rounded-lg p-6 lg:p-8 shadow-dp-lg">
+                    <h4 class="text-lg font-semibold text-base-content mb-6 pb-4 border-b border-base-content/10">Order
+                        Summary</h4>
+
+                    <div class="space-y-4 mb-6">
                         @foreach($booking->items as $item)
-                        <div class="flex items-center justify-between gap-4">
-                            <div class="flex-1">
-                                <div class="text-[14px] font-bold text-base-content line-clamp-1">{{ $item->package->name }}</div>
+                            <div class="flex items-center justify-between gap-4">
+                                <div class="flex-1">
+                                    <div class="text-[14px] font-semibold text-base-content line-clamp-1">
+                                        {{ $item->package->name }}
+                                    </div>
+                                    @if($booking->booking_type !== \App\Enums\BookingType::Event)
+                                        <div class="text-[12px] text-base-content/50 font-medium">GH₵
+                                            {{ number_format($item->price, 0) }} × {{ $item->quantity }}
+                                        </div>
+                                    @endif
+                                </div>
                                 @if($booking->booking_type !== \App\Enums\BookingType::Event)
-                                    <div class="text-[11px] text-base-content/60 font-medium">GH₵ {{ number_format($item->price, 0) }} × {{ $item->quantity }}</div>
+                                    <div class="text-[14px] font-semibold text-base-content whitespace-nowrap">
+                                        GH₵ {{ number_format($item->price * $item->quantity, 0) }}
+                                    </div>
                                 @endif
                             </div>
-                            @if($booking->booking_type !== \App\Enums\BookingType::Event)
-                                <div class="text-[14px] font-bold text-base-content whitespace-nowrap">
-                                    GH₵ {{ number_format($item->price * $item->quantity, 0) }}
-                                </div>
-                            @endif
-                        </div>
                         @endforeach
                     </div>
 
-                    <div class="space-y-4 pt-8 border-t-2 border-dashed border-base-content/10">
+                    <div class="space-y-3 pt-6 border-t border-dashed border-base-content/10">
                         @if($booking->booking_type !== \App\Enums\BookingType::Event)
-                            <div class="flex justify-between items-center text-[14px] text-base-content/60 font-medium">
+                            <div class="flex justify-between items-center text-[14px] text-base-content/50 font-medium">
                                 <span>Subtotal</span>
                                 <span>GH₵ {{ number_format((float) $booking->total_amount, 0) }}</span>
                             </div>
                         @endif
-                        <div class="flex justify-between items-center pt-4">
-                            <span class=" text-xl font-bold text-base-content">Total Due</span>
-                            <span class=" text-3xl font-bold text-primary">GH₵ {{ number_format((float) $booking->total_amount, 0) }}</span>
+                        <div class="flex justify-between items-center pt-3">
+                            <span class="text-[15px] font-semibold text-base-content">Total Due</span>
+                            <span class="text-xl font-bold text-primary">GH₵
+                                {{ number_format((float) $booking->total_amount, 0) }}</span>
                         </div>
                     </div>
 
-                    <div class="mt-10 p-5 bg-base-200 border border-base-content/10 rounded-2xl flex items-center gap-4">
-                        <div class="size-10 bg-base-100 rounded-full flex items-center justify-center shadow-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A3.333 3.333 0 0010 15V5.748a3.333 3.333 0 005.338 2.668 3.333 3.333 0 011.045 4.542 3.333 3.333 0 01-4.765 2.027z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 01-2 2v10a2 2 0 002 2z" /></svg>
+                    <div class="mt-8 p-4 bg-base-200 border border-base-content/10 rounded-lg flex items-center gap-3">
+                        <div
+                            class="size-8 bg-base-100 rounded-full flex items-center justify-center shadow-sm shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-primary" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m5.618-4.016A3.333 3.333 0 0010 15V5.748a3.333 3.333 0 005.338 2.668 3.333 3.333 0 011.045 4.542 3.333 3.333 0 01-4.765 2.027z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 01-2 2v10a2 2 0 002 2z" />
+                            </svg>
                         </div>
-                        <div class="text-[11px] text-base-content/60 font-medium leading-relaxed uppercase tracking-widest">
+                        <p class="text-xs text-base-content/50 font-medium leading-relaxed">
                             Transaction protected by industry-standard encryption
-                        </div>
+                        </p>
                     </div>
                 </div>
             </div>

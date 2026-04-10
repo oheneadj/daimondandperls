@@ -141,6 +141,26 @@
                 </div>
             </x-ui.card>
 
+            @guest
+                <div class="mb-16 bg-primary/5 border border-primary/15 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                    <div class="size-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-[15px] font-bold text-base-content mb-1">Save your details for next time</h3>
+                        <p class="text-[13px] text-base-content/60 leading-relaxed">Create a free account to track your bookings, pay faster, and access your booking history.</p>
+                    </div>
+                    <a href="{{ route('register') }}" class="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-[13px] font-semibold rounded-lg hover:bg-primary/90 transition-colors">
+                        Create Account
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </div>
+            @endguest
+
             <div class="text-center opacity-40">
                 <p class="text-[11px] font-black uppercase tracking-[0.5em] text-base-content/60">Diamonds & Pearls Catering — Excellence in Coordination</p>
             </div>

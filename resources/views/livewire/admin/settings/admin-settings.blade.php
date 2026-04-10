@@ -190,6 +190,144 @@
         {{-- App Tab --}}
         @if($tab === 'app')
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+
+                {{-- Delivery Locations --}}
+                <x-ui.card class="shadow-sm overflow-hidden lg:col-span-2" accent="secondary">
+                    <div class="p-6 border-b border-base-content/5 flex items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-[16px] font-bold text-base-content uppercase tracking-[0.05em]">{{ __('Delivery Locations') }}</h3>
+                            <p class="text-[11px] text-base-content/40 font-medium mt-1">{{ __('Zones customers can select when placing a meal order.') }}</p>
+                        </div>
+                        <x-ui.button type="button" variant="secondary" size="sm" wire:click="openAddLocationModal">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            {{ __('Add Location') }}
+                        </x-ui.button>
+                    </div>
+
+                    <div class="p-6">
+                        @if(empty($delivery_locations))
+                            <div class="flex flex-col items-center justify-center py-10 text-center">
+                                <div class="size-14 bg-base-200 rounded-full flex items-center justify-center mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                </div>
+                                <p class="text-[14px] font-semibold text-base-content/60">No delivery zones added yet</p>
+                                <p class="text-[12px] text-base-content/40 mt-1">Customers will not be asked to pick a location until you add one.</p>
+                                <x-ui.button type="button" variant="outline" size="sm" class="mt-5" wire:click="openAddLocationModal">
+                                    Add your first location
+                                </x-ui.button>
+                            </div>
+                        @else
+                            <div class="divide-y divide-base-content/5">
+                                @foreach($delivery_locations as $i => $location)
+                                    <div class="flex items-center gap-3 py-3 group">
+                                        {{-- Reorder --}}
+                                        <div class="flex flex-col gap-0.5 shrink-0">
+                                            <button type="button" wire:click="moveLocationUp({{ $i }})"
+                                                @class(['p-1 rounded text-base-content/30 hover:text-base-content transition-colors', 'opacity-20 pointer-events-none' => $i === 0])>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/>
+                                                </svg>
+                                            </button>
+                                            <button type="button" wire:click="moveLocationDown({{ $i }})"
+                                                @class(['p-1 rounded text-base-content/30 hover:text-base-content transition-colors', 'opacity-20 pointer-events-none' => $i === count($delivery_locations) - 1])>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        {{-- Location name --}}
+                                        <div class="flex-1 min-w-0">
+                                            <span class="text-[14px] font-medium text-base-content">{{ $location }}</span>
+                                        </div>
+
+                                        {{-- Position badge --}}
+                                        <span class="text-[10px] font-bold text-base-content/30 tabular-nums shrink-0">#{{ $i + 1 }}</span>
+
+                                        {{-- Actions --}}
+                                        <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button type="button" wire:click="openEditLocationModal({{ $i }})"
+                                                class="p-2 rounded-lg text-base-content/40 hover:text-primary hover:bg-primary/5 transition-colors">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                </svg>
+                                            </button>
+                                            <button type="button" wire:click="removeDeliveryLocation({{ $i }})"
+                                                wire:confirm="Remove '{{ $location }}'?"
+                                                class="p-2 rounded-lg text-base-content/40 hover:text-error hover:bg-error/5 transition-colors">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                </x-ui.card>
+
+                {{-- Event Booking Settings --}}
+                <x-ui.card class="shadow-sm overflow-hidden lg:col-span-2" accent="primary">
+                    <div class="p-6 border-b border-base-content/5">
+                        <h3 class="text-[16px] font-bold text-base-content uppercase tracking-[0.05em]">{{ __('Event Booking Rules') }}</h3>
+                        <p class="text-[11px] text-base-content/40 font-medium mt-1">{{ __('Set how far in advance customers must book events.') }}</p>
+                    </div>
+                    <form wire:submit.prevent="saveEventSettings" class="p-6 space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
+                            <div class="space-y-2">
+                                <label class="text-[12px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Minimum Lead Time') }}</label>
+                                <select wire:model="event_lead_days"
+                                    class="w-full px-4 py-3 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[14px] font-medium">
+                                    <option value="0">No minimum (any future date)</option>
+                                    <optgroup label="Days">
+                                        <option value="1">1 day ahead</option>
+                                        <option value="2">2 days ahead</option>
+                                        <option value="3">3 days ahead</option>
+                                        <option value="5">5 days ahead</option>
+                                    </optgroup>
+                                    <optgroup label="Weeks">
+                                        <option value="7">1 week ahead</option>
+                                        <option value="14">2 weeks ahead</option>
+                                        <option value="21">3 weeks ahead</option>
+                                        <option value="28">4 weeks ahead</option>
+                                    </optgroup>
+                                </select>
+                                @error('event_lead_days') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div class="bg-base-200/60 rounded-xl p-4 border border-base-content/5 space-y-1.5">
+                                <p class="text-[11px] font-bold uppercase tracking-widest text-base-content/50">{{ __('How it works') }}</p>
+                                <p class="text-[12px] text-base-content/60 leading-relaxed">
+                                    When a customer opens the event booking form, the earliest selectable date will be automatically set to
+                                    <strong class="text-base-content">today + {{ $event_lead_days }} {{ $event_lead_days === 1 ? 'day' : 'days' }}</strong>.
+                                    Dates before this minimum will be blocked.
+                                </p>
+                                @if($event_lead_days > 0)
+                                    <p class="text-[11px] font-semibold text-primary mt-2">
+                                        Currently: earliest bookable date is {{ now()->addDays($event_lead_days)->format('M j, Y') }}
+                                    </p>
+                                @else
+                                    <p class="text-[11px] font-semibold text-base-content/40 mt-2">
+                                        Currently: any future date is accepted
+                                    </p>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="pt-2 flex justify-end">
+                            <x-ui.button type="submit" variant="secondary" size="md" wire:loading.attr="disabled" wire:target="saveEventSettings">
+                                <span wire:loading.remove wire:target="saveEventSettings">{{ __('Save Event Rules') }}</span>
+                                <span wire:loading wire:target="saveEventSettings">{{ __('Saving...') }}</span>
+                            </x-ui.button>
+                        </div>
+                    </form>
+                </x-ui.card>
                 {{-- Payment Gateway --}}
                 <x-ui.card class="shadow-sm overflow-hidden" accent="warning">
                     <div class="p-6 border-b border-base-content/5">
@@ -370,4 +508,40 @@
             </div>
         @endif
     </div>
+
+    {{-- Delivery Location Modal (Add / Edit) --}}
+    <x-ui.modal wire:model="locationModalOpen" maxWidth="sm">
+        <div class="p-6">
+            <h3 class="text-[16px] font-bold text-base-content mb-1">
+                {{ $editingLocationIndex !== null ? __('Edit Location') : __('Add Delivery Location') }}
+            </h3>
+            <p class="text-[12px] text-base-content/50 mb-6">
+                {{ $editingLocationIndex !== null ? __('Update the name for this delivery zone.') : __('Enter the name of a zone customers can select.') }}
+            </p>
+
+            <form wire:submit.prevent="saveLocationModal" class="space-y-5">
+                <x-app.input
+                    name="locationName"
+                    type="text"
+                    label="Location Name"
+                    wire:model="locationName"
+                    placeholder="e.g. Accra Mall, East Legon"
+                    autofocus
+                />
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <x-ui.button type="button" variant="ghost" size="md" wire:click="$set('locationModalOpen', false)">
+                        {{ __('Cancel') }}
+                    </x-ui.button>
+                    <x-ui.button type="submit" variant="primary" size="md"
+                        wire:loading.attr="disabled" wire:target="saveLocationModal">
+                        <span wire:loading.remove wire:target="saveLocationModal">
+                            {{ $editingLocationIndex !== null ? __('Save Changes') : __('Add Location') }}
+                        </span>
+                        <span wire:loading wire:target="saveLocationModal">{{ __('Saving...') }}</span>
+                    </x-ui.button>
+                </div>
+            </form>
+        </div>
+    </x-ui.modal>
 </div>

@@ -27,6 +27,7 @@ class Package extends Model
         'min_guests',
         'features',
         'is_popular',
+        'window_exempt',
     ];
 
     protected function casts(): array
@@ -38,6 +39,7 @@ class Package extends Model
             'min_guests' => 'integer',
             'features' => 'array',
             'is_popular' => 'boolean',
+            'window_exempt' => 'boolean',
         ];
     }
 

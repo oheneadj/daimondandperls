@@ -21,7 +21,21 @@
       "Bash(find /home/oheneadj/server/dpc/database/migrations -name *customer* -o -name *payment_method*)",
       "Bash(grep -r \"dp-info\\\\|dp-warning\\\\|dp-rose\\\\|dp-\" /home/oheneadj/server/dpc/resources --include=*.css --include=*.scss)",
       "Bash(grep -r \"bg-\\\\|text-\\\\|border-\" /home/oheneadj/server/dpc/resources/views --include=*.blade.php)",
-      "Bash(cat /home/oheneadj/server/dpc/tailwind.config.*)"
+      "Bash(cat /home/oheneadj/server/dpc/tailwind.config.*)",
+      "Bash(echo \"EXIT:$?\")",
+      "mcp__laravel-boost__list-routes",
+      "Bash(grep -n 'attributes\\\\|inputmode\\\\|pattern\\\\|mergeAttributes\\\\|$attributes' /home/oheneadj/server/dpc/resources/views/components/app/input.blade.php)",
+      "Bash(vendor/bin/pint --dirty --format agent app/Livewire/Categories/CategoryIndex.php)",
+      "Bash(vendor/bin/pint --dirty --format agent app/Livewire/Packages/PackageForm.php)",
+      "Bash(vendor/bin/pint --dirty --format agent app/Services/CartService.php app/Models/BookingItem.php app/Traits/HandlesBookingCheckout.php app/Livewire/Packages/PackagesBrowse.php)",
+      "Bash(vendor/bin/pint --dirty --format agent app/Livewire/Packages/PackagesBrowse.php app/Livewire/Categories/CategoryIndex.php app/Livewire/Packages/PackageForm.php)",
+      "Bash(php -r \"echo \\\\Faker\\\\Factory::create\\(\\)->words\\(2, true\\);\")",
+      "Bash(git -C /home/oheneadj/server/dpc diff --name-only HEAD tests/)",
+      "Bash(git -C /home/oheneadj/server/dpc stash -- tests/Feature/Categories/ tests/Feature/AdminBookingsShowTest.php tests/Feature/BookingNotificationTest.php tests/Feature/ErrorHandlingTest.php tests/Feature/GeneralSettingsTest.php)",
+      "Bash(git -C /home/oheneadj/server/dpc stash pop)",
+      "Bash(vendor/bin/pint --dirty --format agent app/Services/BookingWindowService.php app/Livewire/Packages/PackagesBrowse.php)",
+      "Bash(vendor/bin/pint --dirty --format agent app/Livewire/Pages/HomePage.php app/Livewire/Packages/FeaturedPackages.php)",
+      "Bash(grep -r \"sm:\\\\|md:\\\\|lg:\\\\|xl:\" /home/oheneadj/server/dpc/resources/views/livewire/packages/ /home/oheneadj/server/dpc/resources/views/components/package*)"
     ],
     "additionalDirectories": [
       "/home/oheneadj/server/dpc/resources/views/components",

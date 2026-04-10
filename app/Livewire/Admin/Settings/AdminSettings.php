@@ -49,7 +49,20 @@ class AdminSettings extends Component
 
     public bool $sms_notifications = false;
 
+    // Delivery Locations
+    /** @var array<int, string> */
+    public array $delivery_locations = [];
+
+    public bool $locationModalOpen = false;
+
+    public ?int $editingLocationIndex = null;
+
+    public string $locationName = '';
+
     // Bank Details
+    // Event Booking Settings
+    public int $event_lead_days = 0;
+
     public ?string $bank_name = '';
 
     public ?string $account_name = '';
@@ -74,6 +87,10 @@ class AdminSettings extends Component
 
         $this->email_notifications = (bool) ($settings->get('email_enabled')?->value ?? false);
         $this->sms_notifications = (bool) ($settings->get('sms_enabled')?->value ?? false);
+
+        $this->event_lead_days = (int) ($settings->get('event_lead_days')?->value ?? 0);
+
+        $this->delivery_locations = $settings->get('delivery_locations')?->value ?? [];
 
         $this->bank_name = $settings->get('bank_name')?->value ?? '';
         $this->account_name = $settings->get('account_name')?->value ?? '';
@@ -125,6 +142,93 @@ class AdminSettings extends Component
         $this->updateSetting('paystack_secret_key', $this->paystack_secret_key, \App\Enums\SettingType::String, 'payment');
 
         $this->dispatch('banner', style: 'success', message: 'Payment gateway credentials updated.');
+    }
+
+    public function openAddLocationModal(): void
+    {
+        $this->editingLocationIndex = null;
+        $this->locationName = '';
+        $this->locationModalOpen = true;
+    }
+
+    public function openEditLocationModal(int $index): void
+    {
+        $this->editingLocationIndex = $index;
+        $this->locationName = $this->delivery_locations[$index] ?? '';
+        $this->locationModalOpen = true;
+    }
+
+    public function saveLocationModal(): void
+    {
+        $this->validate([
+            'locationName' => ['required', 'string', 'max:100'],
+        ], [
+            'locationName.required' => 'Please enter a location name.',
+        ]);
+
+        if ($this->editingLocationIndex !== null) {
+            $this->delivery_locations[$this->editingLocationIndex] = trim($this->locationName);
+        } else {
+            $this->delivery_locations[] = trim($this->locationName);
+        }
+
+        $this->persistDeliveryLocations();
+        $this->locationModalOpen = false;
+        $this->locationName = '';
+        $this->editingLocationIndex = null;
+
+        $this->dispatch('banner', style: 'success', message: 'Delivery location saved.');
+    }
+
+    public function removeDeliveryLocation(int $index): void
+    {
+        array_splice($this->delivery_locations, $index, 1);
+        $this->delivery_locations = array_values($this->delivery_locations);
+        $this->persistDeliveryLocations();
+
+        $this->dispatch('banner', style: 'success', message: 'Delivery location removed.');
+    }
+
+    public function moveLocationUp(int $index): void
+    {
+        if ($index <= 0) {
+            return;
+        }
+
+        [$this->delivery_locations[$index - 1], $this->delivery_locations[$index]] =
+            [$this->delivery_locations[$index], $this->delivery_locations[$index - 1]];
+
+        $this->persistDeliveryLocations();
+    }
+
+    public function moveLocationDown(int $index): void
+    {
+        if ($index >= count($this->delivery_locations) - 1) {
+            return;
+        }
+
+        [$this->delivery_locations[$index], $this->delivery_locations[$index + 1]] =
+            [$this->delivery_locations[$index + 1], $this->delivery_locations[$index]];
+
+        $this->persistDeliveryLocations();
+    }
+
+    private function persistDeliveryLocations(): void
+    {
+        $this->updateSetting('delivery_locations', json_encode(array_values($this->delivery_locations)), \App\Enums\SettingType::Json, 'booking');
+    }
+
+    public function saveEventSettings(): void
+    {
+        $this->validate([
+            'event_lead_days' => ['required', 'integer', 'min:0', 'max:28'],
+        ], [
+            'event_lead_days.max' => 'Maximum lead time is 4 weeks (28 days).',
+        ]);
+
+        $this->updateSetting('event_lead_days', $this->event_lead_days, \App\Enums\SettingType::Integer, 'event');
+
+        $this->dispatch('banner', style: 'success', message: 'Event booking settings updated.');
     }
 
     public function saveBankDetails(): void

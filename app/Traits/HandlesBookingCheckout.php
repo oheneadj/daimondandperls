@@ -157,16 +157,33 @@ trait HandlesBookingCheckout
         }
     }
 
+    public function getVisualStep(): int
+    {
+        if (Auth::check() && $this->currentStep > $this->getContactStepNumber()) {
+            return $this->currentStep - 1;
+        }
+
+        return $this->currentStep;
+    }
+
     public function nextStep(): void
     {
         $this->validateCurrentStep();
         $this->currentStep++;
+
+        if (Auth::check() && $this->currentStep === $this->getContactStepNumber()) {
+            $this->currentStep++;
+        }
     }
 
     public function previousStep(): void
     {
         if ($this->currentStep > 1) {
             $this->currentStep--;
+
+            if (Auth::check() && $this->currentStep === $this->getContactStepNumber()) {
+                $this->currentStep--;
+            }
         }
     }
 
@@ -247,6 +264,7 @@ trait HandlesBookingCheckout
                 'package_description' => $item['package']->description,
                 'price' => $item['package']->price,
                 'quantity' => $item['quantity'],
+                'scheduled_date' => isset($item['scheduled_date']) ? $item['scheduled_date']?->toDateString() : null,
             ]);
         }
     }
@@ -317,6 +335,12 @@ trait HandlesBookingCheckout
 
         $this->restoreWizardSpecificState($state);
 
+        // Edge case: guest was on the contact step, completed OTP (now authenticated),
+        // and was redirected back — advance past the now-skipped contact step.
+        if (Auth::check() && $this->currentStep === $this->getContactStepNumber()) {
+            $this->currentStep++;
+        }
+
         return true;
     }
 
@@ -342,4 +366,10 @@ trait HandlesBookingCheckout
      * Override in each wizard to return the redirect route after OTP verification.
      */
     abstract protected function getRedirectRoute(): string;
+
+    /**
+     * Return the step number that represents the Contact Details step.
+     * This step is skipped for authenticated users.
+     */
+    abstract protected function getContactStepNumber(): int;
 }

@@ -97,6 +97,55 @@ class MoolrePaymentService
     }
 
     /**
+     * Re-submit the payment request with the customer's OTP code.
+     * Called when a prior initiatePayment() returned TP14.
+     *
+     * @param  string  $channel  (13 = MTN, 6 = Telecel, 7 = AT)
+     */
+    public function submitOtp(Booking $booking, string $channel, string $payerNumber, string $otpCode): array
+    {
+        $payload = [
+            'type' => 1,
+            'channel' => strval($channel),
+            'currency' => 'GHS',
+            'payer' => $payerNumber,
+            'amount' => number_format((float) $booking->total_amount, 2, '.', ''),
+            'externalref' => $booking->reference,
+            'otpcode' => $otpCode,
+            'reference' => '',
+            'sessionid' => '',
+            'accountnumber' => $this->merchantId,
+        ];
+
+        try {
+            Log::info('Moolre: Submitting OTP', [
+                'booking' => $booking->reference,
+                'channel' => $channel,
+                'payer' => $payerNumber,
+            ]);
+
+            $response = $this->client()->post($this->baseUrl.'/payment', $payload);
+
+            $json = $response->json() ?? [];
+
+            Log::info('Moolre: OTP submit response', [
+                'booking' => $booking->reference,
+                'http_status' => $response->status(),
+                'response' => $json,
+            ]);
+
+            return $json ?: ['status' => false, 'message' => 'Failed to reach payment gateway.'];
+        } catch (\Exception $e) {
+            Log::error('Moolre: OTP submit exception', [
+                'booking' => $booking->reference,
+                'error' => $e->getMessage(),
+            ]);
+
+            return ['status' => false, 'message' => 'Network error connecting to Moolre.'];
+        }
+    }
+
+    /**
      * Polling fallback tool: Directly verify the status of a transaction reference
      */
     public function checkStatus(string $externalRef): array

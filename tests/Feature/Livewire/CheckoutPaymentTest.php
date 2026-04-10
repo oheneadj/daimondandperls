@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Enums\PaymentStatus;
 use App\Livewire\Booking\CheckoutPayment;
 use App\Models\Booking;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Package;
 use App\Notifications\BookingConfirmedNotification;
+use App\Services\MoolrePaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
@@ -25,12 +29,15 @@ beforeEach(function () {
     ]);
 });
 
-it('initiates mobile money payment via Moolre and enters awaiting state', function () {
-    $this->mock(\App\Services\MoolrePaymentService::class, function ($mock) {
+// ── Happy path: no OTP required ──────────────────────────────────────────────
+
+it('skips OTP and enters awaiting state when Moolre returns TR099', function () {
+    $this->mock(MoolrePaymentService::class, function ($mock) {
         $mock->shouldReceive('initiatePayment')
             ->once()
             ->andReturn([
                 'status' => 1,
+                'code' => 'TR099',
                 'data' => 'MOOLRE-TEST-123',
                 'message' => 'Success',
             ]);
@@ -39,15 +46,134 @@ it('initiates mobile money payment via Moolre and enters awaiting state', functi
     Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
         ->set('momoNetwork', '13')
         ->set('momoNumber', '0541234567')
-        ->assertStatus(200)
         ->call('processMobileMoney')
         ->assertHasNoErrors()
-        ->assertSet('isAwaitingPayment', true);
+        ->assertSet('paymentStep', 'awaiting');
 
-    $this->booking = $this->booking->fresh();
+    $booking = $this->booking->fresh();
 
-    expect($this->booking->payment_status)->toBe(\App\Enums\PaymentStatus::Pending)
-        ->and($this->booking->payment_reference)->toBe('MOOLRE-TEST-123');
+    expect($booking->payment_status)->toBe(PaymentStatus::Pending)
+        ->and($booking->payment_reference)->toBe('MOOLRE-TEST-123');
+});
+
+// ── OTP flow ─────────────────────────────────────────────────────────────────
+
+it('enters OTP state when Moolre returns TP14', function () {
+    $this->mock(MoolrePaymentService::class, function ($mock) {
+        $mock->shouldReceive('initiatePayment')
+            ->once()
+            ->andReturn([
+                'status' => 0,
+                'code' => 'TP14',
+                'message' => 'Please complete the verification sent via SMS.',
+            ]);
+    });
+
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
+        ->set('momoNetwork', '13')
+        ->set('momoNumber', '0541234567')
+        ->call('processMobileMoney')
+        ->assertHasNoErrors()
+        ->assertSet('paymentStep', 'otp');
+
+    // Channel + number saved to DB, but payment_status still Unpaid and no reference
+    $booking = $this->booking->fresh();
+
+    expect($booking->payment_status)->toBe(PaymentStatus::Unpaid)
+        ->and($booking->payment_reference)->toBeNull()
+        ->and($booking->payment_channel)->toBe('13')
+        ->and($booking->payer_number)->toBe('0541234567');
+});
+
+it('restores OTP state on page refresh when channel is set but reference is null', function () {
+    $this->booking->update([
+        'payment_channel' => '13',
+        'payer_number' => '0541234567',
+        'payment_status' => 'unpaid',
+        'payment_reference' => null,
+    ]);
+
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking->fresh()])
+        ->assertSet('paymentStep', 'otp')
+        ->assertSet('momoNetwork', '13')
+        ->assertSet('momoNumber', '0541234567');
+});
+
+it('submits OTP and enters awaiting state on TP17 then TR099', function () {
+    $this->booking->update([
+        'payment_channel' => '13',
+        'payer_number' => '0541234567',
+    ]);
+
+    $this->mock(MoolrePaymentService::class, function ($mock) {
+        $mock->shouldReceive('submitOtp')
+            ->once()
+            ->andReturn(['status' => 0, 'code' => 'TP17', 'message' => 'OTP verified.']);
+
+        $mock->shouldReceive('initiatePayment')
+            ->once()
+            ->andReturn(['status' => 1, 'code' => 'TR099', 'data' => 'MOOLRE-REF-999', 'message' => 'Prompt sent.']);
+    });
+
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking->fresh()])
+        ->assertSet('paymentStep', 'otp')
+        ->set('otpCode', '123456')
+        ->call('submitOtp')
+        ->assertHasNoErrors()
+        ->assertSet('paymentStep', 'awaiting');
+
+    $booking = $this->booking->fresh();
+
+    expect($booking->payment_status)->toBe(PaymentStatus::Pending)
+        ->and($booking->payment_reference)->toBe('MOOLRE-REF-999');
+});
+
+it('shows error and stays on OTP step for invalid OTP (TP15)', function () {
+    $this->booking->update(['payment_channel' => '13', 'payer_number' => '0541234567']);
+
+    $this->mock(MoolrePaymentService::class, function ($mock) {
+        $mock->shouldReceive('submitOtp')
+            ->once()
+            ->andReturn(['status' => 0, 'code' => 'TP15', 'message' => 'Invalid OTP.']);
+    });
+
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking->fresh()])
+        ->set('otpCode', '000000')
+        ->call('submitOtp')
+        ->assertSet('paymentStep', 'otp')
+        ->assertSet('errorMessage', 'Invalid verification code. Please check and try again.');
+});
+
+it('clears OTP DB state and shows form on cancelPayment', function () {
+    $this->booking->update(['payment_channel' => '13', 'payer_number' => '0541234567']);
+
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking->fresh()])
+        ->assertSet('paymentStep', 'otp')
+        ->call('cancelPayment')
+        ->assertSet('paymentStep', 'form');
+
+    $booking = $this->booking->fresh();
+
+    expect($booking->payment_channel)->toBeNull()
+        ->and($booking->payer_number)->toBeNull()
+        ->and($booking->payment_reference)->toBeNull()
+        ->and($booking->payment_status)->toBe(PaymentStatus::Unpaid);
+});
+
+// ── Polling resume ────────────────────────────────────────────────────────────
+
+it('resumes awaiting state on refresh when payment_reference is set', function () {
+    $this->booking->update([
+        'payment_status' => 'pending',
+        'payment_reference' => 'MOOLRE-TEST-123',
+        'payment_channel' => '13',
+        'payer_number' => '0541234567',
+    ]);
+
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking->fresh()])
+        ->assertSet('paymentStep', 'awaiting')
+        ->assertSet('momoNetwork', '13')
+        ->assertSet('momoNumber', '0541234567');
 });
 
 it('redirects to confirmation and notifies customer when polling detects successful payment', function () {
@@ -55,7 +181,6 @@ it('redirects to confirmation and notifies customer when polling detects success
 
     $component = Livewire::test(CheckoutPayment::class, ['booking' => $this->booking]);
 
-    // Simulate webhook already marked it as paid after component mounts
     $this->booking->update([
         'payment_status' => 'paid',
         'payment_reference' => 'MOOLRE-TEST-123',
@@ -70,29 +195,27 @@ it('redirects to confirmation and notifies customer when polling detects success
     Notification::assertSentTo(
         [$this->customer],
         BookingConfirmedNotification::class,
-        function ($notification, $channels) {
-            return $notification->booking->id === $this->booking->id;
-        }
+        fn ($notification) => $notification->booking->id === $this->booking->id
     );
 });
 
-it('does not dispatch notification for bank transfer', function () {
-    Notification::fake();
+// ── Auto-initiate ─────────────────────────────────────────────────────────────
+
+it('sets autoInitiate and pre-populates network and number from session', function () {
+    session()->put('checkout_payment_method', [
+        'network' => '13',
+        'number' => '0541234567',
+    ]);
 
     Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
-        ->set('paymentMethod', 'bank_transfer')
-        ->set('senderName', 'John Doe Transfer')
-        ->set('senderPhone', '0241234567')
-        ->call('submitBankTransfer')
-        ->assertRedirect(route('booking.confirmation', ['booking' => $this->booking->reference]));
+        ->assertSet('autoInitiate', true)
+        ->assertSet('momoNetwork', '13')
+        ->assertSet('momoNumber', '0541234567');
 
-    $this->booking->refresh();
-
-    expect($this->booking->status->value)->toBe('pending')
-        ->and($this->booking->payment_status->value)->toBe('pending');
-
-    Notification::assertNothingSent();
+    expect(session()->has('checkout_payment_method'))->toBeFalse();
 });
+
+// ── Validation ────────────────────────────────────────────────────────────────
 
 it('validates mobile money network and number are required', function () {
     Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
@@ -110,30 +233,14 @@ it('validates mobile money number matches selected network prefix', function () 
         ->assertHasErrors(['momoNumber']);
 });
 
-it('validates bank transfer requires sender name and phone', function () {
-    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
-        ->set('paymentMethod', 'bank_transfer')
-        ->set('senderName', '')
-        ->set('senderPhone', '')
-        ->call('submitBankTransfer')
-        ->assertHasErrors(['senderName', 'senderPhone']);
-});
+it('validates OTP code is required and must be 6 digits', function () {
+    $this->booking->update(['payment_channel' => '13', 'payer_number' => '0541234567']);
 
-it('validates bank transfer phone format', function () {
-    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
-        ->set('paymentMethod', 'bank_transfer')
-        ->set('senderName', 'John Doe')
-        ->set('senderPhone', '12345')
-        ->call('submitBankTransfer')
-        ->assertHasErrors(['senderPhone']);
-});
-
-it('accepts valid Ghana phone formats for bank transfer', function () {
-    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
-        ->set('paymentMethod', 'bank_transfer')
-        ->set('senderName', 'John Doe')
-        ->set('senderPhone', '0241234567')
-        ->call('submitBankTransfer')
-        ->assertHasNoErrors(['senderPhone'])
-        ->assertRedirect();
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking->fresh()])
+        ->set('otpCode', '')
+        ->call('submitOtp')
+        ->assertHasErrors(['otpCode'])
+        ->set('otpCode', '123')
+        ->call('submitOtp')
+        ->assertHasErrors(['otpCode']);
 });

@@ -46,7 +46,6 @@ Route::middleware(['auth', 'customer'])
     });
 
 // Customer Booking Flow
-Route::get('/book', App\Livewire\Booking\BookingTypeSelection::class)->name('booking.select-type');
 Route::get('/checkout', App\Livewire\Booking\BookingWizard::class)->name('checkout');
 Route::get('/event-booking', App\Livewire\Booking\EventInquiryWizard::class)->name('event-booking');
 Route::get('/booking/track', App\Livewire\Booking\TrackBooking::class)->name('booking.track');

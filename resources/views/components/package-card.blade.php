@@ -1,4 +1,4 @@
-@props(['package', 'selected' => false])
+@props(['package', 'selected' => false, 'windowStatus' => null])
 
 @php
     $bgClass = match($package->category?->slug) {
@@ -46,6 +46,45 @@
             <div class="absolute badge-popular text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm top-3 left-3">
                 {{ __('Most Popular') }}
             </div>
+        @endif
+
+        @if($windowStatus && $windowStatus['enabled'] && !($package->window_exempt ?? false))
+            @if($windowStatus['open'])
+                @php
+                    $diffSeconds = $windowStatus['cutoff']->diffInSeconds(now());
+                    $initH = floor($diffSeconds / 3600);
+                    $initM = floor(($diffSeconds % 3600) / 60);
+                    $initS = $diffSeconds % 60;
+                    $initLabel = $initH > 0 ? "{$initH}h {$initM}m" : "{$initM}m {$initS}s";
+                @endphp
+                <div
+                    class="absolute bottom-0 left-0 right-0 bg-[#121212]/90 backdrop-blur-sm text-white px-3 py-2 flex items-center justify-between gap-2"
+                    x-data="{
+                        deadline: {{ $windowStatus['cutoff']->timestamp * 1000 }},
+                        label: '{{ $initLabel }}',
+                        tick() {
+                            const diff = this.deadline - Date.now();
+                            if (diff <= 0) { this.label = 'Window closed'; return; }
+                            const h = Math.floor(diff / 3600000);
+                            const m = Math.floor((diff % 3600000) / 60000);
+                            const s = Math.floor((diff % 60000) / 1000);
+                            this.label = h > 0 ? `${h}h ${m}m` : `${m}m ${s}s`;
+                        }
+                    }"
+                    x-init="setInterval(() => tick(), 1000)"
+                >
+                    <span class="text-[10px] font-bold text-white/60 uppercase tracking-widest leading-tight">Book by {{ $windowStatus['cutoffLabel'] }}, {{ substr($windowStatus['cutoff']->format('H:i'), 0, 5) }}</span>
+                    <span class="flex items-center gap-1.5 text-[12px] font-black text-white shrink-0">
+                        <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0"></span>
+                        <span x-text="label"></span>
+                    </span>
+                </div>
+            @else
+                <div class="absolute bottom-0 left-0 right-0 bg-error text-white px-3 py-2 flex items-center justify-between gap-2">
+                    <span class="text-[10px] font-bold text-white/70 uppercase tracking-widest leading-tight">Next delivery</span>
+                    <span class="text-[11px] font-black text-white shrink-0">{{ $windowStatus['scheduledDelivery']->format('D, M j') }}</span>
+                </div>
+            @endif
         @endif
 
         <div @class([

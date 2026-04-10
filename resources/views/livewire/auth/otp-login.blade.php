@@ -18,11 +18,11 @@
     <div class="space-y-5">
         @if($step === 1)
             <!-- Step 1: Phone -->
-            <x-auth.input
+            <x-app.input
                 name="phone"
                 type="tel"
                 :label="__('Phone Number')"
-                wireModel="phone"
+                wire:model="phone"
                 required
                 placeholder="e.g., 0244000000"
             >
@@ -31,11 +31,11 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
                 </x-slot:icon>
-            </x-auth.input>
+            </x-app.input>
 
-            <x-auth.button type="button" wireClick="sendOtp" wireTarget="sendOtp" loadingText="Sending...">
+            <x-app.button type="button" class="w-full" wireClick="sendOtp" wireTarget="sendOtp" loadingText="Sending...">
                 Send Verification Code
-            </x-auth.button>
+            </x-app.button>
         @else
             <!-- Step 2: OTP Grid -->
             <x-auth.otp-grid wireModel="otp" wireSubmit="verifyOtp" wireResend="resendOtp" />
@@ -43,16 +43,16 @@
             <x-auth.resend-timer wireResend="resendOtp" :seconds="60" />
 
             <div class="space-y-3">
-                <x-auth.button type="button" variant="primary" wireClick="verifyOtp" wireTarget="verifyOtp" loadingText="Verifying...">
+                <x-app.button type="button" class="w-full" variant="primary" wireClick="verifyOtp" wireTarget="verifyOtp" loadingText="Verifying...">
                     Verify & Login
-                </x-auth.button>
+                </x-app.button>
 
-                <x-auth.button type="button" variant="ghost" wireClick="backToPhone">
+                <x-app.button type="button" class="w-full" variant="ghost" wireClick="backToPhone">
                     <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                     Use a different number
-                </x-auth.button>
+                </x-app.button>
             </div>
         @endif
     </div>

@@ -13,31 +13,31 @@
 
                 <div class="space-y-5">
                     <!-- Name -->
-                    <div>
-                        <label for="name" class="block text-[12px] font-bold text-base-content/60 uppercase tracking-wide mb-2">Full Name</label>
-                        <input type="text" id="name" wire:model="name"
-                            class="w-full bg-base-200/50 border border-base-content/10 text-[14px] rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all outline-none"
-                            placeholder="Your full name">
-                        @error('name') <p class="text-[12px] font-bold text-error mt-1.5">{{ $message }}</p> @enderror
-                    </div>
+                    <x-app.input
+                        name="name"
+                        type="text"
+                        label="Full Name"
+                        wire:model="name"
+                        placeholder="Your full name"
+                    />
 
                     <!-- Email -->
-                    <div>
-                        <label for="email" class="block text-[12px] font-bold text-base-content/60 uppercase tracking-wide mb-2">Email Address</label>
-                        <input type="email" id="email" wire:model="email"
-                            class="w-full bg-base-200/50 border border-base-content/10 text-[14px] rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all outline-none"
-                            placeholder="your@email.com">
-                        @error('email') <p class="text-[12px] font-bold text-error mt-1.5">{{ $message }}</p> @enderror
-                    </div>
+                    <x-app.input
+                        name="email"
+                        type="email"
+                        label="Email Address"
+                        wire:model="email"
+                        placeholder="your@email.com"
+                    />
 
                     <!-- Phone -->
-                    <div>
-                        <label for="phone" class="block text-[12px] font-bold text-base-content/60 uppercase tracking-wide mb-2">Phone Number</label>
-                        <input type="tel" id="phone" wire:model="phone"
-                            class="w-full bg-base-200/50 border border-base-content/10 text-[14px] rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all outline-none"
-                            placeholder="024XXXXXXX">
-                        @error('phone') <p class="text-[12px] font-bold text-error mt-1.5">{{ $message }}</p> @enderror
-                    </div>
+                    <x-app.input
+                        name="phone"
+                        type="tel"
+                        label="Phone Number"
+                        wire:model="phone"
+                        placeholder="024XXXXXXX"
+                    />
                 </div>
             </div>
 

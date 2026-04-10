@@ -42,25 +42,29 @@ test('event wizard requires valid event details', function () {
         ->assertHasErrors(['event_date', 'event_end_time']);
 });
 
-test('meal wizard skips event details entirely', function () {
-    Livewire::test(BookingWizard::class)
-        ->set('currentStep', 2)
-        ->set('name', 'Test User')
-        ->set('phone', '0244123456')
-        ->call('nextStep')
-        ->assertSet('currentStep', 3);
+test('meal wizard is a single screen with no event details fields', function () {
+    $component = Livewire::test(BookingWizard::class);
+
+    // Single-screen wizard stays at step 1 — no step navigation needed
+    $component->assertSet('currentStep', 1);
+
+    // Meal wizard has no event-specific fields
+    expect(property_exists($component->instance(), 'event_date'))->toBeFalse()
+        ->and(property_exists($component->instance(), 'event_type'))->toBeFalse();
 });
 
 test('booking remains pending before payment', function () {
-    $component = Livewire::test(BookingWizard::class)
-        ->set('currentStep', 3)
+    Livewire::test(BookingWizard::class)
         ->set('name', 'John Doe')
         ->set('phone', '0244111222')
+        ->set('momoNetwork', '13')
+        ->set('momoNumber', '0241234567')
         ->call('confirmBooking');
 
     $booking = Booking::latest()->first();
-    expect($booking->status->value)->toBe('pending');
-    expect($booking->payment_status->value)->toBe('unpaid');
+    expect($booking)->not->toBeNull()
+        ->and($booking->status->value)->toBe('pending')
+        ->and($booking->payment_status->value)->toBe('unpaid');
 });
 
 test('booking becomes confirmed only after successful payment', function () {

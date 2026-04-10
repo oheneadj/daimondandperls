@@ -1,6 +1,9 @@
 <div class="bg-base-200 min-h-screen py-10 lg:py-20" x-data x-ref="wizardTop">
     <div class="container mx-auto px-4 lg:px-8 max-w-3xl">
-        <x-booking.progress-bar :steps="['Event', 'Menu', 'Contact', 'Summary']" :currentStep="$currentStep" />
+        <x-booking.progress-bar
+            :steps="Auth::check() ? ['Event Details', 'Summary'] : ['Event Details', 'Contact', 'Summary']"
+            :currentStep="$this->getVisualStep()"
+        />
 
         <div class="bg-base-100 border border-base-content/10 rounded-lg p-5 sm:p-8 lg:p-10 shadow-dp-lg">
 
@@ -14,205 +17,110 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         {{-- Event Date --}}
-                        <div class="md:col-span-2 form-control w-full space-y-1.5">
-                            <label class="text-dp-sm font-medium text-base-content block">Event Date</label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-base-content/40 pointer-events-none">
+                        <div class="md:col-span-2">
+                            <x-app.input
+                                name="event_date"
+                                type="date"
+                                label="Event Date"
+                                wire:model.live="event_date"
+                                :min="$minEventDate"
+                            >
+                                <x-slot:icon>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                </span>
-                                <input type="date" wire:model.live="event_date" class="w-full max-w-full pl-12 pr-[14px] py-[10px] bg-base-100 border border-base-content/10 focus:border-primary focus:ring-3 focus:ring-primary/20 rounded-lg transition-all duration-120 outline-none text-[15px] font-medium">
-                            </div>
-                            @error('event_date') <p class="text-xs text-error flex items-center gap-1"><span>⚠</span> {{ $message }}</p> @enderror
+                                </x-slot:icon>
+                            </x-app.input>
                         </div>
 
                         {{-- Start Time --}}
-                        <div class="form-control w-full space-y-1.5">
-                            <label class="text-dp-sm font-medium text-base-content block">Start Time</label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-base-content/40 pointer-events-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                </span>
-                                <input type="time" wire:model="event_start_time"
-                                    @if(!$event_date) disabled @endif
-                                    @class([
-                                        'w-full max-w-full pl-12 pr-[14px] py-[10px] border rounded-lg transition-all duration-120 outline-none text-[15px] font-medium',
-                                        'bg-base-100 border-base-content/10 focus:border-primary focus:ring-3 focus:ring-primary/20' => $event_date,
-                                        'bg-base-200 border-base-content/5 text-base-content/30 cursor-not-allowed' => !$event_date,
-                                    ])>
-                            </div>
-                            @if(!$event_date)
-                                <p class="text-xs text-base-content/40">Select an event date first</p>
-                            @endif
-                            @error('event_start_time') <p class="text-xs text-error flex items-center gap-1"><span>⚠</span> {{ $message }}</p> @enderror
-                        </div>
+                        <x-app.input
+                            name="event_start_time"
+                            type="time"
+                            label="Start Time"
+                            wire:model="event_start_time"
+                            :disabled="!$event_date"
+                            :hint="!$event_date ? 'Select an event date first' : null"
+                        >
+                            <x-slot:icon>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </x-slot:icon>
+                        </x-app.input>
 
                         {{-- End Time --}}
-                        <div class="form-control w-full space-y-1.5">
-                            <label class="text-dp-sm font-medium text-base-content block">End Time</label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-base-content/40 pointer-events-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                </span>
-                                <input type="time" wire:model="event_end_time"
-                                    @if(!$event_date) disabled @endif
-                                    @class([
-                                        'w-full max-w-full pl-12 pr-[14px] py-[10px] border rounded-lg transition-all duration-120 outline-none text-[15px] font-medium',
-                                        'bg-base-100 border-base-content/10 focus:border-primary focus:ring-3 focus:ring-primary/20' => $event_date,
-                                        'bg-base-200 border-base-content/5 text-base-content/30 cursor-not-allowed' => !$event_date,
-                                    ])>
-                            </div>
-                            @if(!$event_date)
-                                <p class="text-xs text-base-content/40">Select an event date first</p>
-                            @endif
-                            @error('event_end_time') <p class="text-xs text-error flex items-center gap-1"><span>⚠</span> {{ $message }}</p> @enderror
-                        </div>
+                        <x-app.input
+                            name="event_end_time"
+                            type="time"
+                            label="End Time"
+                            wire:model="event_end_time"
+                            :disabled="!$event_date"
+                            :hint="!$event_date ? 'Select an event date first' : null"
+                        >
+                            <x-slot:icon>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </x-slot:icon>
+                        </x-app.input>
 
                         {{-- Occasion Type --}}
-                        <div class="md:col-span-2 form-control w-full space-y-1.5">
-                            <label class="text-dp-sm font-medium text-base-content block">Occasion Type</label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-base-content/40 pointer-events-none">
+                        <div class="md:col-span-2">
+                            <x-app.input
+                                name="event_type"
+                                as="select"
+                                label="Occasion Type"
+                                wire:model.live="event_type"
+                            >
+                                <x-slot:icon>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-                                </span>
-                                <select wire:model.live="event_type" class="w-full max-w-full pl-12 pr-[14px] py-[10px] bg-base-100 border border-base-content/10 focus:border-primary focus:ring-3 focus:ring-primary/20 rounded-lg transition-all duration-120 outline-none text-[15px] font-medium appearance-none">
-                                    <option value="">Select Event Type...</option>
-                                    <option value="wedding">Wedding Reception</option>
-                                    <option value="birthday">Birthday Party</option>
-                                    <option value="corporate">Corporate Event</option>
-                                    <option value="funeral">Funeral Rite</option>
-                                    <option value="party">Social Gathering</option>
-                                    <option value="other">Other Event</option>
-                                </select>
-                                <span class="absolute inset-y-0 right-0 pr-4 flex items-center text-base-content/40 pointer-events-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                                </span>
-                            </div>
-                            @error('event_type') <p class="text-xs text-error flex items-center gap-1"><span>⚠</span> {{ $message }}</p> @enderror
+                                </x-slot:icon>
+                                <option value="">Select Event Type...</option>
+                                <option value="wedding">Wedding Reception</option>
+                                <option value="birthday">Birthday Party</option>
+                                <option value="corporate">Corporate Event</option>
+                                <option value="funeral">Funeral Rite</option>
+                                <option value="party">Social Gathering</option>
+                                <option value="other">Other Event</option>
+                            </x-app.input>
                         </div>
 
                         @if($event_type === 'other')
                             <div class="md:col-span-2 animate-fade-in">
-                                <x-auth.input
+                                <x-app.input
                                     name="event_type_other"
                                     type="text"
                                     :label="__('Specify Occasion')"
-                                    wireModel="event_type_other"
+                                    wire:model="event_type_other"
                                     placeholder="Describe the event..."
                                 >
                                     <x-slot:icon>
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                     </x-slot:icon>
-                                </x-auth.input>
+                                </x-app.input>
                             </div>
                         @endif
+
+                        {{-- Event Location --}}
+                        <div class="md:col-span-2">
+                            <x-app.input
+                                name="event_location"
+                                type="text"
+                                label="Event Location"
+                                wire:model="event_location"
+                                placeholder="e.g. Kempinski Hotel, Accra"
+                            >
+                                <x-slot:icon>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                </x-slot:icon>
+                            </x-app.input>
+                        </div>
                     </div>
 
                     <div class="flex justify-end pt-8 border-t border-base-content/10">
                         <x-ui.button type="button" wire:click="nextStep" x-on:click="$nextTick(() => $refs.wizardTop.scrollIntoView({ behavior: 'smooth' }))" variant="primary" size="lg" class="w-full sm:w-auto">
-                            {{ __('Next: Menu Suggestions') }} &rarr;
+                            {{ Auth::check() ? __('Next: Review Summary') : __('Next: Contact Details') }} &rarr;
                         </x-ui.button>
                     </div>
                 </div>
 
-            {{-- ══ STEP 2: Menu Suggestions + Service Style + Pax ══ --}}
+            {{-- ══ STEP 2: Contact Details ══ --}}
             @elseif($currentStep === 2)
-                <div wire:key="step-menu" class="animate-fade-in space-y-8">
-                    <div>
-                        <h2 class="text-xl font-semibold text-base-content mb-2">Menu Suggestions</h2>
-                        <p class="text-[14px] text-base-content/50 font-medium">Optionally select packages to suggest for your event menu. You can also browse our menu to add items.</p>
-                    </div>
-
-                    @if(count($cartItems) > 0)
-                        <div class="space-y-3">
-                            @foreach($cartItems as $item)
-                                <div wire:key="cart-review-{{ $item['package']->id }}" class="flex items-center gap-4 p-4 bg-base-200 rounded-lg border border-base-content/10">
-                                    <div class="size-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                    </div>
-                                    <span class="text-[15px] font-semibold text-base-content">{{ $item['package']->name }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="text-center py-10 bg-base-200/50 rounded-lg border border-dashed border-base-content/10">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="size-10 mx-auto text-base-content/20 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <p class="text-[14px] text-base-content/40 font-medium mb-3">No menu items selected yet</p>
-                            <a href="{{ route('packages.browse') }}" class="text-[13px] font-semibold text-primary hover:underline">Browse Our Menu &rarr;</a>
-                        </div>
-                    @endif
-
-                    {{-- Service Style --}}
-                    <div class="form-control w-full space-y-1.5">
-                        <label class="text-dp-sm font-medium text-base-content block">Service Style</label>
-                        <div class="flex gap-3">
-                            <button type="button" wire:click="$set('is_buffet', false)"
-                                @class([
-                                    'flex-1 px-4 py-[10px] rounded-lg border text-[14px] font-medium transition-all flex items-center justify-center gap-2',
-                                    'border-primary bg-primary/5 text-primary' => !$is_buffet,
-                                    'border-base-content/10 bg-base-100 text-base-content/60 hover:border-base-content/20' => $is_buffet,
-                                ])>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                                Fixed Plates
-                            </button>
-                            <button type="button" wire:click="$set('is_buffet', true)"
-                                @class([
-                                    'flex-1 px-4 py-[10px] rounded-lg border text-[14px] font-medium transition-all flex items-center justify-center gap-2',
-                                    'border-primary bg-primary/5 text-primary' => $is_buffet,
-                                    'border-base-content/10 bg-base-100 text-base-content/60 hover:border-base-content/20' => !$is_buffet,
-                                ])>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-                                Buffet
-                            </button>
-                        </div>
-                    </div>
-
-                    {{-- Number of Guests / Plates --}}
-                    <div class="form-control w-full space-y-1.5">
-                        <label class="text-dp-sm font-medium text-base-content block">
-                            @if($is_buffet) Expected Number of Guests @else Number of Plates @endif
-                            <span class="text-base-content/40">(Optional)</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-base-content/40 pointer-events-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                            </span>
-                            <input type="number" wire:model="pax" min="1" max="10000"
-                                class="w-full max-w-full pl-12 pr-[14px] py-[10px] bg-base-100 border border-base-content/10 focus:border-primary focus:ring-3 focus:ring-primary/20 rounded-lg transition-all duration-120 outline-none text-[15px] font-medium placeholder:text-base-content/40"
-                                placeholder="e.g. 50">
-                        </div>
-                        @error('pax') <p class="text-xs text-error flex items-center gap-1"><span>⚠</span> {{ $message }}</p> @enderror
-                    </div>
-
-                    {{-- Notes --}}
-                    <div class="form-control w-full space-y-1.5">
-                        <label class="text-dp-sm font-medium text-base-content block">
-                            Additional Notes <span class="text-base-content/40">(Optional)</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute top-0 left-0 pl-4 pt-3 flex text-base-content/40 pointer-events-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
-                            </span>
-                            <textarea wire:model="notes" rows="4"
-                                class="w-full max-w-full pl-12 pr-[14px] py-[10px] bg-base-100 border border-base-content/10 focus:border-primary focus:ring-3 focus:ring-primary/20 rounded-lg transition-all duration-120 outline-none text-[15px] font-medium placeholder:text-base-content/40 resize-none"
-                                placeholder="Any special requests, dietary requirements, or additional details..."></textarea>
-                        </div>
-                        @error('notes') <p class="text-xs text-error flex items-center gap-1"><span>⚠</span> {{ $message }}</p> @enderror
-                    </div>
-
-                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t border-base-content/10">
-                        <x-ui.button variant="ghost" size="md" wire:click="previousStep" x-on:click="$nextTick(() => $refs.wizardTop.scrollIntoView({ behavior: 'smooth' }))" class="w-full sm:w-auto">&larr; {{ __('Back') }}</x-ui.button>
-                        <x-ui.button variant="primary" size="lg" wire:click="nextStep" x-on:click="$nextTick(() => $refs.wizardTop.scrollIntoView({ behavior: 'smooth' }))" class="w-full sm:w-auto">
-                            {{ __('Next: Contact Details') }} &rarr;
-                        </x-ui.button>
-                    </div>
-                </div>
-
-            {{-- ══ STEP 3: Contact Details ══ --}}
-            @elseif($currentStep === 3)
                 <div wire:key="step-contact" class="animate-fade-in space-y-8">
                     <div>
                         <h2 class="text-xl font-semibold text-base-content mb-2">Contact Details</h2>
@@ -229,8 +137,8 @@
                     </div>
                 </div>
 
-            {{-- ══ STEP 4: Summary ══ --}}
-            @elseif($currentStep === 4)
+            {{-- ══ STEP 3: Summary ══ --}}
+            @elseif($currentStep === 3)
                 <div wire:key="step-summary" class="animate-fade-in space-y-8">
                     <div>
                         <h2 class="text-xl font-semibold text-base-content mb-2">Event Summary</h2>
@@ -267,32 +175,14 @@
                                         {{ $event_type === 'other' ? $event_type_other : $event_type }}
                                     </div>
                                 @endif
+                                @if($event_location)
+                                    <div class="flex items-center gap-1.5 mt-2 text-[13px] text-base-content/60 font-medium">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                        {{ $event_location }}
+                                    </div>
+                                @endif
                             </div>
                         </div>
-
-                        {{-- Service & Guests --}}
-                        @if($pax)
-                            <div class="pt-4 border-t border-base-content/10">
-                                <div class="text-dp-sm font-medium text-primary uppercase tracking-wider mb-2">Service Details</div>
-                                <div class="text-[14px] font-semibold text-base-content">
-                                    {{ $is_buffet ? 'Buffet' : 'Fixed Plates' }} — {{ $pax }} {{ $is_buffet ? 'guests' : 'plates' }}
-                                </div>
-                            </div>
-                        @endif
-
-                        {{-- Menu Selections --}}
-                        @if(count($cartItems) > 0)
-                            <div class="pt-4 border-t border-base-content/10">
-                                <div class="text-dp-sm font-medium text-primary uppercase tracking-wider mb-2">Menu Suggestions</div>
-                                <div class="flex flex-wrap gap-2">
-                                    @foreach($cartItems as $item)
-                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full bg-base-100 border border-base-content/10 text-[12px] font-semibold text-base-content">
-                                            {{ $item['package']->name }}
-                                        </span>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
 
                         {{-- Notes --}}
                         @if($notes)

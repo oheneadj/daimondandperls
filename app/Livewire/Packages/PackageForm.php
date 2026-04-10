@@ -39,6 +39,8 @@ class PackageForm extends Component
 
     public bool $is_popular = false;
 
+    public bool $window_exempt = false;
+
     public $image;
 
     public ?string $existing_image = null;
@@ -56,6 +58,7 @@ class PackageForm extends Component
             $this->min_guests = $this->package->min_guests ?? 50;
             $this->features = $this->package->features ?? [];
             $this->is_popular = (bool) $this->package->is_popular;
+            $this->window_exempt = (bool) $this->package->window_exempt;
             $this->category_id = $this->package->category_id;
             $this->is_active = $this->package->is_active;
             $this->existing_image = $this->package->image_path;
@@ -86,6 +89,7 @@ class PackageForm extends Component
             'is_popular' => ['boolean'],
             'category_id' => ['nullable', 'exists:categories,id'],
             'is_active' => ['boolean'],
+            'window_exempt' => ['boolean'],
             'image' => ['nullable', 'image', 'max:2048'], // 2MB Max
         ]);
 
@@ -118,6 +122,7 @@ class PackageForm extends Component
             'min_guests' => $this->min_guests,
             'features' => array_filter($this->features), // Remove empty features
             'is_popular' => $this->is_popular,
+            'window_exempt' => $this->window_exempt,
             'category_id' => $this->category_id,
             'is_active' => $this->is_active,
             'image_path' => $imagePath,

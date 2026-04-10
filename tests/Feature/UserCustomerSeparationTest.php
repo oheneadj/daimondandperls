@@ -32,6 +32,8 @@ test('guest checkout creates customer without user account', function () {
         ->set('name', 'Guest User')
         ->set('phone', '0551234567')
         ->set('email', 'guest@example.com')
+        ->set('momoNetwork', '6')
+        ->set('momoNumber', '0201234567')
         ->call('confirmBooking')
         ->assertRedirect();
 

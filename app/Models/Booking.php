@@ -29,6 +29,8 @@ class Booking extends Model
         'event_end_time',
         'event_type',
         'event_type_other',
+        'event_location',
+        'delivery_location',
         'pax',
         'is_buffet',
         'total_amount',

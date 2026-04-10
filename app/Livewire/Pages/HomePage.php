@@ -6,6 +6,7 @@ namespace App\Livewire\Pages;
 
 use App\Models\Category;
 use App\Models\Package;
+use App\Services\BookingWindowService;
 use App\Services\CartService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
@@ -43,13 +44,18 @@ class HomePage extends Component
         $this->redirect(route('checkout'));
     }
 
-    public function render(CartService $cart): View
+    public function render(CartService $cart, BookingWindowService $windowService): View
     {
+        $categories = Category::whereHas('packages', function ($query) {
+            $query->where('is_active', true);
+        })->orderBy('name')->get();
+
+        $windowStatuses = $categories->keyBy('id')->map(fn (Category $category) => $windowService->getStatus($category));
+
         return view('livewire.pages.home-page', [
             'packages' => $this->getPackages(),
-            'categories' => Category::whereHas('packages', function ($query) {
-                $query->where('is_active', true);
-            })->orderBy('name')->get(),
+            'categories' => $categories,
+            'windowStatuses' => $windowStatuses,
             'cartItems' => $cart->getCart(),
         ]);
     }

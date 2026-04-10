@@ -7,3 +7,6 @@ Schedule::command('queue:work --stop-when-empty --max-time=55')
     ->everyMinute()
     ->withoutOverlapping()
     ->runInBackground();
+
+// Cancel pending bookings that haven't been paid within 24 hours
+Schedule::command('booking:cleanup-abandoned')->hourly();

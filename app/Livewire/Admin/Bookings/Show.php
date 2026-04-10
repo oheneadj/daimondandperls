@@ -51,6 +51,8 @@ class Show extends Component
 
     public ?int $editPax = null;
 
+    public ?string $editEventLocation = null;
+
     public bool $editIsBuffet = false;
 
     public ?string $editQuoteAmount = null;
@@ -260,6 +262,7 @@ class Show extends Component
         $this->editEventEndTime = $this->booking->event_end_time;
         $this->editEventType = $this->booking->event_type?->value;
         $this->editPax = $this->booking->pax;
+        $this->editEventLocation = $this->booking->event_location;
         $this->editIsBuffet = (bool) $this->booking->is_buffet;
         $this->editQuoteAmount = $this->booking->total_amount > 0
             ? (string) $this->booking->total_amount
@@ -284,6 +287,7 @@ class Show extends Component
             'editEventEndTime' => ['nullable', 'string'],
             'editEventType' => ['nullable', 'string'],
             'editPax' => ['nullable', 'integer', 'min:1'],
+            'editEventLocation' => ['nullable', 'string', 'max:255'],
             'confirmPassword' => ['required', 'string'],
         ], [
             'editQuoteAmount.required' => 'Please enter a quote amount.',
@@ -303,6 +307,7 @@ class Show extends Component
             'event_start_time' => $this->editEventStartTime,
             'event_end_time' => $this->editEventEndTime,
             'event_type' => $this->editEventType,
+            'event_location' => $this->editEventLocation,
             'pax' => $this->editPax,
             'is_buffet' => $this->editIsBuffet,
         ]);

@@ -9,7 +9,7 @@ use App\Enums\BookingType;
 use App\Enums\EventType;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
-use App\Services\CartService;
+use App\Models\Setting;
 use App\Traits\HandlesBookingCheckout;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Enum;
@@ -36,6 +36,8 @@ class EventInquiryWizard extends Component
 
     public ?string $event_type_other = null;
 
+    public ?string $event_location = null;
+
     // Guest / Service (Step 2)
     public ?int $pax = null;
 
@@ -50,14 +52,21 @@ class EventInquiryWizard extends Component
         }
 
         $this->prefillFromAuth();
+
+        // Pre-set the date to the minimum allowed date if not already set
+        if (empty($this->event_date)) {
+            $leadDays = (int) (Setting::where('key', 'event_lead_days')->value('value') ?? 0);
+            if ($leadDays > 0) {
+                $this->event_date = now()->addDays($leadDays)->format('Y-m-d');
+            }
+        }
     }
 
     protected function validateCurrentStep(): void
     {
         match ($this->currentStep) {
             1 => $this->validateEventDetails(),
-            2 => $this->validateMenuStep(),
-            3 => $this->validateContactInfo(),
+            2 => $this->validateContactInfo(),
             default => null,
         };
     }
@@ -69,9 +78,14 @@ class EventInquiryWizard extends Component
         $this->event_end_time = $this->event_end_time ?: null;
         $this->event_type = $this->event_type ?: null;
         $this->event_type_other = $this->event_type_other ?: null;
+        $this->event_location = $this->event_location ?: null;
+
+        $leadDays = (int) (Setting::where('key', 'event_lead_days')->value('value') ?? 0);
+        $minDate = $leadDays > 0 ? now()->addDays($leadDays)->format('Y-m-d') : 'today';
 
         $this->validate([
-            'event_date' => ['required', 'date', 'after_or_equal:today'],
+            'event_date' => ['required', 'date', 'after_or_equal:'.$minDate],
+            'event_location' => ['required', 'string', 'max:255'],
             'event_start_time' => ['nullable', 'required_with:event_date', 'date_format:H:i'],
             'event_end_time' => [
                 'nullable',
@@ -83,27 +97,23 @@ class EventInquiryWizard extends Component
             'event_type_other' => ['required_if:event_type,other', 'nullable', 'string', 'max:100'],
         ], [
             'event_date.required' => 'Please select an event date.',
-            'event_date.after_or_equal' => 'The event date must be today or a future date.',
+            'event_date.after_or_equal' => $leadDays > 0
+                ? 'Bookings must be made at least '.($leadDays === 1 ? '1 day' : $leadDays.' days').' in advance.'
+                : 'The event date must be today or a future date.',
+            'event_location.required' => 'Please enter the event location.',
             'event_end_time.after' => 'The event end time must be after the start time.',
             'event_start_time.required_with' => 'Start time is required when an event date is set.',
             'event_end_time.required_with' => 'End time is required when an event date is set.',
         ]);
     }
 
-    private function validateMenuStep(): void
-    {
-        $this->validate([
-            'pax' => ['nullable', 'integer', 'min:1', 'max:10000'],
-        ]);
-    }
-
-    public function confirmBooking(CartService $cart): mixed
+    public function confirmBooking(): mixed
     {
         $this->loading = 'confirmBooking';
         $this->validateContactInfo();
         $this->validateEventDetails();
 
-        $booking = DB::transaction(function () use ($cart): Booking {
+        $booking = DB::transaction(function (): Booking {
             $customer = $this->resolveCustomer();
             $reference = $this->generateReference();
 
@@ -121,6 +131,7 @@ class EventInquiryWizard extends Component
                 'event_end_time' => $this->event_end_time ?: null,
                 'event_type' => $this->event_type ?: null,
                 'event_type_other' => $this->event_type_other ?: null,
+                'event_location' => $this->event_location ?: null,
                 'pax' => $this->pax,
                 'is_buffet' => $this->is_buffet,
                 'customer_notes' => $this->notes,
@@ -129,17 +140,17 @@ class EventInquiryWizard extends Component
                 'payment_status' => PaymentStatus::Unpaid,
             ]);
 
-            if ($cart->count() > 0) {
-                $this->saveCartItemsToBooking($booking, $cart->getCart());
-                $cart->clear();
-            }
-
             $this->notifyBookingCreated($booking, $customer);
 
             return $booking;
         });
 
         return redirect()->route('booking.confirmation', ['booking' => $booking->reference]);
+    }
+
+    protected function getContactStepNumber(): int
+    {
+        return 2;
     }
 
     protected function getRedirectRoute(): string
@@ -155,6 +166,7 @@ class EventInquiryWizard extends Component
             'event_end_time' => $this->event_end_time,
             'event_type' => $this->event_type,
             'event_type_other' => $this->event_type_other,
+            'event_location' => $this->event_location,
             'pax' => $this->pax,
             'is_buffet' => $this->is_buffet,
             'notes' => $this->notes,
@@ -168,17 +180,20 @@ class EventInquiryWizard extends Component
         $this->event_end_time = $state['event_end_time'] ?? null;
         $this->event_type = $state['event_type'] ?? null;
         $this->event_type_other = $state['event_type_other'] ?? null;
+        $this->event_location = $state['event_location'] ?? null;
         $this->pax = $state['pax'] ?? null;
         $this->is_buffet = $state['is_buffet'] ?? false;
         $this->notes = $state['notes'] ?? null;
     }
 
     #[Title('Plan an Event')]
-    public function render(CartService $cart): mixed
+    public function render(): mixed
     {
+        $leadDays = (int) (Setting::where('key', 'event_lead_days')->value('value') ?? 0);
+        $minEventDate = $leadDays > 0 ? now()->addDays($leadDays)->format('Y-m-d') : now()->format('Y-m-d');
+
         return view('livewire.booking.event-inquiry-wizard', [
-            'cartItems' => $cart->getCart(),
-            'cartTotal' => 0,
+            'minEventDate' => $minEventDate,
         ]);
     }
 }

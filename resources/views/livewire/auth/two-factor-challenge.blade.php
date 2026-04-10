@@ -47,9 +47,9 @@
                 @enderror
             </div>
 
-            <x-auth.button type="submit">
+            <x-app.button type="submit" class="w-full">
                 {{ __('Log in') }}
-            </x-auth.button>
+            </x-app.button>
 
             <div class="text-center">
                 <button type="button"

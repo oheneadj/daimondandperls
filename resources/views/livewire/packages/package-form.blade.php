@@ -253,6 +253,23 @@
                             <div class="w-14 h-7 bg-base-200 border border-[#FFC926]/20 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-1 after:left-1 after:bg-base-100 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#FFC926] shadow-sm"></div>
                         </label>
                     </div>
+
+                    {{-- Window Exempt --}}
+                    <div class="flex items-center justify-between py-4 border-t border-base-content/5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-[13px] font-bold text-base-content">{{ __('Always Bookable') }}</p>
+                                <p class="text-[11px] text-base-content/40">{{ __('This package can be ordered at any time, even after the collection\'s booking window closes.') }}</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input wire:model="window_exempt" type="checkbox" class="sr-only peer">
+                            <div class="w-14 h-7 bg-base-200 border border-warning/20 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-1 after:left-1 after:bg-base-100 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-warning shadow-sm"></div>
+                        </label>
+                    </div>
                 </div>
             </div>
         </x-ui.card>

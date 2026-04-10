@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Package;
 use App\Models\User;
 use App\Services\CartService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -28,10 +29,9 @@ function setupCart(int $count = 1, float $price = 100): array
 }
 
 /**
- * Progress a meal booking through all steps to the summary (Step 3).
- * Step flow: 1 (Review) → 2 (Contact) → 3 (Summary)
+ * Fill in contact and payment fields on the single-screen booking wizard.
  */
-function progressMealToSummary(\Livewire\Features\SupportTesting\Testable $component, array $contact = []): \Livewire\Features\SupportTesting\Testable
+function fillContact(\Livewire\Features\SupportTesting\Testable $component, array $contact = [], string $network = '13', string $number = '0241234567'): \Livewire\Features\SupportTesting\Testable
 {
     $contact = array_merge([
         'name' => 'John Doe Test',
@@ -40,13 +40,11 @@ function progressMealToSummary(\Livewire\Features\SupportTesting\Testable $compo
     ], $contact);
 
     return $component
-        ->call('nextStep') // 1 → 2
-        ->assertSet('currentStep', 2)
         ->set('name', $contact['name'])
         ->set('phone', $contact['phone'])
         ->set('email', $contact['email'])
-        ->call('nextStep') // 2 → 3
-        ->assertSet('currentStep', 3);
+        ->set('momoNetwork', $network)
+        ->set('momoNumber', $number);
 }
 
 // ── Core Flow Tests ──────────────────────────────────────────
@@ -63,35 +61,6 @@ it('renders successfully with items in cart', function () {
         ->assertStatus(200);
 });
 
-it('starts on step 1 with review', function () {
-    setupCart();
-
-    Livewire::test(BookingWizard::class)
-        ->assertSet('currentStep', 1);
-});
-
-it('follows 3-step progression: Review → Contact → Summary', function () {
-    setupCart();
-
-    Livewire::test(BookingWizard::class)
-        ->assertSet('currentStep', 1)
-        ->call('nextStep') // 1 → 2
-        ->assertSet('currentStep', 2)
-        ->set('name', 'Step Test')
-        ->set('phone', '0241234567')
-        ->call('nextStep') // 2 → 3
-        ->assertSet('currentStep', 3);
-});
-
-it('can go back from summary to contact', function () {
-    setupCart();
-
-    $component = Livewire::test(BookingWizard::class);
-    progressMealToSummary($component)
-        ->call('previousStep') // 3 → 2
-        ->assertSet('currentStep', 2);
-});
-
 it('can complete a meal booking with multiple items', function () {
     $category = Category::factory()->create();
     $package1 = Package::factory()->create(['category_id' => $category->id, 'price' => 500]);
@@ -100,8 +69,7 @@ it('can complete a meal booking with multiple items', function () {
     app(CartService::class)->add($package1->id, 1);
     app(CartService::class)->add($package2->id, 2);
 
-    $component = Livewire::test(BookingWizard::class);
-    progressMealToSummary($component)
+    fillContact(Livewire::test(BookingWizard::class))
         ->call('confirmBooking')
         ->assertRedirect();
 
@@ -122,7 +90,8 @@ it('can complete a meal booking with multiple items', function () {
         ->and($booking->items[1]->quantity)->toBe(2)
         ->and((float) $booking->items[1]->price)->toEqual(200.0);
 
-    expect(app(CartService::class)->count())->toBe(0);
+    // Cart is NOT cleared here — it persists until payment succeeds
+    expect(app(CartService::class)->count())->toBe(3);
 });
 
 // ── Contact & Auth Tests ─────────────────────────────────────
@@ -154,8 +123,7 @@ it('preserves package details after package is soft-deleted', function () {
 
     app(CartService::class)->add($package->id, 1);
 
-    $component = Livewire::test(BookingWizard::class);
-    progressMealToSummary($component, ['name' => 'Snapshot Test'])
+    fillContact(Livewire::test(BookingWizard::class), ['name' => 'Snapshot Test'])
         ->call('confirmBooking')
         ->assertRedirect();
 
@@ -184,14 +152,12 @@ it('attaches booking to authenticated user customer record', function () {
         'type' => UserType::Customer,
     ]);
 
-    $component = Livewire::actingAs($user)->test(BookingWizard::class);
-    $component
+    Livewire::actingAs($user)
+        ->test(BookingWizard::class)
         ->assertSet('name', 'OTP User')
         ->assertSet('phone', '0241234567')
-        ->call('nextStep') // 1 → 2
-        ->assertSet('currentStep', 2)
-        ->call('nextStep') // 2 → 3
-        ->assertSet('currentStep', 3)
+        ->set('momoNetwork', '13')
+        ->set('momoNumber', '0241234567')
         ->call('confirmBooking')
         ->assertRedirect();
 
@@ -204,8 +170,7 @@ it('attaches booking to authenticated user customer record', function () {
 it('creates guest customer when not authenticated', function () {
     setupCart(1, 100);
 
-    $component = Livewire::test(BookingWizard::class);
-    progressMealToSummary($component, [
+    fillContact(Livewire::test(BookingWizard::class), [
         'name' => 'Guest User',
         'phone' => '0249876543',
         'email' => 'guest@example.com',
@@ -222,7 +187,7 @@ it('creates guest customer when not authenticated', function () {
 
 // ── OTP Tests ────────────────────────────────────────────────
 
-it('sends otp from wizard using contact form phone number', function () {
+it('sends otp using contact form phone number', function () {
     setupCart();
 
     Livewire::test(BookingWizard::class)
@@ -239,7 +204,7 @@ it('sends otp from wizard using contact form phone number', function () {
         ->and($user->type)->toBe(UserType::Customer);
 });
 
-it('verifies otp in wizard and auto-fills contact fields', function () {
+it('verifies otp and auto-fills contact fields', function () {
     setupCart();
 
     $user = User::factory()->create([
@@ -269,7 +234,7 @@ it('verifies otp in wizard and auto-fills contact fields', function () {
         ->phone->toBe('0244555666');
 });
 
-it('shows error for invalid otp in wizard', function () {
+it('shows error for invalid otp', function () {
     setupCart();
 
     User::factory()->create([
@@ -292,8 +257,7 @@ it('shows error for invalid otp in wizard', function () {
 it('creates meal booking without event details', function () {
     setupCart();
 
-    $component = Livewire::test(BookingWizard::class);
-    progressMealToSummary($component, ['name' => 'John Doe No Event'])
+    fillContact(Livewire::test(BookingWizard::class), ['name' => 'John Doe No Event'])
         ->call('confirmBooking')
         ->assertRedirect();
 
@@ -301,4 +265,129 @@ it('creates meal booking without event details', function () {
     expect($booking->booking_type)->toBe(BookingType::Meal)
         ->and($booking->event_date)->toBeNull()
         ->and($booking->event_type)->toBeNull();
+});
+
+// ── Delivery Location Tests ──────────────────────────────────────────────────
+
+it('requires delivery location when locations are configured', function () {
+    setupCart();
+
+    \App\Models\Setting::create([
+        'key' => 'delivery_locations',
+        'value' => json_encode(['East Legon', 'Accra Mall']),
+        'type' => \App\Enums\SettingType::Json,
+        'group' => 'booking',
+        'label' => 'Delivery Locations',
+    ]);
+
+    fillContact(Livewire::test(BookingWizard::class))
+        ->call('confirmBooking')
+        ->assertHasErrors(['deliveryLocation']);
+});
+
+it('saves delivery location on booking when configured', function () {
+    setupCart();
+
+    \App\Models\Setting::create([
+        'key' => 'delivery_locations',
+        'value' => json_encode(['East Legon', 'Accra Mall']),
+        'type' => \App\Enums\SettingType::Json,
+        'group' => 'booking',
+        'label' => 'Delivery Locations',
+    ]);
+
+    fillContact(Livewire::test(BookingWizard::class))
+        ->set('deliveryLocation', 'East Legon')
+        ->call('confirmBooking')
+        ->assertRedirect();
+
+    expect(Booking::latest('id')->first()->delivery_location)->toBe('East Legon');
+});
+
+it('skips delivery location validation when no locations are configured', function () {
+    setupCart();
+
+    fillContact(Livewire::test(BookingWizard::class))
+        ->call('confirmBooking')
+        ->assertHasNoErrors(['deliveryLocation'])
+        ->assertRedirect();
+});
+
+it('rejects an unlisted delivery location', function () {
+    setupCart();
+
+    \App\Models\Setting::create([
+        'key' => 'delivery_locations',
+        'value' => json_encode(['East Legon']),
+        'type' => \App\Enums\SettingType::Json,
+        'group' => 'booking',
+        'label' => 'Delivery Locations',
+    ]);
+
+    fillContact(Livewire::test(BookingWizard::class))
+        ->set('deliveryLocation', 'Some Random Place')
+        ->call('confirmBooking')
+        ->assertHasErrors(['deliveryLocation']);
+});
+
+it('persists delivery location through OTP wizard state', function () {
+    setupCart();
+
+    \App\Models\Setting::create([
+        'key' => 'delivery_locations',
+        'value' => json_encode(['Tema']),
+        'type' => \App\Enums\SettingType::Json,
+        'group' => 'booking',
+        'label' => 'Delivery Locations',
+    ]);
+
+    // verifyOtp calls saveWizardState internally before redirecting
+    User::factory()->create([
+        'name' => 'OTP State User',
+        'phone' => '0244555666',
+        'otp_code' => '123456',
+        'otp_expires_at' => now()->addMinutes(10),
+        'type' => UserType::Customer,
+    ]);
+
+    Livewire::test(BookingWizard::class)
+        ->set('deliveryLocation', 'Tema')
+        ->set('name', 'OTP State User')
+        ->set('phone', '0244555666')
+        ->set('momoNetwork', '13')
+        ->set('momoNumber', '0241234567')
+        ->set('otpStep', 2)
+        ->set('otp', '123456')
+        ->call('verifyOtp');
+
+    $state = session('checkout_wizard_state');
+    expect($state['deliveryLocation'] ?? null)->toBe('Tema');
+});
+
+// ── Booking Window ────────────────────────────────────────────
+
+it('saves scheduled_date on booking item when cart has windowed package', function () {
+    $scheduledDate = Carbon::now()->addDays(3)->startOfDay();
+
+    $category = Category::factory()->withBookingWindow()->create();
+    $package = Package::factory()->create(['category_id' => $category->id, 'price' => 100]);
+    app(CartService::class)->add($package->id, 1, scheduledDate: $scheduledDate);
+
+    fillContact(Livewire::test(BookingWizard::class))
+        ->call('confirmBooking')
+        ->assertRedirect();
+
+    $item = \App\Models\BookingItem::latest('id')->first();
+    expect($item->scheduled_date->toDateString())->toBe($scheduledDate->toDateString());
+});
+
+it('saves null scheduled_date for packages without a booking window', function () {
+    setupCart();
+
+    fillContact(Livewire::test(BookingWizard::class))
+        ->call('confirmBooking')
+        ->assertRedirect();
+
+    $item = \App\Models\BookingItem::latest('id')->first();
+    expect($item->scheduled_date)->toBeNull();
 });

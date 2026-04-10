@@ -24,9 +24,9 @@
         <div class="space-y-4">
             <form method="POST" action="{{ route('verification.send') }}">
                 @csrf
-                <x-auth.button type="submit">
+                <x-app.button type="submit" class="w-full">
                     {{ __('Resend Verification Email') }}
-                </x-auth.button>
+                </x-app.button>
             </form>
 
             <form method="POST" action="{{ route('logout') }}" class="text-center">
