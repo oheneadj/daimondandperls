@@ -36,6 +36,8 @@ test('guest is redirected to login', function () {
 });
 
 test('customer can add a mobile money payment method', function () {
+    Notification::fake();
+
     Livewire::actingAs($this->user)
         ->test(PaymentMethods::class)
         ->call('openForm')
@@ -58,6 +60,8 @@ test('customer can add a mobile money payment method', function () {
 });
 
 test('first payment method is automatically set as default', function () {
+    Notification::fake();
+
     Livewire::actingAs($this->user)
         ->test(PaymentMethods::class)
         ->call('openForm')

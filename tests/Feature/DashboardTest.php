@@ -29,71 +29,39 @@ test('dashboard displays correct operational metrics', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    // 1. Total bookings today (3)
+    // Today's bookings (3)
     Booking::factory()->count(3)->create([
         'created_at' => today(),
-        'event_date' => now()->subMonths(2), // Exclude from upcoming events
-        'payment_status' => PaymentStatus::Paid, // Exclude from pending payments
-        'status' => BookingStatus::Cancelled, // Exclude from completed bookings
-    ]);
-    Booking::factory()->count(2)->create([ // (Not counted)
-        'created_at' => now()->subDay(),
-        'event_date' => now()->subMonths(2),
         'payment_status' => PaymentStatus::Paid,
-        'status' => BookingStatus::Cancelled,
+        'status' => BookingStatus::Completed,
     ]);
 
-    // 2. Upcoming events (4)
-    Booking::factory()->count(4)->create([
-        'event_date' => now()->addDays(2),
-        'created_at' => now()->subDays(2), // Exclude from today's bookings
-        'payment_status' => PaymentStatus::Paid,
-        'status' => BookingStatus::Cancelled,
-    ]);
-    Booking::factory()->count(1)->create([ // (Not counted)
-        'event_date' => now()->subDays(2),
-        'created_at' => now()->subDays(2),
-        'payment_status' => PaymentStatus::Paid,
-        'status' => BookingStatus::Cancelled,
-    ]);
-
-    // 3. Pending payments (3)
+    // Yesterday's bookings — not counted in today
     Booking::factory()->count(2)->create([
-        'payment_status' => PaymentStatus::Pending,
-        'created_at' => now()->subDays(2),
-        'event_date' => now()->subMonths(2),
-        'status' => BookingStatus::Cancelled,
+        'created_at' => now()->subDay(),
+        'payment_status' => PaymentStatus::Paid,
+        'status' => BookingStatus::Completed,
+    ]);
+
+    // Needs attention: unpaid (2) + pending (1), not cancelled
+    Booking::factory()->count(2)->create([
+        'created_at' => now()->subDays(3),
+        'payment_status' => PaymentStatus::Unpaid,
+        'status' => BookingStatus::Pending,
     ]);
     Booking::factory()->count(1)->create([
+        'created_at' => now()->subDays(3),
+        'payment_status' => PaymentStatus::Pending,
+        'status' => BookingStatus::Confirmed,
+    ]);
+    // Cancelled unpaid — excluded from needsAttentionCount
+    Booking::factory()->count(2)->create([
+        'created_at' => now()->subDays(3),
         'payment_status' => PaymentStatus::Unpaid,
-        'created_at' => now()->subDays(2),
-        'event_date' => now()->subMonths(2),
         'status' => BookingStatus::Cancelled,
-    ]);
-    Booking::factory()->count(5)->create([ // (Not counted)
-        'payment_status' => PaymentStatus::Paid,
-        'created_at' => now()->subDays(2),
-        'event_date' => now()->subMonths(2),
-        'status' => BookingStatus::Cancelled,
-    ]);
-
-    // 4. Completed bookings (4)
-    Booking::factory()->count(4)->create([
-        'status' => BookingStatus::Completed,
-        'created_at' => now()->subDays(2),
-        'event_date' => now()->subMonths(2),
-        'payment_status' => PaymentStatus::Paid,
-    ]);
-    Booking::factory()->count(3)->create([ // (Not counted)
-        'status' => BookingStatus::Pending,
-        'created_at' => now()->subDays(2),
-        'event_date' => now()->subMonths(2),
-        'payment_status' => PaymentStatus::Paid,
     ]);
 
     Livewire::test(Dashboard::class)
         ->assertSet('totalBookingsToday', 3)
-        ->assertSet('upcomingEvents', 4)
-        ->assertSet('pendingPayments', 3)
-        ->assertSet('completedBookings', 4);
+        ->assertSet('needsAttentionCount', 3);
 });

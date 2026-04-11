@@ -128,7 +128,7 @@
             </div>
 
             {{-- Footer --}}
-            <div class="px-6 pb-6 pt-4 bg-base-100 border-t border-base-content/5 flex gap-3 shrink-0">
+            <div class="px-6 pb-6 pt-4 bg-base-100 border-t border-base-content/5 flex flex-col-reverse sm:flex-row gap-3 shrink-0">
                 <button @click="showDetails = false" class="px-5 py-3.5 border border-base-content/15 text-base-content font-bold text-[13px] rounded-2xl hover:bg-base-200 transition-colors">
                     {{ __('Close') }}
                 </button>

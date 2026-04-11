@@ -1,7 +1,7 @@
 <div>
     <!-- Floating Cart Button -->
     @if($cartCount > 0 && !$isOpen)
-    <div class="fixed bottom-6 right-6 sm:bottom-10 sm:right-10 z-50 animate-fade-in group">
+    <div class="fixed right-6 sm:right-10 z-50 animate-fade-in group" style="bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px))">
         <button wire:click="toggleSidebar" class="flex items-center justify-center size-16 bg-primary text-dp-white rounded-full shadow-dp-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative shadow-xl border border-white">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
             <span class="absolute -top-1 -right-1 flex items-center justify-center size-6 bg-accent text-dp-white text-[11px] font-black rounded-full ring-4 ring-accent shadow-inner">{{ $cartCount }}</span>
@@ -20,7 +20,7 @@
 
     <!-- Sidebar / Slide-over -->
     <div @class([
-        'fixed inset-y-0 right-0 z-[70] w-full max-w-[420px] bg-base-100 shadow-xl border-l border-white transform transition-transform duration-500 ease-out flex flex-col',
+        'fixed inset-y-0 right-0 z-[70] w-full max-w-[85vw] sm:max-w-[420px] bg-base-100 shadow-xl border-l border-white transform transition-transform duration-500 ease-out flex flex-col',
         'translate-x-0' => $isOpen,
         'translate-x-full' => !$isOpen,
     ])>

@@ -312,6 +312,90 @@
         </x-ui.card>
     </div>
 
+    {{-- Next Week Scheduled Deliveries --}}
+    @php
+        $nextWeekStart = now()->addWeek()->startOfWeek();
+        $nextWeekEnd = now()->addWeek()->endOfWeek();
+        $totalNextWeek = $nextWeekScheduled->flatten()->count();
+        $totalNextWeekRevenue = $nextWeekScheduled->flatten()->sum(fn($item) => $item->price * $item->quantity);
+    @endphp
+    <x-ui.card padding="none" class="shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-base-content/5 flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h3 class="text-[16px] font-bold text-base-content">{{ __('Scheduled for Next Week') }}</h3>
+                <p class="text-[11px] text-base-content/40 mt-0.5">
+                    {{ $nextWeekStart->format('D, M j') }} – {{ $nextWeekEnd->format('D, M j, Y') }}
+                </p>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <div class="text-[18px] font-bold text-primary">{{ $totalNextWeek }}</div>
+                    <div class="text-[10px] font-bold text-base-content/40 uppercase tracking-widest">{{ __('Items') }}</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-[18px] font-bold text-secondary">GH₵{{ number_format($totalNextWeekRevenue, 2) }}</div>
+                    <div class="text-[10px] font-bold text-base-content/40 uppercase tracking-widest">{{ __('Value') }}</div>
+                </div>
+            </div>
+        </div>
+
+        @if($nextWeekScheduled->isEmpty())
+            <div class="py-16 text-center">
+                <div class="w-12 h-12 bg-base-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-base-content/20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <p class="text-[13px] font-semibold text-base-content/40">{{ __('No orders scheduled for next week') }}</p>
+            </div>
+        @else
+            @foreach($nextWeekScheduled as $date => $items)
+                <div class="border-b border-base-content/5 last:border-0">
+                    <div class="px-6 py-3 bg-base-200/40 flex items-center gap-3">
+                        <span class="text-[11px] font-black uppercase tracking-widest text-primary">
+                            {{ \Carbon\Carbon::parse($date)->format('l, M j') }}
+                        </span>
+                        <span class="text-[10px] font-bold text-base-content/40">{{ $items->count() }} {{ Str::plural('order', $items->count()) }}</span>
+                    </div>
+                    <table class="w-full">
+                        <tbody class="divide-y divide-base-content/5">
+                            @foreach($items as $item)
+                                <tr class="hover:bg-base-200/30 transition-colors">
+                                    <td class="px-6 py-3">
+                                        <div class="text-[13px] font-semibold text-base-content">{{ $item->booking->customer?->name ?? 'N/A' }}</div>
+                                        <div class="text-[11px] text-base-content/50">{{ $item->booking->customer?->phone ?? '' }}</div>
+                                    </td>
+                                    <td class="px-6 py-3">
+                                        <div class="text-[13px] text-base-content">{{ $item->package_name ?? $item->package?->name ?? 'N/A' }}</div>
+                                        @if($item->quantity > 1)
+                                            <div class="text-[11px] text-base-content/50">× {{ $item->quantity }}</div>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-3">
+                                        <a href="{{ route('admin.bookings.show', $item->booking->reference) }}"
+                                           class="text-[11px] font-bold text-base-content/40 hover:text-primary transition-colors font-mono">
+                                            #{{ $item->booking->reference }}
+                                        </a>
+                                    </td>
+                                    <td class="px-6 py-3 text-right">
+                                        <span class="text-[13px] font-bold text-base-content">GH₵{{ number_format($item->price * $item->quantity, 2) }}</span>
+                                    </td>
+                                    <td class="px-6 py-3 text-right">
+                                        @php $status = $item->booking->payment_status; @endphp
+                                        <span @class([
+                                            'inline-flex px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide',
+                                            'bg-success/10 text-success' => $status?->value === 'paid',
+                                            'bg-warning/10 text-warning' => $status?->value === 'pending',
+                                            'bg-error/10 text-error' => $status?->value === 'unpaid' || $status?->value === 'failed',
+                                        ])>{{ $status?->value ?? 'unknown' }}</span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endforeach
+        @endif
+    </x-ui.card>
+
     @push('scripts')
         {{-- ApexCharts is now bundled in app.js --}}
     @endpush

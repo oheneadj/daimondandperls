@@ -35,7 +35,12 @@
       "Bash(git -C /home/oheneadj/server/dpc stash pop)",
       "Bash(vendor/bin/pint --dirty --format agent app/Services/BookingWindowService.php app/Livewire/Packages/PackagesBrowse.php)",
       "Bash(vendor/bin/pint --dirty --format agent app/Livewire/Pages/HomePage.php app/Livewire/Packages/FeaturedPackages.php)",
-      "Bash(grep -r \"sm:\\\\|md:\\\\|lg:\\\\|xl:\" /home/oheneadj/server/dpc/resources/views/livewire/packages/ /home/oheneadj/server/dpc/resources/views/components/package*)"
+      "Bash(grep -r \"sm:\\\\|md:\\\\|lg:\\\\|xl:\" /home/oheneadj/server/dpc/resources/views/livewire/packages/ /home/oheneadj/server/dpc/resources/views/components/package*)",
+      "mcp__laravel-boost__last-error",
+      "mcp__laravel-boost__read-log-entries",
+      "Bash(vendor/bin/pint app/Livewire/Admin/Reports/ReportsView.php --format agent)",
+      "Bash(vendor/bin/pint app/Livewire/Dashboard.php --format agent)",
+      "Bash(vendor/bin/pint app/Livewire/Dashboard.php tests/Feature/DashboardTest.php tests/Feature/Admin/AdminDashboardTest.php --format agent)"
     ],
     "additionalDirectories": [
       "/home/oheneadj/server/dpc/resources/views/components",

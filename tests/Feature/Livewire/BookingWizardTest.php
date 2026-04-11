@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\CartService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -188,6 +189,7 @@ it('creates guest customer when not authenticated', function () {
 // ── OTP Tests ────────────────────────────────────────────────
 
 it('sends otp using contact form phone number', function () {
+    Notification::fake();
     setupCart();
 
     Livewire::test(BookingWizard::class)

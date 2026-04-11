@@ -36,8 +36,8 @@
 
     <!-- Filter & Search Strip -->
     <div class="sticky top-[68px] z-40 bg-white/90 backdrop-blur-md border-b border-base-content/5 py-5 shadow-sm">
-        <div class="container mx-auto px-4 lg:px-8 flex flex-col xl:flex-row justify-between items-center gap-6">
-            <div class="flex items-center gap-2 overflow-x-auto pb-2 xl:pb-0 scrollbar-hide w-full xl:w-auto">
+        <div class="container mx-auto px-4 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide w-full sm:w-auto">
                 <button 
                     wire:click="$set('categoryId', null)"
                     @class([
@@ -62,7 +62,7 @@
                 @endforeach
             </div>
 
-            <div class="relative w-full xl:w-[400px]">
+            <div class="relative w-full sm:w-[400px]">
                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <svg class="w-4 h-4 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -139,7 +139,7 @@
                 </button>
             </div>
         @else
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-8">
                 @foreach($packages as $package)
                     @php
                         $inCart = $cartItems->has($package->id);
@@ -172,8 +172,9 @@
 
     <!-- Booking Bar (Dynamic) -->
     @if($cartCount > 0)
-        <div 
-            class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-xl animate-in fade-in slide-in-from-bottom-5 border border-accent rounded-3xl duration-500">
+        <div
+            class="fixed left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-xl animate-in fade-in slide-in-from-bottom-5 border border-accent rounded-3xl duration-500"
+            style="bottom: max(2rem, env(safe-area-inset-bottom, 2rem))">
             <div class="booking-bar-status">
                 <div class="booking-count-badge">
                     {{ $cartCount }}
@@ -181,7 +182,11 @@
                 <div class="flex-1 min-w-0">
                     <div class="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-0.5">{{ __('Added to booking') }}</div>
                     <div class="text-[14px] font-bold truncate text-white">
-                        {{ $cartItems->map(fn($i) => $i['package']->name)->implode(', ') }}
+                        @if($cartCount === 1)
+                            {{ $cartItems->first()['package']->name }}
+                        @else
+                            {{ $cartCount }} packages selected
+                        @endif
                     </div>
                 </div>
                 <button 

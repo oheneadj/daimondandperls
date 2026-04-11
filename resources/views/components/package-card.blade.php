@@ -73,7 +73,7 @@
                     }"
                     x-init="setInterval(() => tick(), 1000)"
                 >
-                    <span class="text-[10px] font-bold text-white/60 uppercase tracking-widest leading-tight">Book by {{ $windowStatus['cutoffLabel'] }}, {{ substr($windowStatus['cutoff']->format('H:i'), 0, 5) }}</span>
+                    <span class="text-[11px] font-bold text-white/60 uppercase tracking-widest leading-tight">Book by {{ $windowStatus['cutoffLabel'] }}, {{ substr($windowStatus['cutoff']->format('H:i'), 0, 5) }}</span>
                     <span class="flex items-center gap-1.5 text-[12px] font-black text-white shrink-0">
                         <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0"></span>
                         <span x-text="label"></span>
@@ -81,8 +81,8 @@
                 </div>
             @else
                 <div class="absolute bottom-0 left-0 right-0 bg-error text-white px-3 py-2 flex items-center justify-between gap-2">
-                    <span class="text-[10px] font-bold text-white/70 uppercase tracking-widest leading-tight">Next delivery</span>
-                    <span class="text-[11px] font-black text-white shrink-0">{{ $windowStatus['scheduledDelivery']->format('D, M j') }}</span>
+                    <span class="text-[11px] font-bold text-white/70 uppercase tracking-widest leading-tight">Next delivery</span>
+                    <span class="text-[12px] font-black text-white shrink-0">{{ $windowStatus['scheduledDelivery']->format('D, M j') }}</span>
                 </div>
             @endif
         @endif

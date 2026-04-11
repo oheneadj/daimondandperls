@@ -46,9 +46,12 @@ class ReportsView extends Component
 
     public Collection $upcomingEvents;
 
+    public Collection $nextWeekScheduled;
+
     public function mount(): void
     {
         $this->upcomingEvents = collect();
+        $this->nextWeekScheduled = collect();
         $this->setPeriod('this_month');
     }
 
@@ -207,6 +210,17 @@ class ReportsView extends Component
             ->whereDate('event_date', '<=', now()->addDays(30))
             ->orderBy($this->sortField, $this->sortDirection)
             ->get();
+
+        $nextWeekStart = now()->addWeek()->startOfWeek();
+        $nextWeekEnd = now()->addWeek()->endOfWeek();
+
+        $this->nextWeekScheduled = \App\Models\BookingItem::query()
+            ->with(['booking.customer', 'package'])
+            ->whereDate('scheduled_date', '>=', $nextWeekStart)
+            ->whereDate('scheduled_date', '<=', $nextWeekEnd)
+            ->orderBy('scheduled_date')
+            ->get()
+            ->groupBy('scheduled_date');
     }
 
     public function exportCsv(): StreamedResponse
