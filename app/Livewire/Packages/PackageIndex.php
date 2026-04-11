@@ -111,9 +111,18 @@ class PackageIndex extends Component
 
     public function render(): View
     {
+        $total = Package::count();
+        $active = Package::where('is_active', true)->count();
+
         return view('livewire.packages.package-index', [
             'packages' => $this->getPackages(),
             'categories' => Category::orderBy('name')->get(),
+            'stats' => [
+                'total' => $total,
+                'active' => $active,
+                'inactive' => $total - $active,
+                'categories' => Category::count(),
+            ],
         ]);
     }
 

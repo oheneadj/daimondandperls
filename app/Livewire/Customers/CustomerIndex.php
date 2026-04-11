@@ -175,8 +175,8 @@ class CustomerIndex extends Component
     {
         $stats = [
             'total' => Customer::count('*'),
-            'new_this_month' => Customer::whereMonth('created_at', '=', now()->month, 'and')->count('*'),
-            'most_active' => Customer::withCount('bookings')->orderBy('bookings_count', 'desc')->first()?->name ?? 'N/A',
+            'new_this_month' => Customer::whereYear('created_at', now()->year)->whereMonth('created_at', now()->month)->count(),
+            'most_active' => Customer::withCount('bookings')->orderByDesc('bookings_count')->first()?->name ?? 'N/A',
         ];
 
         $query = Customer::query()

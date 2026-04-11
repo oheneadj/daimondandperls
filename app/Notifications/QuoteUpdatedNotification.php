@@ -54,10 +54,11 @@ class QuoteUpdatedNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
+            'type' => 'quote_ready',
             'booking_id' => $this->booking->id,
             'reference' => $this->booking->reference,
             'amount' => $this->booking->total_amount,
-            'message' => 'Quote ready for '.$this->booking->reference.': GH₵'.number_format((float) $this->booking->total_amount, 2),
+            'message' => "Quote ready for {$this->booking->reference}: GH₵".number_format((float) $this->booking->total_amount, 2),
             'action_url' => route('booking.payment', ['booking' => $this->booking->reference]),
         ];
     }

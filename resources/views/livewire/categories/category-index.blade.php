@@ -43,7 +43,7 @@
             </div>
             <div>
                 <p class="text-[20px] font-bold text-base-content">{{ number_format($stats['empty']) }}</p>
-                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Empty Ones') }}</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('No Packages') }}</p>
             </div>
         </div>
         <div class="bg-white border border-base-content/5 rounded-xl p-4 flex items-center gap-4">
@@ -52,7 +52,7 @@
             </div>
             <div>
                 <p class="text-[20px] font-bold text-base-content truncate max-w-[120px]" title="{{ $stats['most_popular'] }}">{{ $stats['most_popular'] }}</p>
-                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Biggest Group') }}</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Largest Collection') }}</p>
             </div>
         </div>
     </div>

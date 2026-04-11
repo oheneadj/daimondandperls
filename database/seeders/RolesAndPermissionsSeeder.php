@@ -13,20 +13,27 @@ class RolesAndPermissionsSeeder extends Seeder
     {
         // Define Permissions
         $permissions = [
-            'manage_bookings' => 'Can view, confirm, and manage bookings',
-            'manage_packages' => 'Can create, edit, and delete packages',
-            'manage_customers' => 'Can manage customer profiles',
-            'manage_reports' => 'Can view financial and booking reports',
-            'manage_users' => 'Can manage administrative users and roles',
-            'manage_settings' => 'Can update general application settings',
+            // Operations
+            'manage_bookings' => ['name' => 'Manage Bookings',   'description' => 'View, confirm, update, and cancel meal and event bookings'],
+            'manage_events' => ['name' => 'Manage Events',     'description' => 'View and manage event inquiry bookings'],
+            'manage_packages' => ['name' => 'Manage Packages',   'description' => 'Create, edit, and delete catering packages'],
+            'manage_categories' => ['name' => 'Manage Categories', 'description' => 'Create and manage package categories and delivery windows'],
+            'manage_customers' => ['name' => 'Manage Customers',  'description' => 'View and edit customer profiles and history'],
+            // Finance
+            'manage_payments' => ['name' => 'Manage Payments',   'description' => 'View and process payments, verify transactions'],
+            'manage_reports' => ['name' => 'Manage Reports',    'description' => 'Access financial reports, revenue analytics, and exports'],
+            // Administration
+            'manage_users' => ['name' => 'Manage Users',      'description' => 'Invite, edit, and deactivate administrative users'],
+            'manage_roles' => ['name' => 'Manage Roles',      'description' => 'Create roles and assign permissions (Super Admin only)'],
+            'manage_settings' => ['name' => 'Manage Settings',   'description' => 'Update business info, API keys, and application settings'],
         ];
 
-        foreach ($permissions as $slug => $description) {
+        foreach ($permissions as $slug => $data) {
             \App\Models\Permission::updateOrCreate(
                 ['slug' => $slug],
                 [
-                    'name' => str($slug)->replace('_', ' ')->title()->value(),
-                    'description' => $description,
+                    'name' => $data['name'],
+                    'description' => $data['description'],
                 ]
             );
         }
@@ -35,18 +42,21 @@ class RolesAndPermissionsSeeder extends Seeder
         $roles = [
             'super_admin' => [
                 'name' => 'Super Admin',
-                'description' => 'Full access to all system features',
+                'description' => 'Unrestricted access to all system features and configuration',
                 'permissions' => array_keys($permissions),
             ],
             'admin' => [
                 'name' => 'Admin',
-                'description' => 'Can manage daily operations',
-                'permissions' => ['manage_bookings', 'manage_packages', 'manage_customers', 'manage_reports'],
+                'description' => 'Full operational access excluding system-level settings',
+                'permissions' => [
+                    'manage_bookings', 'manage_events', 'manage_packages',
+                    'manage_categories', 'manage_customers', 'manage_payments', 'manage_reports',
+                ],
             ],
             'staff' => [
                 'name' => 'Staff',
-                'description' => 'Limited operational access',
-                'permissions' => ['manage_bookings', 'manage_customers'],
+                'description' => 'Day-to-day operational access for bookings and customers',
+                'permissions' => ['manage_bookings', 'manage_events', 'manage_customers'],
             ],
         ];
 
@@ -63,11 +73,13 @@ class RolesAndPermissionsSeeder extends Seeder
             $role->permissions()->sync($permissionIds);
         }
 
-        // Assign Super Admin role to existing super_admin user if exists
-        $superAdminUser = \App\Models\User::where('email', 'admin@dpc.com')->first();
+        // Assign Super Admin role to the seeded super_admin user
+        $superAdminUser = \App\Models\User::where('role', \App\Enums\UserRole::SuperAdmin)->first();
         if ($superAdminUser) {
             $superAdminRole = \App\Models\Role::where('slug', 'super_admin')->first();
-            $superAdminUser->roles()->sync([$superAdminRole->id]);
+            if ($superAdminRole) {
+                $superAdminUser->roles()->syncWithoutDetaching([$superAdminRole->id]);
+            }
         }
     }
 }

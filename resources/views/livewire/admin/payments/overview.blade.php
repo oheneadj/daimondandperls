@@ -25,8 +25,8 @@
                 @include('layouts.partials.icons.information-circle-solid', ['class' => 'w-5 h-5 text-[#FFC926]'])
             </div>
             <div>
-                <p class="text-[20px] font-bold text-base-content">{{ number_format($stats['pending_verification']) }}</p>
-                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Pending Verification') }}</p>
+                <p class="text-[20px] font-bold text-base-content">{{ number_format($stats['awaiting_payment']) }}</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Awaiting Payment') }}</p>
             </div>
         </div>
         <div class="bg-white border border-base-content/5 rounded-lg p-4 flex items-center gap-4">

@@ -62,9 +62,10 @@ class BookingCompletedNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
+            'type' => 'booking_completed',
             'booking_id' => $this->booking->id,
             'reference' => $this->booking->reference,
-            'message' => 'Your catering booking '.$this->booking->reference.' has been marked as completed.',
+            'message' => "Booking {$this->booking->reference} has been completed.",
             'action_url' => route('booking.confirmation', ['booking' => $this->booking->reference]),
         ];
     }

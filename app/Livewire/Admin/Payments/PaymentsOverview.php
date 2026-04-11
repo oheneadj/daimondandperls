@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Livewire\Admin\Payments;
 
 use App\Enums\BookingStatus;
-use App\Enums\PaymentGateway;
 use App\Enums\PaymentGatewayStatus;
 use App\Models\Payment;
 use Illuminate\Contracts\View\View;
@@ -132,7 +131,7 @@ class PaymentsOverview extends Component
     {
         $stats = [
             'total_received' => Payment::where('status', PaymentGatewayStatus::Successful)->sum('amount'),
-            'pending_verification' => Payment::where('status', PaymentGatewayStatus::Pending)->where('gateway', PaymentGateway::Manual)->count(),
+            'awaiting_payment' => Payment::where('status', PaymentGatewayStatus::Pending)->count(),
             'failed_transactions' => Payment::where('status', PaymentGatewayStatus::Failed)->count(),
         ];
 

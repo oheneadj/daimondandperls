@@ -30,7 +30,7 @@ class BookingConfirmedNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', GaintSmsChannel::class];
+        return ['mail', 'database', GaintSmsChannel::class];
     }
 
     /**
@@ -91,7 +91,12 @@ class BookingConfirmedNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            //
+            'type' => 'booking_confirmed',
+            'booking_id' => $this->booking->id,
+            'reference' => $this->booking->reference,
+            'amount' => $this->booking->total_amount,
+            'message' => "Booking {$this->booking->reference} confirmed — GH₵".number_format($this->booking->total_amount, 2).' received.',
+            'action_url' => route('admin.bookings.show', $this->booking->reference),
         ];
     }
 }

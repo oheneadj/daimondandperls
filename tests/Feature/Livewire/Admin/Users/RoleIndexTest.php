@@ -7,7 +7,7 @@ use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->user = User::factory()->create();
+    $this->user = User::factory()->create(['role' => \App\Enums\UserRole::SuperAdmin]);
     $this->actingAs($this->user);
 
     // Ensure permissions exist

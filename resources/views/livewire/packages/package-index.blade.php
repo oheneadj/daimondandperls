@@ -1,10 +1,4 @@
 <div class="space-y-6 pb-10" x-data="{ reordering: false }">
-    @php
-        $totalPackages = \App\Models\Package::count();
-        $activePackages = \App\Models\Package::where('is_active', true)->count();
-        $inactivePackages = $totalPackages - $activePackages;
-        $totalCategories = \App\Models\Category::count();
-    @endphp
 
     {{-- Page Header --}}
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -41,7 +35,7 @@
                 @include('layouts.partials.icons.clipboard-document-list', ['class' => 'w-5 h-5 text-[#F96015]'])
             </div>
             <div>
-                <p class="text-[20px] font-bold text-base-content">{{ number_format($totalPackages) }}</p>
+                <p class="text-[20px] font-bold text-base-content">{{ number_format($stats['total']) }}</p>
                 <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Total') }}</p>
             </div>
         </div>
@@ -50,7 +44,7 @@
                 @include('layouts.partials.icons.check-circle-solid', ['class' => 'w-5 h-5 text-[#9ABC05]'])
             </div>
             <div>
-                <p class="text-[20px] font-bold text-base-content">{{ number_format($activePackages) }}</p>
+                <p class="text-[20px] font-bold text-base-content">{{ number_format($stats['active']) }}</p>
                 <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Active') }}</p>
             </div>
         </div>
@@ -59,7 +53,7 @@
                 @include('layouts.partials.icons.exclamation-triangle-solid', ['class' => 'w-5 h-5 text-[#D52518]'])
             </div>
             <div>
-                <p class="text-[20px] font-bold text-base-content">{{ number_format($inactivePackages) }}</p>
+                <p class="text-[20px] font-bold text-base-content">{{ number_format($stats['inactive']) }}</p>
                 <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Inactive') }}</p>
             </div>
         </div>
@@ -68,7 +62,7 @@
                 @include('layouts.partials.icons.information-circle-solid', ['class' => 'w-5 h-5 text-[#FFC926]'])
             </div>
             <div>
-                <p class="text-[20px] font-bold text-base-content">{{ number_format($totalCategories) }}</p>
+                <p class="text-[20px] font-bold text-base-content">{{ number_format($stats['categories']) }}</p>
                 <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Collections') }}</p>
             </div>
         </div>

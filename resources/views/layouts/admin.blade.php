@@ -46,6 +46,10 @@
         </main>
     </div>
 
+    @auth
+        @livewire('admin.notifications.notification-slideover')
+    @endauth
+
     @stack('scripts')
 
     <div
