@@ -102,7 +102,7 @@ class BookingWindowService
 
         // Advance to next occurrence of delivery_day (or stay if today is delivery day)
         if ($delivery->isoWeekday() !== $category->delivery_day) {
-            $delivery->next($category->delivery_day);
+            $delivery->next(self::DAY_LABELS[$category->delivery_day]);
         }
 
         // Cutoff is on cutoff_day of the same ISO week as delivery, at cutoff_time

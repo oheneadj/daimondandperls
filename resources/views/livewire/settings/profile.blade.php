@@ -1,60 +1,78 @@
-<section class="max-w-2xl">
+<section>
     <x-settings.layout :title="__('Profile')" :description="__('Update your name and email address')">
-        <form wire:submit="updateProfileInformation" class="space-y-8 mt-6">
-            <!-- Name -->
-            <div class="space-y-2.5">
-                <label class=" text-[11px] font-bold uppercase tracking-[0.2em] text-base-content/60 ml-1">{{ __('Full Legal Name') }}</label>
-                <x-ui.input wire:model="name" type="text" required autofocus placeholder="e.g. Ohene Adjei" class="rounded-2xl h-14 bg-base-100 border-base-content/10/60" />
-                @error('name') <p class=" text-[11px] text-error font-bold mt-1.5 ml-1">{{ $message }}</p> @enderror
-            </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start max-w-4xl">
 
-            <!-- Email -->
-            <div class="space-y-2.5">
-                <label class=" text-[11px] font-bold uppercase tracking-[0.2em] text-base-content/60 ml-1">{{ __('Communication Email') }}</label>
-                <x-ui.input wire:model="email" type="email" required placeholder="client@example.com" class="rounded-2xl h-14 bg-base-100 border-base-content/10/60" />
-                @error('email') <p class=" text-[11px] text-error font-bold mt-1.5 ml-1">{{ $message }}</p> @enderror
+            {{-- Avatar sidebar --}}
+            <div class="space-y-4">
+                <div class="bg-white border border-base-content/5 rounded-xl p-6 flex flex-col items-center gap-4 text-center shadow-sm">
+                    <div class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-[28px] select-none">
+                        {{ strtoupper(substr($name ?: 'A', 0, 1)) }}
+                    </div>
+                    <div>
+                        <p class="text-[15px] font-bold text-base-content">{{ $name ?: __('Admin') }}</p>
+                        <p class="text-[12px] text-base-content/40 mt-0.5">{{ $email }}</p>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#A31C4E]/10 text-[#A31C4E] text-[11px] font-bold uppercase tracking-widest">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#A31C4E]"></span>
+                        {{ __('Administrator') }}
+                    </span>
+                </div>
 
                 @if ($this->hasUnverifiedEmail)
-                    <div
-                        class="mt-4 p-4 rounded-xl bg-warning/10 border border-warning/20 text-warning flex flex-col gap-2">
-                        <div class="flex items-center gap-2 font-bold text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            {{ __('Your email address is unverified.') }}
+                    <div class="bg-warning/10 border border-warning/20 rounded-xl p-4 space-y-2">
+                        <div class="flex items-center gap-2 text-warning font-bold text-[12px]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            {{ __('Email unverified') }}
                         </div>
-                        <x-ui.button wire:click.prevent="resendVerificationNotification" variant="ghost" size="sm" class="justify-start !px-0 hover:bg-transparent underline decoration-warning/30 font-bold text-warning">
-                            {{ __('Click here to re-send the verification email.') }}
-                        </x-ui.button>
-
+                        <button wire:click.prevent="resendVerificationNotification"
+                            class="text-[12px] font-bold text-warning underline decoration-warning/40 hover:decoration-warning transition-all">
+                            {{ __('Resend verification email') }}
+                        </button>
                         @if (session('status') === 'verification-link-sent')
-                            <div class="text-xs font-bold bg-success/20 text-success p-2 rounded-lg mt-2 animate-pulse">
-                                {{ __('A new verification link has been sent to your email address.') }}
-                            </div>
+                            <p class="text-[11px] font-bold text-success">{{ __('Verification link sent!') }}</p>
                         @endif
                     </div>
                 @endif
             </div>
 
-            <div class="flex items-center gap-6 pt-10 border-t border-base-content/10/50">
-                <x-ui.button type="submit" variant="primary" class="px-10 h-14 rounded-2xl shadow-dp-lg hover:shadow-xl transition-all  text-[14px] uppercase tracking-widest">
-                    {{ __('Finalize Refinement') }}
-                </x-ui.button>
+            {{-- Forms --}}
+            <div class="lg:col-span-2 space-y-6">
+                <form wire:submit="updateProfileInformation">
+                    <div class="bg-white border border-base-content/5 rounded-xl shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-base-content/5">
+                            <p class="text-[11px] font-bold uppercase tracking-widest text-base-content/50">{{ __('Personal Details') }}</p>
+                        </div>
+                        <div class="p-6 space-y-5">
+                            <div>
+                                <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/50 block mb-1.5">{{ __('Full Name') }}</label>
+                                <x-ui.input wire:model="name" type="text" required autofocus placeholder="Your full name" />
+                                @error('name') <p class="text-[12px] text-error font-bold mt-1">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/50 block mb-1.5">{{ __('Email Address') }}</label>
+                                <x-ui.input wire:model="email" type="email" required placeholder="admin@example.com" />
+                                @error('email') <p class="text-[12px] text-error font-bold mt-1">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+                        <div class="px-6 py-4 border-t border-base-content/5 bg-base-200/30 flex items-center justify-between gap-4">
+                            <x-action-message class="text-[12px] font-bold text-success flex items-center gap-1.5" on="profile-updated">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                {{ __('Saved') }}
+                            </x-action-message>
+                            <div></div>
+                            <button type="submit" wire:loading.attr="disabled"
+                                class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-lg font-bold text-[13px] hover:bg-primary/90 transition-colors disabled:opacity-50">
+                                <span wire:loading.remove wire:target="updateProfileInformation">{{ __('Save Changes') }}</span>
+                                <span wire:loading wire:target="updateProfileInformation" class="flex items-center gap-2">
+                                    <span class="loading loading-spinner loading-xs"></span>
+                                    {{ __('Saving...') }}
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
 
-                <x-action-message class=" text-[13px] font-bold text-secondary bg-secondary-soft px-4 py-2 rounded-xl border border-dp-green/10" on="profile-updated">
-                    {{ __('Profile Refined') }}
-                </x-action-message>
             </div>
-        </form>
-
-        @if ($this->showDeleteUser)
-            <div class="mt-20 border-t-2 border-dashed border-error/20 pt-10">
-                <div class="bg-error/5 rounded-2xl p-8 border border-error/10">
-                    <livewire:settings.delete-user-form />
-                </div>
-            </div>
-        @endif
+        </div>
     </x-settings.layout>
 </section>

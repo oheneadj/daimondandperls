@@ -52,6 +52,12 @@
 
     @stack('scripts')
 
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('filepond', { uploading: false });
+        });
+    </script>
+
     <div
         x-data="{
             toasts: [],

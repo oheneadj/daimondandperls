@@ -1,62 +1,73 @@
-<section class="max-w-2xl">
+<section>
     <x-settings.layout :title="__('Notification Settings')" :description="__('Configure how you receive administrative alerts')">
-        <form wire:submit="updateNotifications" class="space-y-10 mt-6">
-            <!-- Global Admin Toggles -->
-            <div class="bg-base-200-mid/40 p-10 rounded-3xl border border-base-content/10/40 space-y-8">
-                <div class="flex items-center gap-2.5 mb-2">
-                    <div class="w-8 h-8 rounded-full bg-primary-soft text-primary flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+        <div class="max-w-2xl">
+            <form wire:submit="updateNotifications" class="space-y-6">
+
+                {{-- System-wide toggles --}}
+                <div class="bg-white border border-base-content/5 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-base-content/5">
+                        <p class="text-[11px] font-bold uppercase tracking-widest text-base-content/50">{{ __('System Channels') }}</p>
+                        <p class="text-[12px] text-base-content/40 font-medium mt-0.5">{{ __('Master switches for outgoing notifications.') }}</p>
                     </div>
-                    <h3 class=" text-[11px] font-bold uppercase tracking-[0.2em] text-base-content">{{ __('Global System Toggles') }}</h3>
+                    <div class="divide-y divide-base-content/5">
+                        <label class="flex items-center justify-between px-6 py-4 cursor-pointer hover:bg-base-200/30 transition-colors">
+                            <div>
+                                <p class="text-[13px] font-bold text-base-content">{{ __('Email Notifications') }}</p>
+                                <p class="text-[11px] text-base-content/40 font-medium mt-0.5">{{ __('Enable all outgoing booking and system emails.') }}</p>
+                            </div>
+                            <input type="checkbox" wire:model="email_enabled" class="toggle toggle-primary toggle-sm" />
+                        </label>
+                        <label class="flex items-center justify-between px-6 py-4 cursor-pointer hover:bg-base-200/30 transition-colors">
+                            <div>
+                                <p class="text-[13px] font-bold text-base-content">{{ __('SMS Notifications') }}</p>
+                                <p class="text-[11px] text-base-content/40 font-medium mt-0.5">{{ __('Enable all outgoing SMS alerts via GaintSMS.') }}</p>
+                            </div>
+                            <input type="checkbox" wire:model="sms_enabled" class="toggle toggle-primary toggle-sm" />
+                        </label>
+                    </div>
                 </div>
-                
-                <div class="space-y-6">
-                    <label class="flex items-center group cursor-pointer">
-                        <input type="checkbox" wire:model="email_enabled" class="sr-only peer">
-                        <div class="w-10 h-5 border-base-content/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-base-100 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary shadow-sm"></div>
-                        <div class="ml-4">
-                            <span class="block  text-[13px] font-bold text-base-content">{{ __('Executive Communication') }}</span>
-                            <span class="block  text-[10px] text-base-content/60 font-bold uppercase tracking-widest opacity-60">{{ __('Master switch for all outgoing orchestration emails.') }}</span>
-                        </div>
-                    </label>
 
-                    <label class="flex items-center group cursor-pointer">
-                        <input type="checkbox" wire:model="sms_enabled" class="sr-only peer">
-                        <div class="w-10 h-5 border-base-content/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-base-100 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary shadow-sm"></div>
-                        <div class="ml-4">
-                            <span class="block  text-[13px] font-bold text-base-content">{{ __('Direct SMS Transmission') }}</span>
-                            <span class="block  text-[10px] text-base-content/60 font-bold uppercase tracking-widest opacity-60">{{ __('Master switch for all SMS alerts (requires Giant SMS config).') }}</span>
-                        </div>
-                    </label>
+                {{-- Personal preference --}}
+                <div class="bg-white border border-base-content/5 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-base-content/5">
+                        <p class="text-[11px] font-bold uppercase tracking-widest text-base-content/50">{{ __('Personal Preference') }}</p>
+                        <p class="text-[12px] text-base-content/40 font-medium mt-0.5">{{ __('How you personally receive admin alerts.') }}</p>
+                    </div>
+                    <div class="p-6 space-y-3">
+                        @foreach([
+                            ['value' => 'email', 'label' => 'Email Only', 'desc' => 'Receive alerts via email only'],
+                            ['value' => 'sms',   'label' => 'SMS Only',   'desc' => 'Receive alerts via SMS only'],
+                            ['value' => 'both',  'label' => 'Email & SMS','desc' => 'Receive alerts via both channels'],
+                        ] as $option)
+                            <label class="flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all
+                                {{ $notification_preference === $option['value'] ? 'border-primary/25 bg-primary/[0.03]' : 'border-base-content/8 hover:border-base-content/15' }}">
+                                <input type="radio" wire:model.live="notification_preference" value="{{ $option['value'] }}"
+                                    class="radio radio-primary radio-sm">
+                                <div>
+                                    <p class="text-[13px] font-bold text-base-content">{{ __($option['label']) }}</p>
+                                    <p class="text-[11px] text-base-content/45 font-medium">{{ __($option['desc']) }}</p>
+                                </div>
+                            </label>
+                        @endforeach
+                        @error('notification_preference') <p class="text-[12px] text-error font-bold mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div class="px-6 py-4 border-t border-base-content/5 bg-base-200/30 flex items-center justify-between gap-4">
+                        <x-action-message class="text-[12px] font-bold text-success flex items-center gap-1.5" on="notifications-updated">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            {{ __('Saved') }}
+                        </x-action-message>
+                        <div></div>
+                        <button type="submit" wire:loading.attr="disabled"
+                            class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-lg font-bold text-[13px] hover:bg-primary/90 transition-colors disabled:opacity-50">
+                            <span wire:loading.remove wire:target="updateNotifications">{{ __('Save Preferences') }}</span>
+                            <span wire:loading wire:target="updateNotifications" class="flex items-center gap-2">
+                                <span class="loading loading-spinner loading-xs"></span>
+                                {{ __('Saving...') }}
+                            </span>
+                        </button>
+                    </div>
                 </div>
-            </div>
-
-            <div class="divider text-[10px] font-black uppercase tracking-widest opacity-20">{{ __('Personal Preferences') }}</div>
-
-            <!-- Notification Preference -->
-            <div class="space-y-4">
-                <label class=" text-[11px] font-bold uppercase tracking-[0.2em] text-base-content/60 ml-1">{{ __('Personal Orchestration Alerts') }}</label>
-                <x-ui.select wire:model="notification_preference" class="rounded-2xl h-14 bg-base-100 border-base-content/10/60">
-                    <option value="email">{{ __('Email Presentation') }}</option>
-                    <option value="sms">{{ __('SMS Transmission') }}</option>
-                    <option value="both">{{ __('Unified Communication (Both)') }}</option>
-                </x-ui.select>
-                @error('notification_preference') <p class=" text-[11px] text-error font-bold mt-1.5 ml-1">{{ $message }}</p> @enderror
-                <p class=" text-[10px] text-base-content/60 font-bold uppercase tracking-widest opacity-40 ml-1">
-                    {{ __('Choose your preferred channel for receiving administrative alerts.') }}
-                </p>
-            </div>
-
-            <div class="flex items-center gap-6 pt-10 border-t border-base-content/10/50">
-                <x-ui.button type="submit" variant="primary" size="lg" class="px-10 h-14 rounded-2xl shadow-dp-lg  text-[14px] uppercase tracking-widest">
-                    {{ __('Save Preferences') }}
-                </x-ui.button>
-
-                <x-action-message class=" text-[13px] font-bold text-secondary bg-secondary-soft px-4 py-2 rounded-xl border border-dp-green/10" on="notifications-updated">
-                    {{ __('Preferences Secured') }}
-                </x-action-message>
-            </div>
-        </form>
+            </form>
+        </div>
     </x-settings.layout>
 </section>

@@ -43,7 +43,10 @@
       "Bash(vendor/bin/pint app/Livewire/Dashboard.php tests/Feature/DashboardTest.php tests/Feature/Admin/AdminDashboardTest.php --format agent)",
       "mcp__laravel-boost__tinker",
       "Bash(sed -n '31,35p' /home/oheneadj/server/dpc/app/Notifications/BookingConfirmedNotification.php)",
-      "Bash(sed -n '91,105p' /home/oheneadj/server/dpc/app/Notifications/BookingConfirmedNotification.php)"
+      "Bash(sed -n '91,105p' /home/oheneadj/server/dpc/app/Notifications/BookingConfirmedNotification.php)",
+      "Bash(vendor/bin/pint app/Services/BookingWindowService.php --format agent)",
+      "Bash(vendor/bin/pint app/Livewire/Admin/Settings/AdminSettings.php --format agent)",
+      "Bash(vendor/bin/pint app/Livewire/Auth/OtpLogin.php --format agent)"
     ],
     "additionalDirectories": [
       "/home/oheneadj/server/dpc/resources/views/components",

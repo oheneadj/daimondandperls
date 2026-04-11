@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\Auth;
 
-use App\Enums\UserType;
-use App\Models\Customer;
 use App\Models\User;
 use App\Notifications\OtpNotification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Livewire\Component;
 
 class OtpLogin extends Component
@@ -36,28 +31,9 @@ class OtpLogin extends Component
         $user = User::query()->where('phone', $this->phone)->first();
 
         if (! $user) {
-            $customer = Customer::query()->where('phone', $this->phone)->first();
+            $this->error = 'No account found with this phone number. Please register first.';
 
-            $user = DB::transaction(function () use ($customer): User {
-                $user = User::create([
-                    'name' => $customer?->name ?? 'Customer '.substr($this->phone, -4),
-                    'phone' => $this->phone,
-                    'email' => $customer?->email,
-                    'password' => Hash::make(Str::random(32)),
-                    'type' => UserType::Customer,
-                ]);
-
-                if ($customer) {
-                    $customer->update(['user_id' => $user->id]);
-                } else {
-                    $user->customer()->create([
-                        'name' => $user->name,
-                        'phone' => $this->phone,
-                    ]);
-                }
-
-                return $user;
-            });
+            return;
         }
 
         $otp = (string) rand(100000, 999999);

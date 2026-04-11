@@ -35,7 +35,12 @@
                             <h3 class="text-[16px] font-bold text-base-content uppercase tracking-[0.05em]">{{ __('Business Identity') }}</h3>
                             <p class="text-[11px] text-base-content/40 font-medium mt-1">{{ __('Manage your branding and public presence.') }}</p>
                         </div>
-                        <form wire:submit.prevent="saveBusinessInfo" class="p-6 space-y-6">
+                        <form class="p-6 space-y-6"
+                            x-data="{ uploading: false }"
+                            @filepond-start.document="uploading = true"
+                            @filepond-end.document="uploading = false"
+                            @submit.prevent="if (!uploading) $wire.saveBusinessInfo()"
+                        >
                             @if (session()->has('business_info_success'))
                                 <x-ui.alert type="success" class="mb-4">
                                     {{ session('business_info_success') }}
@@ -71,9 +76,10 @@
                                                     acceptedFileTypes: ['image/png', 'image/webp', 'image/jpeg', 'image/jpg'],
                                                     server: {
                                                         process: (fieldName, file, metadata, load, error, progress, abort) => {
-                                                            $wire.upload('business_logo', file, 
-                                                                (uploadedFilename) => { load(uploadedFilename); },
-                                                                () => { error('Upload failed'); },
+                                                            document.dispatchEvent(new CustomEvent('filepond-start'));
+                                                            $wire.upload('business_logo', file,
+                                                                (uploadedFilename) => { load(uploadedFilename); document.dispatchEvent(new CustomEvent('filepond-end')); },
+                                                                () => { error('Upload failed'); document.dispatchEvent(new CustomEvent('filepond-end')); },
                                                                 (progressValue) => { progress(true, progressValue, 100); }
                                                             );
                                                         }
@@ -141,13 +147,22 @@
                             </div>
 
                             <div class="pt-4 flex justify-end">
-                                <x-ui.button type="submit" variant="primary" size="md" wire:loading.attr="disabled">
-                                    <span wire:loading.remove wire:target="saveBusinessInfo">{{ __('Verify & Save Changes') }}</span>
+                                <button type="submit"
+                                    x-bind:disabled="uploading"
+                                    x-bind:class="uploading ? 'opacity-60 cursor-not-allowed' : ''"
+                                    wire:loading.attr="disabled"
+                                    class="btn border-none inline-flex items-center justify-center font-medium rounded-xl transition-all duration-150 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed bg-primary text-primary-content hover:brightness-110 px-[18px] py-[10px] text-[13px] gap-2"
+                                >
+                                    <span x-show="uploading" class="flex items-center gap-2">
+                                        <span class="loading loading-spinner loading-xs"></span>
+                                        {{ __('Uploading logo...') }}
+                                    </span>
+                                    <span x-show="!uploading" wire:loading.remove wire:target="saveBusinessInfo">{{ __('Verify & Save Changes') }}</span>
                                     <span wire:loading wire:target="saveBusinessInfo" class="flex items-center gap-2">
                                         <span class="loading loading-spinner loading-xs"></span>
                                         {{ __('Persisting...') }}
                                     </span>
-                                </x-ui.button>
+                                </button>
                             </div>
                         </form>
                     </x-ui.card>

@@ -1,8 +1,6 @@
 <?php
 
-use App\Enums\UserType;
 use App\Livewire\Auth\OtpLogin;
-use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -27,40 +25,14 @@ test('otp sends verification code for existing user', function () {
         ->and($user->otp_expires_at)->not->toBeNull();
 });
 
-test('otp auto-registers new user as customer type', function () {
+test('otp rejects unknown phone number with error', function () {
     Livewire::test(OtpLogin::class)
         ->set('phone', '0244555666')
         ->call('sendOtp')
-        ->assertHasNoErrors()
-        ->assertSet('step', 2);
+        ->assertSet('step', 1)
+        ->assertSet('error', 'No account found with this phone number. Please register first.');
 
-    $user = User::query()->where('phone', '0244555666')->first();
-    expect($user)->not->toBeNull()
-        ->and($user->type)->toBe(UserType::Customer)
-        ->and($user->email)->toBeNull()
-        ->and($user->customer)->not->toBeNull()
-        ->and($user->customer->phone)->toBe('0244555666');
-});
-
-test('otp auto-register links existing customer record', function () {
-    $customer = Customer::factory()->create([
-        'phone' => '0244777888',
-        'name' => 'Existing Customer',
-        'email' => 'existing@example.com',
-    ]);
-
-    Livewire::test(OtpLogin::class)
-        ->set('phone', '0244777888')
-        ->call('sendOtp')
-        ->assertHasNoErrors();
-
-    $user = User::query()->where('phone', '0244777888')->first();
-    expect($user->name)->toBe('Existing Customer')
-        ->and($user->email)->toBe('existing@example.com')
-        ->and($user->type)->toBe(UserType::Customer);
-
-    $customer->refresh();
-    expect($customer->user_id)->toBe($user->id);
+    expect(User::query()->where('phone', '0244555666')->exists())->toBeFalse();
 });
 
 test('otp verifies valid code and logs in user', function () {

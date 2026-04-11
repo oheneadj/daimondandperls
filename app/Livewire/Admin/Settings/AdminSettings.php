@@ -9,6 +9,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -273,7 +274,8 @@ class AdminSettings extends Component
         );
     }
 
-    public function getSystemStatsProperty(): array
+    #[Computed]
+    public function systemStats(): array
     {
         return [
             'server' => [

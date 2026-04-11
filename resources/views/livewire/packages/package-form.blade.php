@@ -20,7 +20,12 @@
         </x-ui.button>
     </div>
 
-    <form wire:submit="save" class="max-w-4xl space-y-8">
+    <form class="max-w-4xl space-y-8"
+        x-data="{ uploading: false }"
+        @filepond-start.document="uploading = true"
+        @filepond-end.document="uploading = false"
+        @submit.prevent="if (!uploading) $wire.save()"
+    >
         <x-ui.card>
             <div class="space-y-8">
                 <!-- Group 1: Core Identity -->
@@ -177,9 +182,10 @@
                                     credits: false,
                                     server: {
                                         process: (fieldName, file, metadata, load, error, progress, abort) => {
-                                            $wire.upload('image', file, 
-                                                (uploadedFilename) => { load(uploadedFilename); },
-                                                () => { error('Upload failed'); },
+                                            document.dispatchEvent(new CustomEvent('filepond-start'));
+                                            $wire.upload('image', file,
+                                                (uploadedFilename) => { load(uploadedFilename); document.dispatchEvent(new CustomEvent('filepond-end')); },
+                                                () => { error('Upload failed'); document.dispatchEvent(new CustomEvent('filepond-end')); },
                                                 (progressValue) => { progress(true, progressValue, 100); }
                                             );
                                         },
@@ -291,15 +297,24 @@
                     </x-ui.button>
                 @endif
             </div>
-            <x-ui.button type="submit" variant="primary" size="lg" wire:loading.attr="disabled" class="min-w-[200px] shadow-dp-lg">
-                <span wire:loading.remove wire:target="save">
+            <button type="submit"
+                x-bind:disabled="uploading"
+                x-bind:class="uploading ? 'opacity-60 cursor-not-allowed' : ''"
+                wire:loading.attr="disabled"
+                class="btn border-none inline-flex items-center justify-center font-medium rounded-xl transition-all duration-150 focus:outline-none focus:ring-3 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-primary text-primary-content hover:brightness-110 focus:ring-primary/30 px-[24px] py-[13px] text-[15px] gap-2 min-w-[200px] shadow-dp-lg"
+            >
+                <span x-show="uploading" class="flex items-center gap-3">
+                    <span class="loading loading-spinner loading-sm"></span>
+                    {{ __('Uploading image...') }}
+                </span>
+                <span x-show="!uploading" wire:loading.remove wire:target="save">
                     {{ $package ? __('Update Package') : __('Add Package') }}
                 </span>
                 <span wire:loading wire:target="save" class="flex items-center gap-3">
                     <span class="loading loading-spinner loading-sm"></span>
                     {{ __('Processing...') }}
                 </span>
-            </x-ui.button>
+            </button>
         </div>
 
         @error('delete')
