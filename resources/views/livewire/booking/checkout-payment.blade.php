@@ -56,32 +56,47 @@
                             </p>
                         </div>
 
-                        @if ($errorMessage)
+                        {{-- Fatal (non-retryable) error — hide the form, show support contact --}}
+                        @if ($fatalError)
                             <div class="mb-8 animate-fade-in">
-                                <div class="p-4 bg-error/10 border border-error/15 rounded-lg flex items-start gap-3">
-                                    <div class="size-8 bg-error/10 rounded-full flex items-center justify-center shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-error" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                <div class="p-5 bg-error/10 border border-error/15 rounded-lg flex items-start gap-4">
+                                    <div class="size-9 bg-error/15 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                         </svg>
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-[13px] font-medium text-error">{{ $errorMessage }}</p>
-                                        <button wire:click="retry"
-                                            class="inline-flex items-center gap-1.5 mt-2 text-[13px] font-semibold text-error hover:text-error/80 transition-colors">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                            </svg>
-                                            Try again
-                                        </button>
+                                        <p class="text-[14px] font-semibold text-error mb-1">Payment Unavailable</p>
+                                        <p class="text-[13px] text-error/80">{{ $fatalError }}</p>
+                                        <div class="mt-3 flex flex-wrap gap-3">
+                                            <a href="tel:+233596070822"
+                                                class="inline-flex items-center gap-1.5 text-[13px] font-semibold text-error hover:text-error/80 transition-colors">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                                </svg>
+                                                Call / WhatsApp: +233 59 607 0822
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         @endif
 
+                        {{-- Retryable error — shown inline above the form so the customer can try again immediately --}}
+                        @if ($errorMessage)
+                            <div class="mb-6 animate-fade-in">
+                                <div class="p-4 bg-error/10 border border-error/15 rounded-lg flex items-start gap-3">
+                                    <div class="size-8 bg-error/10 rounded-full flex items-center justify-center shrink-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-[13px] font-medium text-error flex-1">{{ $errorMessage }}</p>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if (!$fatalError)
                         <div class="space-y-8">
                             <div class="animate-fade-in space-y-6">
                                 @if ($paymentStep === 'awaiting')
@@ -135,10 +150,22 @@
                                                 </p>
                                             </div>
 
-                                            <div class="max-w-xs mx-auto text-left">
-                                                <x-app.input name="otpCode" type="text" label="Verification Code"
-                                                    wire:model="otpCode" inputmode="numeric" maxlength="6"
-                                                    placeholder="Enter code" required />
+                                            <div class="max-w-xs mx-auto space-y-1.5">
+                                                <label class="text-dp-sm font-medium text-base-content block">{{ __('Verification Code') }}</label>
+                                                <input
+                                                    wire:model="otpCode"
+                                                    type="text"
+                                                    inputmode="numeric"
+                                                    pattern="[0-9]*"
+                                                    maxlength="6"
+                                                    autocomplete="one-time-code"
+                                                    autofocus
+                                                    placeholder="000000"
+                                                    class="w-full px-[14px] py-[14px] text-center text-2xl font-bold tracking-[0.4em] bg-base-100 border border-base-content/10 rounded-lg transition-all duration-120 outline-none placeholder:text-base-content/20 focus:border-primary focus:ring-3 focus:ring-primary/20"
+                                                />
+                                                @error('otpCode')
+                                                    <p class="text-xs text-error flex items-center gap-1"><span>⚠</span> {{ $message }}</p>
+                                                @enderror
                                             </div>
 
                                             <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -240,14 +267,15 @@
                                                 <div class="pt-4 border-t border-base-content/5">
                                                     <x-app.button type="button" variant="primary" size="lg" class="w-full"
                                                         wireClick="processMobileMoney" wireTarget="processMobileMoney"
-                                                        :loadingText="'Processing...'" :disabled="!$this->isMomoFormValid">
+                                                        :loadingText="'Processing...'" :disabled="!$this->getIsMomoFormValidProperty()">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none"
                                                             viewBox="0 0 24 24" stroke="currentColor">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                                 d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                                        </svg>
-                                                        Pay GH₵ {{ number_format($booking->total_amount, 2) }}</ x-app.button>
-                                                                </div>
+                                                            </svg>
+                                                        Pay GH₵ {{ number_format($booking->total_amount, 2) }}
+                                                    </x-app.button>
+                                                </div>
                                             @endif
                                         @endif
                                     @endauth
@@ -307,7 +335,7 @@
                                             <div class="pt-4 border-t border-base-content/5">
                                                 <x-app.button type="button" variant="primary" size="lg" class="w-full"
                                                     wireClick="processMobileMoney" wireTarget="processMobileMoney"
-                                                    :loadingText="'Processing...'" :disabled="!$this->isMomoFormValid">
+                                                    :loadingText="'Processing...'" :disabled="!$this->getIsMomoFormValidProperty()">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none"
                                                         viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -321,6 +349,7 @@
                             </div>
 
                         </div>
+                        @endif {{-- !$fatalError --}}
                     </div>
                 </div>
             </div>

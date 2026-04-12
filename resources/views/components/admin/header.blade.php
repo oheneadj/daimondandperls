@@ -39,7 +39,7 @@
             <div x-data="{ open: false }" class="relative flex items-center gap-3 pl-4 sm:pl-6 border-l border-base-content/10">
                 <div class="hidden sm:flex flex-col items-end">
                     <span class="text-[13px] font-bold text-[#18542A] leading-tight">{{ auth()->user()->displayName() }}</span>
-                    <span class="text-[11px] text-[#18542A]/60 leading-tight font-medium">{{ ucfirst(auth()->user()->role?->value ?? 'Administrator') }}</span>
+                    <span class="text-[11px] text-[#18542A]/60 leading-tight font-medium">{{ auth()->user()->roles->first()?->name ?? 'Administrator' }}</span>
                 </div>
 
                 <button @click="open = !open" class="relative group">

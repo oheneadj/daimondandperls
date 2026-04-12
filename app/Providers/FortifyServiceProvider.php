@@ -36,7 +36,7 @@ class FortifyServiceProvider extends ServiceProvider
             if ($user && \Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
                 if (! $user->is_active) {
                     throw \Illuminate\Validation\ValidationException::withMessages([
-                        Fortify::username() => [__('Your account has been disabled. Please contact support.')],
+                        Fortify::username() => [__('Your account has been disabled. Please contact an administrator for assistance.')],
                     ]);
                 }
 

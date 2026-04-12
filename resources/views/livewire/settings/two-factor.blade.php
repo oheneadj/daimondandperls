@@ -68,7 +68,8 @@
                     <div>
                         <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/50 block mb-2">{{ __('Verification Code') }}</label>
                         <input wire:model="code" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6"
-                            class="input input-bordered w-full text-center text-[24px] font-mono tracking-[0.5em] h-14 border-base-content/15 rounded-xl"
+                            autocomplete="one-time-code"
+                            class="w-full px-[14px] py-[14px] text-center text-2xl font-bold tracking-[0.4em] bg-base-100 border border-base-content/10 rounded-lg transition-all duration-120 outline-none placeholder:text-base-content/20 focus:border-primary focus:ring-3 focus:ring-primary/20"
                             placeholder="000000" />
                     </div>
                     <div class="flex gap-3">

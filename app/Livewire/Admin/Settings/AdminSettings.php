@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Admin\Settings;
 
 use App\Models\Setting;
+use App\Traits\HasAdminAuthorization;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +21,7 @@ use Livewire\WithFileUploads;
 #[Title('Application Settings')]
 class AdminSettings extends Component
 {
+    use HasAdminAuthorization;
     use WithFileUploads;
 
     #[Url]
@@ -74,6 +76,7 @@ class AdminSettings extends Component
 
     public function mount(): void
     {
+        $this->authorizePermission('manage_settings');
         $settings = Setting::all()->keyBy('key');
 
         $this->business_name = $settings->get('business_name')?->value ?? '';

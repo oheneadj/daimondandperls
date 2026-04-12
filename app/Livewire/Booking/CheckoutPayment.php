@@ -8,6 +8,7 @@ use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\CustomerPaymentMethod;
+use App\Models\ErrorLog;
 use App\Models\Payment;
 use App\Notifications\BookingConfirmedNotification;
 use App\Services\CartService;
@@ -17,6 +18,7 @@ use App\Traits\HandlesMomoValidation;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -41,6 +43,9 @@ class CheckoutPayment extends Component
     public ?string $otpMessage = null;
 
     public ?string $errorMessage = null;
+
+    /** Non-retryable error the customer cannot resolve themselves (e.g. merchant config). */
+    public ?string $fatalError = null;
 
     public ?string $loading = null;
 
@@ -165,9 +170,54 @@ class CheckoutPayment extends Component
     public function retry(): void
     {
         $this->errorMessage = null;
+        $this->fatalError = null;
         $this->otpCode = '';
         $this->paymentStep = 'form';
         session()->forget('error');
+    }
+
+    /**
+     * Classify a Moolre error response, log it, and set the appropriate error property.
+     * Fatal errors (merchant/gateway config) go to $fatalError; retryable ones to $errorMessage.
+     *
+     * @param  array<string, mixed>  $response
+     */
+    private function handlePaymentError(array $response, string $context): void
+    {
+        $message = $response['message'] ?? 'An unexpected error occurred. Please try again.';
+        $code = $response['code'] ?? null;
+
+        Log::error('Moolre payment error', [
+            'context' => $context,
+            'booking' => $this->booking->reference,
+            'code' => $code,
+            'message' => $message,
+            'response' => $response,
+            'network' => $this->momoNetwork,
+            'payer' => $this->momoNumber,
+        ]);
+
+        ErrorLog::create([
+            'source' => 'payment',
+            'context' => $context,
+            'level' => 'error',
+            'booking_reference' => $this->booking->reference,
+            'error_code' => $code,
+            'message' => $message,
+            'network' => $this->momoNetwork,
+            'payer_number' => $this->momoNumber,
+            'payload' => $response,
+        ]);
+
+        // Non-retryable: merchant/gateway configuration issues
+        $fatalPhrases = ['merchant account setup', 'account setup incomplete', 'invalid merchant', 'merchant not found'];
+        $isFatal = collect($fatalPhrases)->contains(fn (string $phrase) => str_contains(strtolower($message), $phrase));
+
+        if ($isFatal) {
+            $this->fatalError = 'Payment is temporarily unavailable. Please contact our support team for assistance.';
+        } else {
+            $this->errorMessage = $message;
+        }
     }
 
     public function processMobileMoney(MoolrePaymentService $moolre): void
@@ -210,8 +260,7 @@ class CheckoutPayment extends Component
 
             $this->paymentStep = 'awaiting';
         } else {
-            $this->errorMessage = $response['message'] ?? 'Failed to initiate payment prompt. Please try again.';
-            session()->flash('error', $this->errorMessage);
+            $this->handlePaymentError($response, 'initiate');
         }
 
         $this->loading = null;
@@ -245,12 +294,12 @@ class CheckoutPayment extends Component
                 $this->otpCode = '';
                 $this->paymentStep = 'awaiting';
             } else {
-                $this->errorMessage = $initResponse['message'] ?? 'OTP verified but failed to send payment prompt. Please try again.';
+                $this->handlePaymentError($initResponse, 'otp-reinitiate');
             }
         } elseif ($code === 'TP15') {
             $this->errorMessage = 'Invalid verification code. Please check and try again.';
         } else {
-            $this->errorMessage = $response['message'] ?? 'Verification failed. Please try again.';
+            $this->handlePaymentError($response, 'otp-submit');
         }
 
         $this->loading = null;
@@ -267,7 +316,7 @@ class CheckoutPayment extends Component
         if ($code === 'TP14') {
             $this->otpMessage = 'A new verification code has been sent to your phone.';
         } else {
-            $this->errorMessage = $response['message'] ?? 'Failed to resend verification code. Please try again.';
+            $this->handlePaymentError($response, 'resend-otp');
         }
     }
 
@@ -331,6 +380,24 @@ class CheckoutPayment extends Component
         }
 
         if ($this->booking->payment_status === PaymentStatus::Failed) {
+            Log::warning('Moolre payment failed via webhook/poll', [
+                'booking' => $this->booking->reference,
+                'network' => $this->momoNetwork,
+                'payer' => $this->momoNumber,
+                'payment_details' => $this->booking->payment_details,
+            ]);
+
+            ErrorLog::create([
+                'source' => 'payment',
+                'context' => 'webhook-failed',
+                'level' => 'warning',
+                'booking_reference' => $this->booking->reference,
+                'message' => 'Payment was declined or failed (reported by Moolre webhook/poll).',
+                'network' => $this->momoNetwork,
+                'payer_number' => $this->momoNumber,
+                'payload' => $this->booking->payment_details ?? [],
+            ]);
+
             $this->paymentStep = 'form';
             $this->errorMessage = 'Payment was declined or failed. Please try again.';
             session()->flash('error', $this->errorMessage);

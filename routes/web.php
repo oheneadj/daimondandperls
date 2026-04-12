@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', \App\Livewire\Pages\HomePage::class)->name('home');
+
+Route::get('/invitation/accept/{token}', [\App\Http\Controllers\InvitationController::class, 'accept'])
+    ->name('invitation.accept');
 Route::get('/all-packages', \App\Livewire\Packages\PackagesBrowse::class)->name('packages.browse');
 
 Route::get('/about', function () {
@@ -94,6 +97,9 @@ Route::middleware(['auth', 'verified', 'admin'])
         // Admin Settings
         Route::get('settings', \App\Livewire\Admin\Settings\AdminSettings::class)->name('settings.index');
 
+        // Error Logs (super admin + users with view_error_logs permission)
+        Route::get('error-logs', \App\Livewire\Admin\ErrorLogs\ErrorLogIndex::class)->name('error-logs.index');
+
         // User Management
         Route::get('users', \App\Livewire\Admin\Users\UserIndex::class)->name('users.index');
         Route::get('users/create', \App\Livewire\Admin\Users\UserForm::class)->name('users.create');
@@ -116,6 +122,10 @@ Route::middleware(['auth', 'verified', 'admin'])
 
         Route::get('design-system', \App\Livewire\Admin\DesignSystem::class)->name('design-system');
     });
+
+// Moolre Payment Webhook (CSRF exempt via bootstrap/app.php)
+Route::post('/webhooks/moolre', \App\Http\Controllers\MoolreWebhookController::class)
+    ->name('webhooks.moolre');
 
 // Public Invoices (Signed)
 Route::get('/invoice/{reference}/download', [\App\Http\Controllers\InvoiceController::class, 'download'])

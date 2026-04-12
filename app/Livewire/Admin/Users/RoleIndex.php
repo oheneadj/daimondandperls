@@ -7,6 +7,7 @@ namespace App\Livewire\Admin\Users;
 use App\Enums\UserRole;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Traits\HasAdminAuthorization;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -18,6 +19,8 @@ use Livewire\Component;
 #[Title('Roles & Permissions')]
 class RoleIndex extends Component
 {
+    use HasAdminAuthorization;
+
     public $roles;
 
     public $permissions;
@@ -42,6 +45,7 @@ class RoleIndex extends Component
 
     public function mount(): void
     {
+        $this->authorizePermission('manage_roles');
         $this->loadData();
 
         if ($this->roles->count() > 0) {
@@ -180,7 +184,7 @@ class RoleIndex extends Component
                 'manage_payments', 'manage_reports',
             ]),
             'Administration' => $this->permissions->whereIn('slug', [
-                'manage_users', 'manage_roles', 'manage_settings',
+                'manage_users', 'manage_roles', 'manage_settings', 'view_error_logs',
             ]),
         ];
 

@@ -10,6 +10,7 @@ use App\Models\Booking;
 use App\Notifications\BookingCompletedNotification;
 use App\Notifications\BookingConfirmedNotification;
 use App\Notifications\QuoteUpdatedNotification;
+use App\Traits\HasAdminAuthorization;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
@@ -20,6 +21,8 @@ use Livewire\Component;
 #[Title('Booking Details')]
 class Show extends Component
 {
+    use HasAdminAuthorization;
+
     public Booking $booking;
 
     public string $cancelReason = '';
@@ -59,9 +62,40 @@ class Show extends Component
 
     public string $confirmPassword = '';
 
-    public function mount(Booking $booking)
+    public bool $editingAdminNotes = false;
+
+    public string $adminNotesValue = '';
+
+    public function mount(Booking $booking): void
     {
-        $this->booking = $booking->load(['customer', 'items.package', 'payment.verifiedBy']);
+        $this->authorizePermission('manage_bookings');
+        $this->booking = $booking->load([
+            'customer',
+            'items.package.category',
+            'payment.verifiedBy',
+            'bookingNotificationLogs' => fn ($q) => $q->latest()->limit(15),
+        ]);
+    }
+
+    public function startEditingAdminNotes(): void
+    {
+        $this->adminNotesValue = $this->booking->admin_notes ?? '';
+        $this->editingAdminNotes = true;
+    }
+
+    public function saveAdminNotes(): void
+    {
+        $this->validate(['adminNotesValue' => ['nullable', 'string', 'max:2000']]);
+        $this->booking->update(['admin_notes' => $this->adminNotesValue ?: null]);
+        $this->booking->refresh();
+        $this->editingAdminNotes = false;
+        $this->dispatch('toast', type: 'success', message: 'Admin notes updated.');
+    }
+
+    public function cancelEditingAdminNotes(): void
+    {
+        $this->editingAdminNotes = false;
+        $this->resetErrorBag('adminNotesValue');
     }
 
     public function getCanBeConfirmedProperty(): bool

@@ -6,6 +6,7 @@ namespace App\Livewire\Categories;
 
 use App\Models\Category;
 use App\Models\Package;
+use App\Traits\HasAdminAuthorization;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Layout;
@@ -18,6 +19,7 @@ use Livewire\WithPagination;
 #[Layout('layouts.admin')]
 class CategoryIndex extends Component
 {
+    use HasAdminAuthorization;
     use WithPagination;
 
     #[Url(history: true)]
@@ -171,6 +173,11 @@ class CategoryIndex extends Component
             'empty' => Category::doesntHave('packages')->count(),
             'most_popular' => Category::withCount('packages')->orderByDesc('packages_count')->first()?->name ?? 'None',
         ];
+    }
+
+    public function mount(): void
+    {
+        $this->authorizePermission('manage_categories');
     }
 
     public function render(): View

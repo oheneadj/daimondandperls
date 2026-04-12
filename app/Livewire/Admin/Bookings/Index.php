@@ -8,8 +8,10 @@ use App\Enums\BookingStatus;
 use App\Enums\BookingType;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
+use App\Traits\HasAdminAuthorization;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -17,6 +19,7 @@ use Livewire\WithPagination;
 #[Title('Meal Bookings')]
 class Index extends Component
 {
+    use HasAdminAuthorization;
     use WithPagination;
 
     public string $search = '';
@@ -25,24 +28,61 @@ class Index extends Component
 
     public ?string $paymentStatus = null;
 
+    #[Url]
+    public string $startDate = '';
+
+    #[Url]
+    public string $endDate = '';
+
     protected $queryString = [
         'search' => ['except' => ''],
         'status' => ['except' => ''],
         'paymentStatus' => ['except' => ''],
     ];
 
-    public function updatingSearch()
+    public function updatingSearch(): void
     {
         $this->resetPage();
     }
 
-    public function updatingStatus()
+    public function updatingStatus(): void
     {
         $this->resetPage();
     }
 
-    public function updatingPaymentStatus()
+    public function updatingPaymentStatus(): void
     {
+        $this->resetPage();
+    }
+
+    public function updatingStartDate(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingEndDate(): void
+    {
+        $this->resetPage();
+    }
+
+    public function filterToday(): void
+    {
+        $this->startDate = now()->toDateString();
+        $this->endDate = now()->toDateString();
+        $this->resetPage();
+    }
+
+    public function filterThisWeek(): void
+    {
+        $this->startDate = now()->startOfWeek()->toDateString();
+        $this->endDate = now()->endOfWeek()->toDateString();
+        $this->resetPage();
+    }
+
+    public function clearDateFilter(): void
+    {
+        $this->startDate = '';
+        $this->endDate = '';
         $this->resetPage();
     }
 
@@ -131,29 +171,35 @@ class Index extends Component
 
     public function render()
     {
-        $query = Booking::with(['customer', 'items.package'])
-            ->where('booking_type', BookingType::Meal)
+        $baseQuery = Booking::query()->where('booking_type', BookingType::Meal);
+
+        $query = (clone $baseQuery)
+            ->with(['customer', 'items.package'])
+            ->withMin('items', 'scheduled_date')
             ->when($this->search, function ($query) {
-                $query->where('reference', 'like', '%'.$this->search.'%')
-                    ->orWhereHas('customer', function ($q) {
-                        $q->where('name', 'like', '%'.$this->search.'%')
-                            ->orWhere('phone', 'like', '%'.$this->search.'%');
-                    });
+                $query->where(function ($q) {
+                    $q->where('reference', 'like', '%'.$this->search.'%')
+                        ->orWhereHas('customer', function ($cq) {
+                            $cq->where('name', 'like', '%'.$this->search.'%')
+                                ->orWhere('phone', 'like', '%'.$this->search.'%');
+                        });
+                });
             })
-            ->when($this->status, function ($query) {
-                $query->where('status', $this->status);
-            })
-            ->when($this->paymentStatus, function ($query) {
-                $query->where('payment_status', $this->paymentStatus);
-            })
+            ->when($this->status, fn ($q) => $q->where('status', $this->status))
+            ->when($this->paymentStatus, fn ($q) => $q->where('payment_status', $this->paymentStatus))
+            ->when($this->startDate, fn ($q) => $q->whereHas('items', fn ($sq) => $sq->whereDate('scheduled_date', '>=', $this->startDate)
+            ))
+            ->when($this->endDate, fn ($q) => $q->whereHas('items', fn ($sq) => $sq->whereDate('scheduled_date', '<=', $this->endDate)
+            ))
             ->latest();
 
-        // Calculate counts separately for the stats bar (CursorPaginator doesn't support total/count)
         $counts = [
-            'total' => (clone $query)->count(),
-            'pending' => (clone $query)->where('status', \App\Enums\BookingStatus::Pending)->count(),
-            'confirmed' => (clone $query)->where('status', \App\Enums\BookingStatus::Confirmed)->count(),
-            'unpaid' => (clone $query)->where('payment_status', \App\Enums\PaymentStatus::Unpaid)->count(),
+            'total' => (clone $baseQuery)->count(),
+            'pending' => (clone $baseQuery)->where('status', BookingStatus::Pending)->count(),
+            'confirmed' => (clone $baseQuery)->where('status', BookingStatus::Confirmed)->count(),
+            'unpaid' => (clone $baseQuery)->where('payment_status', PaymentStatus::Unpaid)->count(),
+            'today' => (clone $baseQuery)->whereHas('items', fn ($q) => $q->whereDate('scheduled_date', today())
+            )->count(),
         ];
 
         $bookings = $query->simplePaginate(15);

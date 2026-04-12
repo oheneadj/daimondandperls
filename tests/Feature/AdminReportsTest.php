@@ -63,8 +63,8 @@ it('calculates daily booking count correctly', function () {
 
     Livewire::test(ReportsView::class)
         ->assertSet('dailyBookings', function ($dailyBookings) {
-            return $dailyBookings->get(now()->format('Y-m-d')) === 3
-                && $dailyBookings->get(now()->subDay()->format('Y-m-d')) === 2;
+            return ($dailyBookings[now()->format('Y-m-d')] ?? null) === 3
+                && ($dailyBookings[now()->subDay()->format('Y-m-d')] ?? null) === 2;
         });
 });
 

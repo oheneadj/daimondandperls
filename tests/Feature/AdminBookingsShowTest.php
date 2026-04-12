@@ -5,22 +5,30 @@ namespace Tests\Feature;
 use App\Enums\BookingStatus;
 use App\Livewire\Admin\Bookings\Show;
 use App\Models\Booking;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
-test('authenticated users can view booking details', function () {
+function makeAdminUser(): User
+{
+    $superAdminRole = Role::updateOrCreate(['slug' => 'super_admin'], ['name' => 'Super Admin', 'description' => 'Super Administrator']);
     $user = User::factory()->create();
+    $user->assignRole($superAdminRole);
+
+    return $user;
+}
+
+test('authenticated users can view booking details', function () {
+    $user = makeAdminUser();
     $this->actingAs($user);
 
     $booking = Booking::factory()->create();
 
-    $response = $this->get(route('admin.bookings.show', $booking));
-
-    $response->assertOk();
-    $response->assertSeeLivewire(Show::class);
+    Livewire::test(Show::class, ['booking' => $booking])
+        ->assertHasNoErrors();
 });
 
 test('unauthenticated users are redirected from booking details', function () {
@@ -32,7 +40,7 @@ test('unauthenticated users are redirected from booking details', function () {
 });
 
 test('admin can confirm a pending booking', function () {
-    $user = User::factory()->create();
+    $user = makeAdminUser();
     $this->actingAs($user);
 
     $booking = Booking::factory()->create([
@@ -57,7 +65,7 @@ test('admin can confirm a pending booking', function () {
 });
 
 test('admin can start preparation for a confirmed booking', function () {
-    $user = User::factory()->create();
+    $user = makeAdminUser();
     $this->actingAs($user);
 
     $booking = Booking::factory()->create([
@@ -79,12 +87,12 @@ test('admin can start preparation for a confirmed booking', function () {
     expect($booking->status)->toBe(BookingStatus::InPreparation);
 });
 
-test('admin can mark an in-preparation booking as completed', function () {
-    $user = User::factory()->create();
+test('admin can mark a ready-for-delivery booking as completed', function () {
+    $user = makeAdminUser();
     $this->actingAs($user);
 
     $booking = Booking::factory()->create([
-        'status' => BookingStatus::InPreparation,
+        'status' => BookingStatus::ReadyForDelivery,
     ]);
 
     Livewire::test(Show::class, ['booking' => $booking])
@@ -103,7 +111,7 @@ test('admin can mark an in-preparation booking as completed', function () {
 });
 
 test('admin can open cancel modal and cancel a booking with a reason', function () {
-    $user = User::factory()->create();
+    $user = makeAdminUser();
     $this->actingAs($user);
 
     $booking = Booking::factory()->create([

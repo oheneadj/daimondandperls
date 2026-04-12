@@ -17,6 +17,7 @@ use App\Traits\HandlesMomoValidation;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -73,6 +74,37 @@ class BookingWizard extends Component
     public function getIsMomoFormValidProperty(): bool
     {
         return $this->isValidMomoNumber($this->momoNetwork, $this->momoNumber);
+    }
+
+    #[Computed]
+    public function isReadyToConfirm(): bool
+    {
+        // Contact info
+        if (empty(trim((string) $this->name))) {
+            return false;
+        }
+
+        if (empty($this->phone) || ! preg_match('/^(?:\+233|0)\d{9}$/', $this->phone)) {
+            return false;
+        }
+
+        // Delivery location (only required when locations are configured)
+        $locations = Setting::where('key', 'delivery_locations')->first()?->value ?? [];
+
+        if (! empty($locations) && ! \in_array($this->deliveryLocation, $locations)) {
+            return false;
+        }
+
+        // Payment
+        if (! \in_array($this->momoNetwork, ['13', '6', '7'])) {
+            return false;
+        }
+
+        if (! $this->getIsMomoFormValidProperty()) {
+            return false;
+        }
+
+        return true;
     }
 
     public function selectPaymentMethod(int $id): void

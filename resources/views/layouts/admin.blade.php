@@ -21,6 +21,26 @@
         <!-- Page Content -->
         <main class="flex-1 overflow-y-auto p-6 md:p-10 lg:p-16">
             <div class="max-w-7xl mx-auto">
+            @if(auth()->check() && auth()->user()->must_change_password)
+                <div class="mb-8 bg-[#FFC926] text-black px-6 py-4 rounded-2xl flex items-center justify-between gap-4 shadow-md animate-in slide-in-from-top duration-500">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-black/10 flex items-center justify-center shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-black/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-[14px] font-bold tracking-tight">Action Required: Change Your Password</p>
+                            <p class="text-[11px] opacity-70 font-medium uppercase tracking-widest">You are using a temporary password. Please update it to secure your account.</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('user-password.edit') }}" wire:navigate
+                        class="shrink-0 px-4 py-2 bg-black text-white text-[13px] font-bold rounded-lg hover:bg-black/80 transition-colors whitespace-nowrap">
+                        Change Password →
+                    </a>
+                </div>
+            @endif
+
             @if(session()->has('impersonator_id'))
                 <div class="mb-8 bg-neutral text-neutral-content px-6 py-4 rounded-2xl flex items-center justify-between shadow-md animate-in slide-in-from-top duration-500">
                     <div class="flex items-center gap-4">

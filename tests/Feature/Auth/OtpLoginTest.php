@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserType;
 use App\Livewire\Auth\OtpLogin;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,6 +39,7 @@ test('otp rejects unknown phone number with error', function () {
 test('otp verifies valid code and logs in user', function () {
     $user = User::factory()->create([
         'phone' => '0244111222',
+        'type' => UserType::Customer,
         'otp_code' => '123456',
         'otp_expires_at' => now()->addMinutes(10),
     ]);

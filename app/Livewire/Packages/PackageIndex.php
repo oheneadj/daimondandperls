@@ -6,6 +6,7 @@ namespace App\Livewire\Packages;
 
 use App\Models\Category;
 use App\Models\Package;
+use App\Traits\HasAdminAuthorization;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Layout;
@@ -18,6 +19,7 @@ use Livewire\WithPagination;
 #[Layout('layouts.admin')]
 class PackageIndex extends Component
 {
+    use HasAdminAuthorization;
     use WithPagination;
 
     #[Url(history: true)]
@@ -107,6 +109,11 @@ class PackageIndex extends Component
             Package::where('id', $id)->update(['sort_order' => $index]);
         }
         $this->dispatch('banner', style: 'success', message: 'Packages reordered successfully.');
+    }
+
+    public function mount(): void
+    {
+        $this->authorizePermission('manage_packages');
     }
 
     public function render(): View

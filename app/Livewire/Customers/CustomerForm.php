@@ -3,6 +3,7 @@
 namespace App\Livewire\Customers;
 
 use App\Models\Customer;
+use App\Traits\HasAdminAuthorization;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -11,6 +12,8 @@ use Livewire\Component;
 #[Layout('layouts.admin')]
 class CustomerForm extends Component
 {
+    use HasAdminAuthorization;
+
     public ?Customer $customer = null;
 
     public ?string $name = '';
@@ -29,6 +32,7 @@ class CustomerForm extends Component
 
     public function mount(?Customer $customer = null): void
     {
+        $this->authorizePermission('manage_customers');
         if ($customer && $customer->exists) {
             $this->customer = $customer;
             $this->name = $customer->name;

@@ -1,15 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
+use App\Models\Payment;
+use App\Notifications\BookingConfirmedNotification;
+use App\Services\InvoiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class MoolreWebhookController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request, InvoiceService $invoiceService): \Illuminate\Http\JsonResponse
     {
         $payload = $request->all();
         $data = $request->input('data', []);
@@ -48,11 +53,35 @@ class MoolreWebhookController extends Controller
         ]);
 
         if ($txstatus === 1) {
+            $alreadyPaid = $booking->payment_status === PaymentStatus::Paid;
+
             $booking->update([
                 'payment_status' => PaymentStatus::Paid,
                 'payment_details' => $payload,
             ]);
+
             Log::info('Moolre Webhook: Payment marked as PAID', ['booking' => $booking->reference]);
+
+            if (! $alreadyPaid) {
+                Payment::updateOrCreate(
+                    ['booking_id' => $booking->id],
+                    [
+                        'gateway' => 'moolre',
+                        'method' => 'mobile_money',
+                        'amount' => $booking->total_amount,
+                        'currency' => 'GHS',
+                        'status' => 'successful',
+                        'paid_at' => now(),
+                        'gateway_reference' => $booking->payment_reference,
+                        'gateway_response' => json_encode($payload),
+                    ]
+                );
+
+                $booking->customer->notify(new BookingConfirmedNotification(
+                    $booking,
+                    $invoiceService->getDownloadUrl($booking)
+                ));
+            }
         } elseif ($txstatus === 2) {
             $booking->update([
                 'payment_status' => PaymentStatus::Failed,

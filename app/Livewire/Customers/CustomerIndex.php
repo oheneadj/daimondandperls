@@ -4,6 +4,7 @@ namespace App\Livewire\Customers;
 
 use App\Enums\UserRole;
 use App\Models\Customer;
+use App\Traits\HasAdminAuthorization;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
@@ -16,6 +17,7 @@ use Livewire\WithPagination;
 #[Layout('layouts.admin')]
 class CustomerIndex extends Component
 {
+    use HasAdminAuthorization;
     use WithPagination;
 
     #[Url(history: true)]

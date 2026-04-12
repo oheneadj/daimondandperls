@@ -4,11 +4,14 @@ use App\Enums\BookingStatus;
 use App\Enums\PaymentStatus;
 use App\Livewire\Admin\Bookings\Show;
 use App\Models\Booking;
+use App\Models\Role;
 use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['role' => \App\Enums\UserRole::Admin]);
+    $superAdminRole = Role::updateOrCreate(['slug' => 'super_admin'], ['name' => 'Super Admin', 'description' => 'Super Administrator']);
+    $this->admin = User::factory()->create();
+    $this->admin->assignRole($superAdminRole);
     $this->actingAs($this->admin);
 });
 

@@ -2,9 +2,13 @@
 
 namespace App\Livewire\Admin\Users;
 
+use App\Enums\UserType;
 use App\Models\Role;
 use App\Models\User;
+use App\Notifications\AdminInvitationNotification;
+use App\Traits\HasAdminAuthorization;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -14,6 +18,8 @@ use Livewire\Component;
 #[Title('Manage User')]
 class UserForm extends Component
 {
+    use HasAdminAuthorization;
+
     public ?User $user = null;
 
     public string $name = '';
@@ -28,6 +34,7 @@ class UserForm extends Component
 
     public function mount(?User $user = null): void
     {
+        $this->authorizePermission('manage_users');
         if ($user && $user->exists) {
             $this->user = $user;
             $this->name = $user->name;
@@ -63,21 +70,37 @@ class UserForm extends Component
             ]);
             $user = $this->user;
         } else {
+            $temporaryPassword = Str::password(16);
+            $token = Str::random(64);
+
             $user = User::create([
                 'name' => $this->name,
                 'email' => $this->email,
                 'phone' => $this->phone,
-                'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(16)),
-                'is_active' => $this->is_active,
+                'password' => $temporaryPassword,
+                'is_active' => true,
+                'type' => UserType::Admin,
+                'must_change_password' => true,
+                'invitation_token' => $token,
+                'invitation_sent_at' => now(),
             ]);
+
+            $user->roles()->sync([$this->selectedRole]);
+
+            $user->notify(new AdminInvitationNotification(
+                $temporaryPassword,
+                route('invitation.accept', $token)
+            ));
+
+            $this->dispatch('toast', type: 'success', message: 'Invitation sent to '.$this->email.'.');
+            $this->redirectRoute('admin.users.index', navigate: true);
+
+            return;
         }
 
         $user->roles()->sync([$this->selectedRole]);
 
-        $this->dispatch('notify', [
-            'type' => 'success',
-            'message' => $this->user ? 'User updated successfully.' : 'User invited successfully.',
-        ]);
+        $this->dispatch('toast', type: 'success', message: 'User updated successfully.');
 
         $this->redirectRoute('admin.users.index', navigate: true);
     }

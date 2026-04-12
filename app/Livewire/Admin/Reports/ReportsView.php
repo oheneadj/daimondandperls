@@ -8,9 +8,9 @@ use App\Enums\BookingStatus;
 use App\Enums\PaymentGatewayStatus;
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Traits\HasAdminAuthorization;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -20,13 +20,13 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 #[Title('Reports & Analytics')]
 class ReportsView extends Component
 {
+    use HasAdminAuthorization;
+
     public string $period = 'this_month';
 
     public string $startDate = '';
 
     public string $endDate = '';
-
-    public Collection $dailyBookings;
 
     public string $sortField = 'event_date';
 
@@ -44,14 +44,11 @@ class ReportsView extends Component
 
     public array $paymentSummary = [];
 
-    public Collection $upcomingEvents;
-
-    public Collection $nextWeekScheduled;
+    public array $dailyBookings = [];
 
     public function mount(): void
     {
-        $this->upcomingEvents = collect();
-        $this->nextWeekScheduled = collect();
+        $this->authorizePermission('manage_reports');
         $this->setPeriod('this_month');
     }
 
@@ -202,25 +199,8 @@ class ReportsView extends Component
             ->groupBy('date')
             ->orderBy('date')
             ->get()
-            ->pluck('count', 'date');
-
-        $this->upcomingEvents = Booking::query()
-            ->with(['customer', 'items.package'])
-            ->whereDate('event_date', '>=', now())
-            ->whereDate('event_date', '<=', now()->addDays(30))
-            ->orderBy($this->sortField, $this->sortDirection)
-            ->get();
-
-        $nextWeekStart = now()->addWeek()->startOfWeek();
-        $nextWeekEnd = now()->addWeek()->endOfWeek();
-
-        $this->nextWeekScheduled = \App\Models\BookingItem::query()
-            ->with(['booking.customer', 'package'])
-            ->whereDate('scheduled_date', '>=', $nextWeekStart)
-            ->whereDate('scheduled_date', '<=', $nextWeekEnd)
-            ->orderBy('scheduled_date')
-            ->get()
-            ->groupBy('scheduled_date');
+            ->pluck('count', 'date')
+            ->toArray();
     }
 
     public function exportCsv(): StreamedResponse
@@ -265,6 +245,27 @@ class ReportsView extends Component
 
     public function render(): View
     {
-        return view('livewire.admin.reports.view');
+        $upcomingEvents = Booking::query()
+            ->with(['customer', 'items.package'])
+            ->whereDate('event_date', '>=', now())
+            ->whereDate('event_date', '<=', now()->addDays(30))
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->get();
+
+        $nextWeekStart = now()->addWeek()->startOfWeek();
+        $nextWeekEnd = now()->addWeek()->endOfWeek();
+
+        $nextWeekScheduled = \App\Models\BookingItem::query()
+            ->with(['booking.customer', 'package'])
+            ->whereDate('scheduled_date', '>=', $nextWeekStart)
+            ->whereDate('scheduled_date', '<=', $nextWeekEnd)
+            ->orderBy('scheduled_date')
+            ->get()
+            ->groupBy('scheduled_date');
+
+        return view('livewire.admin.reports.view', [
+            'upcomingEvents' => $upcomingEvents,
+            'nextWeekScheduled' => $nextWeekScheduled,
+        ]);
     }
 }

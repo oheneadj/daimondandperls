@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'customer' => \App\Http\Middleware\EnsureUserIsCustomer::class,
         ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/moolre',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

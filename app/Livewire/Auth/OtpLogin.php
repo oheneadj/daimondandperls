@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Auth;
 
+use App\Enums\UserType;
 use App\Models\User;
 use App\Notifications\OtpNotification;
 use Illuminate\Contracts\View\View;
@@ -32,6 +33,12 @@ class OtpLogin extends Component
 
         if (! $user) {
             $this->error = 'No account found with this phone number. Please register first.';
+
+            return;
+        }
+
+        if (! $user->is_active) {
+            $this->error = 'Your account has been disabled. Please contact an administrator for assistance.';
 
             return;
         }
@@ -66,6 +73,12 @@ class OtpLogin extends Component
             return;
         }
 
+        if (! $user->is_active) {
+            $this->error = 'Your account has been disabled. Please contact an administrator for assistance.';
+
+            return;
+        }
+
         $user->update([
             'otp_code' => null,
             'otp_expires_at' => null,
@@ -73,7 +86,11 @@ class OtpLogin extends Component
 
         Auth::login($user, true);
 
-        $this->redirect(route('dashboard.index'));
+        $destination = $user->type === UserType::Admin
+            ? route('admin.dashboard')
+            : route('dashboard.index');
+
+        $this->redirect($destination);
     }
 
     public function resendOtp(): void

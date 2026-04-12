@@ -19,6 +19,8 @@ class LoginResponse implements LoginResponseContract
             return redirect()->intended(route('admin.dashboard'));
         }
 
-        return redirect()->intended(route('dashboard.index'));
+        // Always send customers to their dashboard — never follow a stored
+        // "intended" URL which may point to an admin-only route from a prior session.
+        return redirect(route('dashboard.index'));
     }
 }

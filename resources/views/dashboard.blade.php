@@ -60,7 +60,7 @@
         </a>
 
         {{-- Next Week Deliveries --}}
-        <a href="{{ route('admin.reports.index') }}" wire:navigate
+        <a href="{{ route('admin.bookings.index') }}" wire:navigate
            class="bg-white border border-base-content/5 rounded-lg p-4 flex items-center gap-4 hover:shadow-md hover:border-[#A31C4E]/20 transition-all group">
             <div class="w-10 h-10 rounded-lg bg-[#A31C4E]/10 flex items-center justify-center shrink-0 group-hover:bg-[#A31C4E]/20 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#A31C4E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
@@ -324,6 +324,7 @@
                         <th class="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Status') }}</th>
                         <th class="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Payment') }}</th>
                         <th class="px-6 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Date') }}</th>
+                        <th class="px-6 py-3"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-base-content/5">
@@ -383,10 +384,17 @@
                             <td class="px-6 py-3.5 text-right">
                                 <span class="text-[11px] text-base-content/40">{{ \Carbon\Carbon::parse($booking['created_at'])->format('d M, H:i') }}</span>
                             </td>
+                            <td class="px-6 py-3.5 text-right">
+                                <a href="{{ route('admin.bookings.show', $booking['reference']) }}" wire:navigate
+                                   class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-base-200 text-base-content/50 text-[10px] font-bold hover:bg-primary hover:text-white transition-all whitespace-nowrap">
+                                    View
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                </a>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-16 text-center">
+                            <td colspan="8" class="px-6 py-16 text-center">
                                 <p class="text-[13px] text-base-content/30 font-medium">{{ __('No bookings yet') }}</p>
                             </td>
                         </tr>

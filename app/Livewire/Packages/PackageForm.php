@@ -6,6 +6,7 @@ namespace App\Livewire\Packages;
 
 use App\Models\Category;
 use App\Models\Package;
+use App\Traits\HasAdminAuthorization;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
@@ -17,6 +18,7 @@ use Livewire\WithFileUploads;
 #[Layout('layouts.admin')]
 class PackageForm extends Component
 {
+    use HasAdminAuthorization;
     use WithFileUploads;
 
     public ?Package $package = null;
@@ -49,6 +51,7 @@ class PackageForm extends Component
 
     public function mount(?Package $package = null): void
     {
+        $this->authorizePermission('manage_packages');
         if ($package && $package->exists) {
             $this->package = $package;
             $this->name = $this->package->name;

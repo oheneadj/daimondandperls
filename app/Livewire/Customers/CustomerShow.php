@@ -5,6 +5,7 @@ namespace App\Livewire\Customers;
 use App\Enums\BookingStatus;
 use App\Models\ActivityLog;
 use App\Models\Customer;
+use App\Traits\HasAdminAuthorization;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -16,6 +17,7 @@ use Livewire\WithPagination;
 #[Layout('layouts.admin')]
 class CustomerShow extends Component
 {
+    use HasAdminAuthorization;
     use WithPagination;
 
     public Customer $customer;
@@ -51,6 +53,7 @@ class CustomerShow extends Component
 
     public function mount(Customer $customer): void
     {
+        $this->authorizePermission('manage_customers');
         $this->customer = $customer;
     }
 

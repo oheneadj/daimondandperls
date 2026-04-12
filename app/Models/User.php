@@ -34,6 +34,10 @@ class User extends Authenticatable
         'otp_expires_at',
         'saved_momo_number',
         'saved_momo_network',
+        'invitation_token',
+        'invitation_sent_at',
+        'invitation_accepted_at',
+        'must_change_password',
     ];
 
     /**
@@ -63,6 +67,9 @@ class User extends Authenticatable
             'notification_preference' => \App\Enums\NotificationPreference::class,
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
+            'invitation_sent_at' => 'datetime',
+            'invitation_accepted_at' => 'datetime',
+            'must_change_password' => 'boolean',
         ];
     }
 

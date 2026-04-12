@@ -158,7 +158,7 @@
                             ];
                         }
                     @endphp
-                    <div @click="openDetails({{ json_encode($package) }}, {{ $inCart ? 'true' : 'false' }}, {{ $wi ? json_encode($wi) : 'null' }})">
+                    <div x-data="{ pkg: @js($package), wi: @js($wi) }" @click="openDetails(pkg, {{ $inCart ? 'true' : 'false' }}, wi)">
                         <x-package-card
                             :package="$package"
                             :selected="$inCart"

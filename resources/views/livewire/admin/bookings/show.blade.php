@@ -107,12 +107,12 @@
     </div>
 
     {{-- Main Content Grid --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-        {{-- Left: Details & Packages (2/3) --}}
-        <div class="lg:col-span-2 space-y-6 sm:space-y-8">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
+        {{-- Left: Details & Packages (3/4) --}}
+        <div class="lg:col-span-3 space-y-6 sm:space-y-8">
 
-            {{-- Customer & Event Cards --}}
-            <div class="grid grid-cols-1 {{ $booking->booking_type === \App\Enums\BookingType::Event ? 'sm:grid-cols-2' : '' }} gap-6">
+            {{-- Info Cards — 3 cols on desktop --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {{-- Customer Details Card --}}
                 <x-ui.card>
                     <div class="flex items-center gap-2.5 mb-6">
@@ -283,6 +283,50 @@
                 </x-ui.card>
                 @endif
 
+                {{-- Admin Notes Card --}}
+                <x-ui.card>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </div>
+                            <h2 class="text-[11px] font-bold uppercase tracking-[0.2em] text-base-content">{{ __('Admin Notes') }}</h2>
+                        </div>
+                        @if(! $editingAdminNotes)
+                            <button wire:click="startEditingAdminNotes"
+                                class="text-[11px] font-bold text-base-content/40 hover:text-[#F96015] transition-colors flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                Edit
+                            </button>
+                        @endif
+                    </div>
+
+                    @if($editingAdminNotes)
+                        <textarea wire:model="adminNotesValue" rows="4"
+                            class="w-full px-4 py-3 bg-base-200 rounded-xl text-[13px] border border-base-content/10 focus:border-[#F96015] focus:ring-2 focus:ring-[#F96015]/20 outline-none resize-none">
+                        </textarea>
+                        @error('adminNotesValue')
+                            <span class="text-[11px] font-bold text-error mt-1 block">{{ $message }}</span>
+                        @enderror
+                        <div class="flex gap-2 mt-3">
+                            <button wire:click="saveAdminNotes"
+                                class="px-4 py-2 bg-[#18542A] text-white text-[12px] font-bold rounded-lg hover:bg-[#206f38] transition-colors">
+                                Save
+                            </button>
+                            <button wire:click="cancelEditingAdminNotes"
+                                class="px-4 py-2 bg-base-200 text-base-content text-[12px] font-bold rounded-lg hover:bg-base-300 transition-colors">
+                                Cancel
+                            </button>
+                        </div>
+                    @else
+                        @if($booking->admin_notes)
+                            <p class="text-[13px] text-base-content/70 leading-relaxed">{{ $booking->admin_notes }}</p>
+                        @else
+                            <p class="text-[12px] text-base-content/30 italic">No admin notes yet.</p>
+                        @endif
+                    @endif
+                </x-ui.card>
+
             </div>
 
             {{-- Packages / Invoice Table --}}
@@ -318,13 +362,23 @@
                         </x-slot:header>
 
                         @forelse ($booking->items as $item)
-                            <x-ui.table.row>
+                            @php
+                                $isOverdue = $item->scheduled_date
+                                    && $item->scheduled_date->isPast()
+                                    && ! in_array($booking->status?->value, ['completed', 'cancelled']);
+                            @endphp
+                            <x-ui.table.row @class(['bg-error/5' => $isOverdue])>
                                 <x-ui.table.cell>
                                     <div class="text-[13px] sm:text-[14px] font-bold text-base-content">{{ $item->package_name ?? $item->package?->name ?? 'Custom Package' }}</div>
+                                    @if($item->package?->category)
+                                        <span class="text-[10px] text-base-content/40 font-medium">{{ $item->package->category->name }}</span>
+                                    @endif
                                     @if($item->scheduled_date && $booking->booking_type === \App\Enums\BookingType::Meal)
                                         <div class="flex items-center gap-1 mt-1">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                            <span class="text-[11px] text-primary font-semibold">Delivery: {{ $item->scheduled_date->format('D, M j, Y') }}</span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 {{ $isOverdue ? 'text-error' : 'text-primary' }} shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            <span class="text-[11px] {{ $isOverdue ? 'text-error font-bold' : 'text-primary font-semibold' }}">
+                                                {{ $isOverdue ? 'Overdue: ' : 'Delivery: ' }}{{ $item->scheduled_date->format('D, M j, Y') }}
+                                            </span>
                                         </div>
                                     @endif
                                 </x-ui.table.cell>
@@ -358,7 +412,7 @@
 
         </div>
 
-        {{-- Right: Sidebar Action Panel (1/3) --}}
+        {{-- Right: Sidebar Action Panel (1/4) --}}
         <div class="space-y-6 sm:space-y-8">
 
             {{-- Manage Booking Card --}}
@@ -554,6 +608,40 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Notification History --}}
+            @if($booking->bookingNotificationLogs->isNotEmpty())
+            <div class="relative rounded-xl p-[1px] shadow-sm">
+                <div class="p-5 sm:p-6 rounded-[calc(1.5rem-1px)] bg-base-100 h-full w-full">
+                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-base-content/40 mb-4">{{ __('Notification History') }}</h3>
+                    <div class="space-y-3">
+                        @foreach($booking->bookingNotificationLogs as $log)
+                            <div class="flex items-start gap-3">
+                                <div @class([
+                                    'w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[9px] font-black',
+                                    'bg-[#9ABC05]/15 text-[#9ABC05]' => $log->status?->value === 'sent',
+                                    'bg-error/15 text-error' => $log->status?->value === 'failed',
+                                    'bg-base-200 text-base-content/40' => $log->status?->value === 'pending',
+                                ])>
+                                    {{ strtoupper(substr($log->channel?->value ?? '?', 0, 1)) }}
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-[12px] font-semibold text-base-content truncate">
+                                        {{ str($log->template ?? 'Notification')->replace('_', ' ')->title() }}
+                                    </p>
+                                    <p class="text-[10px] text-base-content/40">
+                                        {{ ($log->sent_at ?? $log->created_at)->format('M j, H:i') }}
+                                        @if($log->status?->value === 'failed' && $log->error_message)
+                                            · <span class="text-error">{{ \Illuminate\Support\Str::limit($log->error_message, 40) }}</span>
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @endif
 
         </div>
     </div>

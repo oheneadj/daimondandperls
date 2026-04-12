@@ -67,7 +67,12 @@
                     </div>
                 </x-ui.table.td>
                 <x-ui.table.td>
-                    @if($user->is_active)
+                    @if($user->invitation_sent_at && ! $user->invitation_accepted_at)
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#F96015]/10 text-[#F96015]">
+                            <span class="size-1.5 rounded-full bg-[#F96015]"></span>
+                            Pending Invite
+                        </span>
+                    @elseif($user->is_active)
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-success/10 text-dp-success">
                             <span class="size-1.5 rounded-full bg-success"></span>
                             Active
@@ -76,6 +81,11 @@
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-error/10 text-dp-error">
                             <span class="size-1.5 rounded-full bg-error"></span>
                             Inactive
+                        </span>
+                    @endif
+                    @if($user->must_change_password)
+                        <span class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FFC926]/20 text-[#B08A00]">
+                            Temp Password
                         </span>
                     @endif
                 </x-ui.table.td>
@@ -102,6 +112,16 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                             </svg>
                         </a>
+
+                        @if($user->invitation_sent_at && ! $user->invitation_accepted_at)
+                            <button wire:click="confirmResendInvite({{ $user->id }})"
+                                    class="p-1.5 text-[#F96015]/50 hover:text-[#F96015] hover:bg-[#F96015]/10 rounded-lg transition-all"
+                                    title="Resend Invitation">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                                </svg>
+                            </button>
+                        @endif
 
                         @if($user->id !== auth()->id())
                             <button wire:click="startAction({{ $user->id }}, 'toggleStatus')" 
@@ -139,6 +159,41 @@
             {{ $users->links() }}
         </x-slot>
     </x-ui.table>
+
+    <!-- Resend Invite Modal -->
+    <x-ui.modal wire:model="showResendModal" maxWidth="sm">
+        <div class="p-6">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-10 h-10 rounded-full bg-[#F96015]/10 flex items-center justify-center shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-[#F96015]">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                    </svg>
+                </div>
+                <h3 class="text-[17px] font-bold text-base-content">Resend Invitation</h3>
+            </div>
+            <p class="text-[13px] text-base-content/70 mb-1">
+                A new invitation email with fresh credentials will be sent to
+            </p>
+            <p class="text-[14px] font-semibold text-base-content mb-4">{{ $resendTarget?->email }}</p>
+            <p class="text-[12px] text-base-content/50 mb-6">
+                The previous invitation link will be invalidated and a new temporary password will be generated.
+            </p>
+            <div class="flex justify-end gap-3">
+                <button type="button" wire:click="$set('showResendModal', false)"
+                    class="px-4 py-2 text-[13px] font-semibold text-base-content/60 hover:text-base-content rounded-lg hover:bg-base-200 transition-colors">
+                    Cancel
+                </button>
+                <button type="button" wire:click="resendInvite" wire:loading.attr="disabled"
+                    class="px-4 py-2 bg-[#F96015] text-white text-[13px] font-bold rounded-lg hover:brightness-105 transition-all disabled:opacity-50 flex items-center gap-2">
+                    <span wire:loading.remove wire:target="resendInvite">Resend Invitation</span>
+                    <span wire:loading wire:target="resendInvite" class="flex items-center gap-2">
+                        <span class="loading loading-spinner loading-xs"></span>
+                        Sending...
+                    </span>
+                </button>
+            </div>
+        </div>
+    </x-ui.modal>
 
     <!-- Confirmation Modal -->
     <x-ui.modal wire:model="showConfirmationModal" maxWidth="sm">

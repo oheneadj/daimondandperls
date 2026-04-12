@@ -6,22 +6,25 @@
             ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'icon' => 'squares-2x2'],
         ],
         'OPERATIONS' => [
-            ['label' => 'Bookings', 'route' => 'admin.bookings.index', 'icon' => 'clipboard-document-list', 'badge' => auth()->user()->unreadBookingsCount() ?? 0, 'pattern' => 'admin.bookings.*'],
-            ['label' => 'Events', 'route' => 'admin.events.index', 'icon' => 'table-cells', 'pattern' => 'admin.events.*'],
-            ['label' => 'Packages', 'route' => 'admin.manage-packages.index', 'icon' => 'cake', 'pattern' => 'admin.manage-packages.*'],
-            ['label' => 'Collections', 'route' => 'admin.categories.index', 'icon' => 'tag', 'pattern' => 'admin.categories.*'],
-            ['label' => 'Payments', 'route' => 'admin.payments.index', 'icon' => 'credit-card', 'badge' => auth()->user()->pendingPaymentsCount() ?? 0, 'pattern' => 'admin.payments.*'],
-            ['label' => 'Customers', 'route' => 'admin.customers.index', 'icon' => 'user-group', 'pattern' => 'admin.customers.*'],
+            ['label' => 'Bookings', 'route' => 'admin.bookings.index', 'icon' => 'clipboard-document-list', 'badge' => auth()->user()->unreadBookingsCount() ?? 0, 'pattern' => 'admin.bookings.*', 'permission' => 'manage_bookings'],
+            ['label' => 'Events', 'route' => 'admin.events.index', 'icon' => 'table-cells', 'pattern' => 'admin.events.*', 'permission' => 'manage_events'],
+            ['label' => 'Packages', 'route' => 'admin.manage-packages.index', 'icon' => 'cake', 'pattern' => 'admin.manage-packages.*', 'permission' => 'manage_packages'],
+            ['label' => 'Collections', 'route' => 'admin.categories.index', 'icon' => 'tag', 'pattern' => 'admin.categories.*', 'permission' => 'manage_categories'],
+            ['label' => 'Payments', 'route' => 'admin.payments.index', 'icon' => 'credit-card', 'badge' => auth()->user()->pendingPaymentsCount() ?? 0, 'pattern' => 'admin.payments.*', 'permission' => 'manage_payments'],
+            ['label' => 'Customers', 'route' => 'admin.customers.index', 'icon' => 'user-group', 'pattern' => 'admin.customers.*', 'permission' => 'manage_customers'],
         ],
         'STAFF' => [
-            ['label' => 'Admins & Staff', 'route' => 'admin.users.index', 'icon' => 'user-group', 'pattern' => 'admin.users.*'],
-            ['label' => 'Roles & Perms', 'route' => 'admin.roles.index', 'icon' => 'shield-check', 'pattern' => 'admin.roles.*'],
+            ['label' => 'Admins & Staff', 'route' => 'admin.users.index', 'icon' => 'user-group', 'pattern' => 'admin.users.*', 'permission' => 'manage_users'],
+            ['label' => 'Roles & Perms', 'route' => 'admin.roles.index', 'icon' => 'shield-check', 'pattern' => 'admin.roles.*', 'permission' => 'manage_roles'],
         ],
         'SYSTEM' => [
-            ['label' => 'Reports', 'route' => 'admin.reports.index', 'icon' => 'chart-bar-square', 'pattern' => 'admin.reports.*'],
-            ['label' => 'Settings', 'route' => 'admin.settings.index', 'icon' => 'cog-6-tooth', 'pattern' => 'admin.settings.*'],
+            ['label' => 'Reports', 'route' => 'admin.reports.index', 'icon' => 'chart-bar-square', 'pattern' => 'admin.reports.*', 'permission' => 'manage_reports'],
+            ['label' => 'System Logs', 'route' => 'admin.error-logs.index', 'icon' => 'exclamation-triangle-solid', 'pattern' => 'admin.error-logs.*', 'permission' => 'view_error_logs'],
+            ['label' => 'Settings', 'route' => 'admin.settings.index', 'icon' => 'cog-6-tooth', 'pattern' => 'admin.settings.*', 'permission' => 'manage_settings'],
         ],
     ];
+
+    $isSuperAdmin = auth()->user()->hasRole('super_admin');
 @endphp
 
 <aside
@@ -50,7 +53,9 @@
                     @foreach($items as $item)
                         @php
                             $isActive = request()->routeIs($item['route']) || (isset($item['pattern']) && request()->routeIs($item['pattern']));
+                            $canSee = !isset($item['permission']) || $isSuperAdmin || auth()->user()->hasPermission($item['permission']);
                         @endphp
+                        @if(!$canSee) @continue @endif
                         <li class="relative">
                             <a href="{{ route($item['route']) }}"
                                wire:navigate
@@ -83,7 +88,7 @@
                 </div>
                 <div class="flex flex-col overflow-hidden">
                     <span class="text-[13px] font-semibold text-white truncate max-w-[120px]">{{ auth()->user()->name }}</span>
-                    <span class="text-[11px] text-white/40 leading-none">{{ ucfirst(auth()->user()->role?->value ?? 'Administrator') }}</span>
+                    <span class="text-[11px] text-white/40 leading-none">{{ auth()->user()->roles->first()?->name ?? 'Administrator' }}</span>
                 </div>
             </div>
 

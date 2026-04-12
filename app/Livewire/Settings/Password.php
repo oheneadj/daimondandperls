@@ -37,9 +37,14 @@ class Password extends Component
             throw $e;
         }
 
-        Auth::user()->update([
-            'password' => $validated['password'],
-        ]);
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $user->update(['password' => $validated['password']]);
+
+        if ($user->must_change_password) {
+            $user->update(['must_change_password' => false]);
+        }
 
         $this->reset('current_password', 'password', 'password_confirmation');
 

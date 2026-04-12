@@ -23,9 +23,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'manage_payments' => ['name' => 'Manage Payments',   'description' => 'View and process payments, verify transactions'],
             'manage_reports' => ['name' => 'Manage Reports',    'description' => 'Access financial reports, revenue analytics, and exports'],
             // Administration
-            'manage_users' => ['name' => 'Manage Users',      'description' => 'Invite, edit, and deactivate administrative users'],
-            'manage_roles' => ['name' => 'Manage Roles',      'description' => 'Create roles and assign permissions (Super Admin only)'],
-            'manage_settings' => ['name' => 'Manage Settings',   'description' => 'Update business info, API keys, and application settings'],
+            'manage_users' => ['name' => 'Manage Users',     'description' => 'Invite, edit, and deactivate administrative users'],
+            'manage_roles' => ['name' => 'Manage Roles',     'description' => 'Create roles and assign permissions (Super Admin only)'],
+            'manage_settings' => ['name' => 'Manage Settings',  'description' => 'Update business info, API keys, and application settings'],
+            'view_error_logs' => ['name' => 'View Error Logs',  'description' => 'Access the payment and system error log tracker'],
         ];
 
         foreach ($permissions as $slug => $data) {
@@ -51,6 +52,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'permissions' => [
                     'manage_bookings', 'manage_events', 'manage_packages',
                     'manage_categories', 'manage_customers', 'manage_payments', 'manage_reports',
+                    'view_error_logs',
                 ],
             ],
             'staff' => [

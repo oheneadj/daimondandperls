@@ -10,7 +10,7 @@
     </div>
 
     {{-- Stats Bar --}}
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div class="bg-white border border-base-content/5 rounded-xl p-4 flex items-center gap-4">
             <div class="w-10 h-10 rounded-xl bg-[#F96015]/10 flex items-center justify-center">
                 @include('layouts.partials.icons.clipboard-document-list', ['class' => 'w-5 h-5 text-[#F96015]'])
@@ -45,6 +45,15 @@
             <div>
                 <p class="text-[20px] font-bold text-base-content">{{ number_format($counts['unpaid']) }}</p>
                 <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Unpaid') }}</p>
+            </div>
+        </div>
+        <div class="bg-white border border-[#A31C4E]/10 rounded-xl p-4 flex items-center gap-4">
+            <div class="w-10 h-10 rounded-xl bg-[#A31C4E]/10 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#A31C4E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+            <div>
+                <p class="text-[20px] font-bold text-[#A31C4E]">{{ number_format($counts['upcoming']) }}</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Upcoming 30d') }}</p>
             </div>
         </div>
     </div>
@@ -94,7 +103,16 @@
         </x-slot>
 
         @forelse($bookings as $booking)
-            <x-ui.table.row wire:key="booking-{{ $booking->id }}">
+            @php
+                $daysUntil = $booking->event_date
+                    ? (int) now()->startOfDay()->diffInDays($booking->event_date->copy()->startOfDay(), false)
+                    : null;
+                $isUrgent = $daysUntil !== null
+                    && $daysUntil >= 0
+                    && $daysUntil <= 7
+                    && ! in_array($booking->status?->value, ['completed', 'cancelled']);
+            @endphp
+            <x-ui.table.row wire:key="booking-{{ $booking->id }}" @class(['bg-[#FFF8F0]' => $isUrgent])>
                 <x-ui.table.td>
                     <a href="{{ route('admin.bookings.show', $booking) }}" wire:navigate>
                         <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-base-200 text-base-content/70 text-[11px] font-bold tracking-wide hover:bg-base-300 transition-colors">
@@ -112,13 +130,24 @@
                     <x-badge type="ghost" class="text-[11px]">{{ $booking->event_type?->value ? str($booking->event_type->value)->title()->replace('_', ' ') : 'N/A' }}</x-badge>
                 </x-ui.table.td>
                 <x-ui.table.td>
-                    <div class="flex items-center gap-2">
-                        <div class="w-6 h-6 rounded-md bg-base-200 flex items-center justify-center shrink-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <div class="flex flex-col gap-0.5">
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 rounded-md bg-base-200 flex items-center justify-center shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            </div>
+                            <span class="text-[13px] text-base-content font-medium">
+                                {{ $booking->event_date?->format('d M, Y') ?? 'No Date' }}
+                            </span>
                         </div>
-                        <span class="text-[13px] text-base-content font-medium">
-                            {{ $booking->event_date?->format('d M, Y') ?? 'No Date' }}
-                        </span>
+                        @if($daysUntil !== null)
+                            @if($daysUntil === 0)
+                                <span class="text-[10px] font-bold text-[#F96015] uppercase tracking-wide ml-8">Today</span>
+                            @elseif($daysUntil > 0)
+                                <span class="text-[10px] font-bold text-[#9ABC05] uppercase tracking-wide ml-8">In {{ $daysUntil }}d</span>
+                            @else
+                                <span class="text-[10px] font-medium text-base-content/30 uppercase tracking-wide ml-8">Past</span>
+                            @endif
+                        @endif
                     </div>
                 </x-ui.table.td>
                 <x-ui.table.td align="center">
@@ -142,6 +171,9 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         {{ str($booking->payment_status?->value ?? 'unpaid')->replace('_', ' ')->title() }}
                     </div>
+                    @if($booking->total_amount == 0 && in_array($booking->status?->value, ['pending', 'confirmed']))
+                        <span class="block text-[10px] font-bold text-[#FFC926] uppercase tracking-wide mt-0.5">Quote Needed</span>
+                    @endif
                 </x-ui.table.td>
                 <x-ui.table.td align="center">
                     <x-badge :type="$booking->status?->value ?? 'pending'" dot>

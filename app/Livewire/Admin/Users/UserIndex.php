@@ -3,9 +3,12 @@
 namespace App\Livewire\Admin\Users;
 
 use App\Models\User;
+use App\Notifications\AdminInvitationNotification;
+use App\Traits\HasAdminAuthorization;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -16,6 +19,7 @@ use Livewire\WithPagination;
 #[Title('User Management')]
 class UserIndex extends Component
 {
+    use HasAdminAuthorization;
     use WithPagination;
 
     #[Url(history: true)]
@@ -40,6 +44,10 @@ class UserIndex extends Component
     public string $confirmationPassword = '';
 
     public ?User $actionTarget = null;
+
+    public bool $showResendModal = false;
+
+    public ?User $resendTarget = null;
 
     public function sortBy(string $field): void
     {
@@ -120,6 +128,45 @@ class UserIndex extends Component
 
         $this->showConfirmationModal = false;
         $this->reset(['actionTarget', 'sensitiveAction', 'confirmationPassword']);
+    }
+
+    public function confirmResendInvite(User $user): void
+    {
+        $this->resendTarget = $user;
+        $this->showResendModal = true;
+    }
+
+    public function resendInvite(): void
+    {
+        if (! $this->resendTarget) {
+            return;
+        }
+
+        $temporaryPassword = Str::password(16);
+        $token = Str::random(64);
+
+        $this->resendTarget->update([
+            'password' => $temporaryPassword,
+            'must_change_password' => true,
+            'invitation_token' => $token,
+            'invitation_sent_at' => now(),
+            'invitation_accepted_at' => null,
+        ]);
+
+        $this->resendTarget->notify(new AdminInvitationNotification(
+            $temporaryPassword,
+            route('invitation.accept', $token)
+        ));
+
+        $this->showResendModal = false;
+        $this->reset(['resendTarget']);
+
+        $this->dispatch('toast', type: 'success', message: 'Invitation resent successfully.');
+    }
+
+    public function mount(): void
+    {
+        $this->authorizePermission('manage_users');
     }
 
     public function render(): View

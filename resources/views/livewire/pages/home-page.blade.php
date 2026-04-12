@@ -191,7 +191,7 @@
                             ];
                         }
                     @endphp
-                    <div wire:key="home-pkg-{{ $package->id }}" @click="openDetails({{ json_encode($package) }}, {{ $inCart ? 'true' : 'false' }}, {{ $wi ? json_encode($wi) : 'null' }})">
+                    <div wire:key="home-pkg-{{ $package->id }}" x-data="{ pkg: @js($package), wi: @js($wi) }" @click="openDetails(pkg, {{ $inCart ? 'true' : 'false' }}, wi)">
                         <x-package-card
                             :package="$package"
                             :selected="$inCart"

@@ -7,6 +7,7 @@ namespace App\Livewire\Admin\Payments;
 use App\Enums\BookingStatus;
 use App\Enums\PaymentGatewayStatus;
 use App\Models\Payment;
+use App\Traits\HasAdminAuthorization;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -18,6 +19,7 @@ use Livewire\WithPagination;
 #[Title('Payments Overview')]
 class PaymentsOverview extends Component
 {
+    use HasAdminAuthorization;
     use WithPagination;
 
     #[Url(history: true)]
@@ -125,6 +127,11 @@ class PaymentsOverview extends Component
 
         $this->showingVerifyModal = false;
         $this->paymentToVerify = null;
+    }
+
+    public function mount(): void
+    {
+        $this->authorizePermission('manage_payments');
     }
 
     public function render(): View

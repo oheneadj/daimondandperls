@@ -9,6 +9,7 @@ use App\Enums\BookingType;
 use App\Enums\EventType;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
+use App\Traits\HasAdminAuthorization;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -19,6 +20,7 @@ use Livewire\WithPagination;
 #[Title('Event Bookings')]
 class EventIndex extends Component
 {
+    use HasAdminAuthorization;
     use WithPagination;
 
     public string $search = '';
@@ -117,13 +119,20 @@ class EventIndex extends Component
             ->when($this->endDate, function ($query) {
                 $query->whereDate('event_date', '<=', $this->endDate);
             })
-            ->latest();
+            ->orderBy('event_date', 'asc');
+
+        $baseQuery = Booking::query()->where('booking_type', BookingType::Event);
 
         $counts = [
-            'total' => (clone $query)->count(),
-            'pending' => (clone $query)->where('status', BookingStatus::Pending)->count(),
-            'confirmed' => (clone $query)->where('status', BookingStatus::Confirmed)->count(),
-            'unpaid' => (clone $query)->where('payment_status', PaymentStatus::Unpaid)->count(),
+            'total' => (clone $baseQuery)->count(),
+            'pending' => (clone $baseQuery)->where('status', BookingStatus::Pending)->count(),
+            'confirmed' => (clone $baseQuery)->where('status', BookingStatus::Confirmed)->count(),
+            'unpaid' => (clone $baseQuery)->where('payment_status', PaymentStatus::Unpaid)->count(),
+            'upcoming' => (clone $baseQuery)
+                ->whereDate('event_date', '>=', today())
+                ->whereDate('event_date', '<=', today()->addDays(30))
+                ->whereNotIn('status', [BookingStatus::Cancelled->value, BookingStatus::Completed->value])
+                ->count(),
         ];
 
         $bookings = $query->simplePaginate(15);

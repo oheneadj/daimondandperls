@@ -51,7 +51,7 @@
     <button
         type="{{ $type }}"
         @if($wireClick) wire:click="{{ $wireClick }}" @endif
-        @if($wireClick) wire:loading.attr="disabled" @endif
+        @if($wireClick && $wireTarget) wire:loading.attr="disabled" wire:target="{{ $wireTarget }}" @elseif($wireClick) wire:loading.attr="disabled" wire:target="{{ $wireClick }}" @endif
         {{ $attributes->merge(['class' => $classes, 'disabled' => $loading]) }}
     >
         @if($wireTarget && $loadingText)

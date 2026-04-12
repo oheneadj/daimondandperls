@@ -12,10 +12,44 @@
                             <x-ui.input wire:model="current_password" type="password" required placeholder="••••••••" />
                             @error('current_password') <p class="text-[12px] text-error font-bold mt-1">{{ $message }}</p> @enderror
                         </div>
-                        <div class="border-t border-base-content/5 pt-5">
+                        <div class="border-t border-base-content/5 pt-5" x-data="{ pw: '' }">
                             <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/50 block mb-1.5">{{ __('New Password') }}</label>
-                            <x-ui.input wire:model="password" type="password" required placeholder="••••••••" />
+                            <x-ui.input wire:model="password" type="password" required placeholder="••••••••" x-model="pw" />
                             @error('password') <p class="text-[12px] text-error font-bold mt-1">{{ $message }}</p> @enderror
+
+                            {{-- Real-time policy checklist --}}
+                            <ul class="mt-3 space-y-1.5">
+                                <li class="flex items-center gap-2 text-[12px] font-medium transition-colors"
+                                    :class="pw.length >= 8 ? 'text-[#5A7A00]' : 'text-base-content/40'">
+                                    <span class="w-3.5 text-center" :class="pw.length >= 8 ? 'text-[#9ABC05]' : 'text-base-content/20'"
+                                        x-text="pw.length >= 8 ? '✓' : '○'"></span>
+                                    At least 8 characters
+                                </li>
+                                <li class="flex items-center gap-2 text-[12px] font-medium transition-colors"
+                                    :class="/[A-Z]/.test(pw) ? 'text-[#5A7A00]' : 'text-base-content/40'">
+                                    <span class="w-3.5 text-center" :class="/[A-Z]/.test(pw) ? 'text-[#9ABC05]' : 'text-base-content/20'"
+                                        x-text="/[A-Z]/.test(pw) ? '✓' : '○'"></span>
+                                    One uppercase letter
+                                </li>
+                                <li class="flex items-center gap-2 text-[12px] font-medium transition-colors"
+                                    :class="/[a-z]/.test(pw) ? 'text-[#5A7A00]' : 'text-base-content/40'">
+                                    <span class="w-3.5 text-center" :class="/[a-z]/.test(pw) ? 'text-[#9ABC05]' : 'text-base-content/20'"
+                                        x-text="/[a-z]/.test(pw) ? '✓' : '○'"></span>
+                                    One lowercase letter
+                                </li>
+                                <li class="flex items-center gap-2 text-[12px] font-medium transition-colors"
+                                    :class="/[0-9]/.test(pw) ? 'text-[#5A7A00]' : 'text-base-content/40'">
+                                    <span class="w-3.5 text-center" :class="/[0-9]/.test(pw) ? 'text-[#9ABC05]' : 'text-base-content/20'"
+                                        x-text="/[0-9]/.test(pw) ? '✓' : '○'"></span>
+                                    One number
+                                </li>
+                                <li class="flex items-center gap-2 text-[12px] font-medium transition-colors"
+                                    :class="/[^A-Za-z0-9]/.test(pw) ? 'text-[#5A7A00]' : 'text-base-content/40'">
+                                    <span class="w-3.5 text-center" :class="/[^A-Za-z0-9]/.test(pw) ? 'text-[#9ABC05]' : 'text-base-content/20'"
+                                        x-text="/[^A-Za-z0-9]/.test(pw) ? '✓' : '○'"></span>
+                                    One special character
+                                </li>
+                            </ul>
                         </div>
                         <div>
                             <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/50 block mb-1.5">{{ __('Confirm New Password') }}</label>

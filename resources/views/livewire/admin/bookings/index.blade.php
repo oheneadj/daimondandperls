@@ -11,7 +11,7 @@
     </div>
 
     {{-- Stats Bar --}}
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div class="bg-white border border-base-content/5 rounded-xl p-4 flex items-center gap-4">
             <div class="w-10 h-10 rounded-xl bg-[#F96015]/10 flex items-center justify-center">
                 @include('layouts.partials.icons.clipboard-document-list', ['class' => 'w-5 h-5 text-[#F96015]'])
@@ -48,12 +48,52 @@
                 <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Unpaid') }}</p>
             </div>
         </div>
+        <button wire:click="filterToday"
+            @class([
+                'text-left rounded-xl p-4 flex items-center gap-4 border transition-colors',
+                'bg-[#F96015] border-[#F96015]' => $startDate === now()->toDateString() && $endDate === now()->toDateString(),
+                'bg-white border-base-content/5 hover:border-[#F96015]/30' => !($startDate === now()->toDateString() && $endDate === now()->toDateString()),
+            ])>
+            <div @class([
+                'w-10 h-10 rounded-xl flex items-center justify-center',
+                'bg-white/20' => $startDate === now()->toDateString() && $endDate === now()->toDateString(),
+                'bg-[#F96015]/10' => !($startDate === now()->toDateString() && $endDate === now()->toDateString()),
+            ])>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 {{ $startDate === now()->toDateString() && $endDate === now()->toDateString() ? 'text-white' : 'text-[#F96015]' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+            </div>
+            <div>
+                <p class="text-[20px] font-bold {{ $startDate === now()->toDateString() && $endDate === now()->toDateString() ? 'text-white' : 'text-base-content' }}">{{ number_format($counts['today']) }}</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest {{ $startDate === now()->toDateString() && $endDate === now()->toDateString() ? 'text-white/70' : 'text-base-content/40' }}">{{ __('Delivering Today') }}</p>
+            </div>
+        </button>
     </div>
 
     {{-- Table --}}
     <x-ui.table search="search">
         <x-slot name="filters">
             <div class="flex flex-wrap items-center gap-3">
+                {{-- Quick-filter pills --}}
+                <div class="flex items-center gap-2">
+                    <button wire:click="filterToday" @class([
+                        'px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide transition-colors',
+                        'bg-[#F96015] text-white' => $startDate === now()->toDateString() && $endDate === now()->toDateString(),
+                        'bg-base-200 text-base-content/60 hover:bg-base-300' => !($startDate === now()->toDateString() && $endDate === now()->toDateString()),
+                    ])>Today</button>
+                    <button wire:click="filterThisWeek" @class([
+                        'px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide transition-colors',
+                        'bg-[#A31C4E] text-white' => $startDate === now()->startOfWeek()->toDateString() && $endDate === now()->endOfWeek()->toDateString(),
+                        'bg-base-200 text-base-content/60 hover:bg-base-300' => !($startDate === now()->startOfWeek()->toDateString() && $endDate === now()->endOfWeek()->toDateString()),
+                    ])>This Week</button>
+                    @if($startDate || $endDate)
+                        <button wire:click="clearDateFilter" class="text-[11px] text-base-content/40 hover:text-error font-bold transition-colors">✕ Clear</button>
+                    @endif
+                </div>
+
+                <input type="date" wire:model.live="startDate"
+                    class="bg-base-200 border-none text-[13px] rounded-lg px-3 py-2 outline-none font-medium focus:ring-2 focus:ring-[#F96015]/30">
+                <input type="date" wire:model.live="endDate"
+                    class="bg-base-200 border-none text-[13px] rounded-lg px-3 py-2 outline-none font-medium focus:ring-2 focus:ring-[#F96015]/30">
+
                 <select wire:model.live="status" class="bg-base-200 border-none text-[13px] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#F96015]/30 outline-none transition-all font-medium">
                     <option value="">All Statuses</option>
                     @foreach($statuses as $s)
@@ -67,7 +107,6 @@
                         <option wire:key="pay-status-{{ $ps->value }}" value="{{ $ps->value }}">{{ str($ps->value)->title() }}</option>
                     @endforeach
                 </select>
-
             </div>
         </x-slot>
 
@@ -75,6 +114,7 @@
             <x-ui.table.th>Ref #</x-ui.table.th>
             <x-ui.table.th>Customer</x-ui.table.th>
             <x-ui.table.th>Package</x-ui.table.th>
+            <x-ui.table.th>Next Delivery</x-ui.table.th>
             <x-ui.table.th align="center">Payment</x-ui.table.th>
             <x-ui.table.th align="center">Status</x-ui.table.th>
             <x-ui.table.th align="right">Actions</x-ui.table.th>
@@ -102,6 +142,24 @@
                             <span class="text-[#F96015] font-bold text-[11px] ml-1">+{{ $booking->items->count() - 1 }}</span>
                         @endif
                     </span>
+                </x-ui.table.td>
+                <x-ui.table.td>
+                    @php
+                        $nextDate = $booking->items_min_scheduled_date
+                            ? \Carbon\Carbon::parse($booking->items_min_scheduled_date)
+                            : null;
+                    @endphp
+                    @if($nextDate)
+                        @if($nextDate->isToday())
+                            <span class="inline-flex px-2 py-0.5 rounded-md bg-[#F96015] text-white text-[10px] font-bold uppercase tracking-wide">Today</span>
+                        @elseif($nextDate->isTomorrow())
+                            <span class="inline-flex px-2 py-0.5 rounded-md bg-[#FFC926]/20 text-[#a07800] text-[10px] font-bold uppercase tracking-wide">Tomorrow</span>
+                        @else
+                            <span class="text-[13px] font-medium text-base-content">{{ $nextDate->format('D, M j') }}</span>
+                        @endif
+                    @else
+                        <span class="text-[11px] text-base-content/30">—</span>
+                    @endif
                 </x-ui.table.td>
                 <x-ui.table.td align="center">
                     @php

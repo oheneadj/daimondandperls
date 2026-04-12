@@ -32,8 +32,16 @@ trait HasRoles
 
     public function hasPermission(string $permission): bool
     {
+        if (! $this->relationLoaded('roles')) {
+            $this->load('roles.permissions');
+        }
+
         foreach ($this->roles as $role) {
-            if ($role->hasPermission($permission)) {
+            if (! $role->relationLoaded('permissions')) {
+                $role->load('permissions');
+            }
+
+            if ($role->permissions->contains('slug', $permission)) {
                 return true;
             }
         }

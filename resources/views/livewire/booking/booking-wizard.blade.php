@@ -234,7 +234,7 @@
                                 </x-slot:icon>
                             </x-app.input>
 
-                            @if($momoNumber && strlen($momoNumber) === 10 && !$this->isMomoFormValid)
+                            @if($momoNumber && strlen($momoNumber) === 10 && !$this->getIsMomoFormValidProperty())
                                 <p class="text-xs text-error flex items-center gap-1 -mt-2"><span>⚠</span> This number doesn't match the selected network</p>
                             @endif
                         </div>
@@ -247,6 +247,7 @@
                         wire:click="confirmBooking"
                         wire:loading.attr="disabled"
                         :loading="$loading === 'confirmBooking'"
+                        :disabled="!$this->isReadyToConfirm"
                         variant="primary"
                         size="lg"
                         class="w-full"
