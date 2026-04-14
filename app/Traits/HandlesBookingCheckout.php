@@ -42,6 +42,16 @@ trait HandlesBookingCheckout
 
     public string $otpError = '';
 
+    /**
+     * Send a one-time password (OTP) to the user's phone number.
+     *
+     * Resolves or creates a User record using the following priority:
+     * 1. Look up by phone number (exact match).
+     * 2. If not found, look up by email to avoid duplicate email violations.
+     * 3. If still not found, check if a Customer record exists for this phone
+     *    and use the customer's email as a fallback lookup.
+     * 4. Only create a brand-new User if none of the above matched.
+     */
     public function sendOtp(): void
     {
         $this->validate([
@@ -50,40 +60,75 @@ trait HandlesBookingCheckout
             'phone.regex' => 'Please enter a valid phone number. This number will be used for payment.',
         ]);
 
+        // Step 1: Try to find an existing user by phone number
         $user = User::query()->where('phone', $this->phone)->first();
 
-        if (! $user) {
-            $customer = Customer::query()->where('phone', $this->phone)->first();
+        // Step 2: If no user matched by phone, check by email to prevent
+        // unique constraint violations (e.g. guest using an admin's email)
+        $resolvedEmail = $this->email;
+        if (! $user && $resolvedEmail) {
+            $user = User::query()->where('email', $resolvedEmail)->first();
 
-            $user = DB::transaction(function () use ($customer): User {
-                $user = User::create([
-                    'name' => $customer?->name ?? $this->name ?? 'Customer '.substr($this->phone, -4),
-                    'phone' => $this->phone,
-                    'email' => $customer?->email ?? $this->email,
-                    'password' => Hash::make(Str::random(32)),
-                    'type' => UserType::Customer,
-                ]);
-
-                if ($customer) {
-                    $customer->update(['user_id' => $user->id]);
-                } else {
-                    $user->customer()->create([
-                        'name' => $user->name,
-                        'phone' => $this->phone,
-                        'email' => $this->email,
-                    ]);
-                }
-
-                return $user;
-            });
+            if ($user) {
+                // User already exists with this email — attach this phone number to them
+                $user->update(['phone' => $this->phone]);
+            }
         }
 
+        // Step 3: Still no user — check if a Customer record exists for this phone,
+        // and use the customer's email as a final fallback to find an existing user
+        if (! $user) {
+            $customer = Customer::query()->where('phone', $this->phone)->first();
+            $resolvedEmail = $customer?->email ?? $this->email;
+
+            if ($resolvedEmail) {
+                $user = User::query()->where('email', $resolvedEmail)->first();
+
+                if ($user) {
+                    // Found a user via the customer's email — link phone and customer
+                    $user->update(['phone' => $this->phone]);
+
+                    if ($customer) {
+                        $customer->update(['user_id' => $user->id]);
+                    }
+                }
+            }
+
+            // Step 4: No existing user found at all — create a brand-new one
+            if (! $user) {
+                $user = DB::transaction(function () use ($customer, $resolvedEmail): User {
+                    $user = User::create([
+                        'name' => $customer?->name ?? $this->name ?? 'Customer '.substr($this->phone, -4),
+                        'phone' => $this->phone,
+                        'email' => $resolvedEmail,
+                        'password' => Hash::make(Str::random(32)),
+                        'type' => UserType::Customer,
+                    ]);
+
+                    // Link to existing customer record, or create a new one
+                    if ($customer) {
+                        $customer->update(['user_id' => $user->id]);
+                    } else {
+                        $user->customer()->create([
+                            'name' => $user->name,
+                            'phone' => $this->phone,
+                            'email' => $this->email,
+                        ]);
+                    }
+
+                    return $user;
+                });
+            }
+        }
+
+        // Generate a 6-digit OTP and save it to the user with a 10-minute expiry
         $otp = (string) rand(100000, 999999);
         $user->update([
             'otp_code' => $otp,
             'otp_expires_at' => now()->addMinutes(10),
         ]);
 
+        // Send the OTP to the user via their notification channel (SMS/email)
         $user->notify(new OtpNotification($otp));
 
         $this->otpStep = 2;

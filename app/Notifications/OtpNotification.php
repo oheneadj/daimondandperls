@@ -3,14 +3,10 @@
 namespace App\Notifications;
 
 use App\Notifications\Channels\GaintSmsChannel;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class OtpNotification extends Notification implements ShouldQueue
+class OtpNotification extends Notification
 {
-    use Queueable;
-
     public function __construct(
         public string $otp,
         public string $purpose = 'login',
