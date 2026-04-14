@@ -8,7 +8,7 @@
         'soups' => 'bg-cat-soups',
         default => 'bg-base-200',
     };
-    
+
     $emoji = match($package->category?->slug) {
         'rice' => '🍚',
         'banku' => '🍲',
@@ -19,16 +19,16 @@
 
     $containerClasses = [
         'package-card bg-white border overflow-hidden transition-all duration-500 relative flex flex-col',
-        'rounded-[24px]',
+        'rounded-2xl',
         $selected ? 'border-primary ring-2 ring-primary/10' : 'border-base-content/10 shadow-sm hover:shadow-2xl hover:-translate-y-1',
     ];
-    
+
     // We detect Livewire context so we can use interactive buttons for the browse page
     // and standard redirect links for the static welcome page, while keeping identical styling.
-    $isLivewireContext = isset($this); 
+    $isLivewireContext = isset($this);
 @endphp
 
-<div 
+<div
     @if($isLivewireContext) wire:key="package-{{ $package->id }}" @endif
     @class($containerClasses)
 >
@@ -103,7 +103,7 @@
         <h3 class="font-bold text-base-content leading-tight text-[16px] mb-1">
             {{ $package->name }}
         </h3>
-        
+
         <div class="flex items-baseline gap-1.5 mb-4">
             <span class="font-black text-primary tracking-tight text-[18px]">
                 GH₵{{ number_format((float) $package->price, 0) }}
@@ -114,7 +114,7 @@
             <p class="text-[12px] text-base-content/60 leading-relaxed line-clamp-2">
                 {{ $package->description }}
             </p>
-            
+
             @php
                 $features = is_array($package->features) ? $package->features : (json_decode($package->features ?? '[]', true) ?: []);
                 if (empty($features)) {
@@ -135,10 +135,10 @@
 
         <div class="flex items-stretch mt-auto">
             @if($isLivewireContext)
-                <button 
+                <button
                     wire:click.stop="toggleSelection({{ $package->id }})"
                     @class([
-                        'flex-1 py-3 px-4 text-[12px] sm:text-[13px] font-black uppercase tracking-widest transition-all rounded-full border flex items-center justify-center gap-2 leading-none whitespace-nowrap',
+                        'flex-1 py-3 px-4 text-[12px] sm:text-[13px] font-black uppercase tracking-widest transition-all rounded-xl border flex items-center justify-center gap-2 leading-none whitespace-nowrap',
                         'bg-base-content text-base-100 border-base-content shadow-md shadow-base-content/20 scale-[0.98]' => $selected,
                         'bg-primary text-white border-primary hover:bg-primary/90 hover:border-primary/90 hover:shadow-sm' => !$selected,
                     ])
@@ -152,9 +152,9 @@
                     @endif
                 </button>
             @else
-                <a 
+                <a
                     href="{{ route('packages.browse') }}"
-                    class="flex-1 py-3 px-4 text-[12px] sm:text-[13px] font-black uppercase tracking-widest text-center transition-all bg-primary text-white hover:bg-primary/90 rounded-full border border-primary hover:border-primary/90 hover:shadow-sm flex items-center justify-center gap-2 shadow-sm leading-none whitespace-nowrap"
+                    class="flex-1 py-3 px-4 text-[12px] sm:text-[13px] font-black uppercase tracking-widest text-center transition-all bg-primary text-white hover:bg-primary/90 rounded-xl border border-primary hover:border-primary/90 hover:shadow-sm flex items-center justify-center gap-2 shadow-sm leading-none whitespace-nowrap"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                     <span>{{ __('Add to Basket') }}</span>

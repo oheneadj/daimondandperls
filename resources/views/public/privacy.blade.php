@@ -4,18 +4,19 @@
     @endphp
 
     {{-- Hero Header --}}
-    <section class="relative bg-base-200 pt-20 lg:pt-32 pb-12 lg:pb-16 overflow-hidden border-b border-base-content/10">
-        <div class="absolute top-0 right-0 size-[500px] bg-primary/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/4" aria-hidden="true"></div>
-        <div class="absolute bottom-0 left-0 size-[400px] bg-accent/5 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/4" aria-hidden="true"></div>
+    <section class="relative bg-primary pt-20 lg:pt-28 pb-14 lg:pb-20 overflow-hidden">
+        <div class="absolute top-0 right-0 size-[600px] bg-white/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/3" aria-hidden="true"></div>
+        <div class="absolute bottom-0 left-0 size-[400px] bg-black/10 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/4" aria-hidden="true"></div>
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.03\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]" aria-hidden="true"></div>
 
         <div class="container mx-auto px-4 lg:px-8 max-w-4xl relative z-10">
-            <div class="inline-flex items-center gap-2 bg-primary/10 text-primary text-[11px] font-bold px-4 py-2 rounded-full border border-primary/20 uppercase tracking-widest mb-6 shadow-sm">
-                <span class="size-2 rounded-full bg-primary animate-pulse"></span>
+            <div class="inline-flex items-center gap-2 bg-white/15 text-white text-[11px] font-bold px-4 py-2 rounded-full uppercase tracking-widest mb-8">
+                <span class="size-2 rounded-full bg-accent animate-pulse"></span>
                 Legal
             </div>
-            <h1 class="text-4xl lg:text-5xl font-semibold text-base-content tracking-tight mb-4">Privacy Policy</h1>
-            <p class="text-[13px] text-base-content/40 font-medium mb-6">Last updated: April 14, 2026</p>
-            <p class="text-[15px] text-base-content/60 font-medium leading-relaxed max-w-2xl">
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-semibold text-white tracking-tight mb-3 leading-tight">Privacy Policy</h1>
+            <p class="text-[13px] text-white/50 font-medium mb-6">Last updated: April 14, 2026</p>
+            <p class="text-[15px] text-white/70 font-medium leading-relaxed max-w-2xl">
                 At Diamonds & Pearls Catering, we take your privacy seriously. This policy explains how we collect, use, and protect your personal information when you use our website and services.
             </p>
         </div>
@@ -146,18 +147,18 @@
     </div>
 
     {{-- Bottom CTA --}}
-    <section class="bg-base-100 py-16 lg:py-20 border-t border-base-content/10">
-        <div class="container mx-auto px-4 lg:px-8 max-w-4xl text-center">
-            <p class="text-[15px] text-base-content/60 font-medium mb-6">Have concerns about your privacy?</p>
+    <section class="bg-[#18542A] py-16 lg:py-20 relative overflow-hidden">
+        <div class="absolute top-0 right-0 size-[300px] bg-white/5 blur-[60px] rounded-full -translate-y-1/2 translate-x-1/4" aria-hidden="true"></div>
+        <div class="container mx-auto px-4 lg:px-8 max-w-4xl text-center relative z-10">
+            <p class="text-[11px] font-bold text-white/50 uppercase tracking-widest mb-3">Still have questions?</p>
+            <h2 class="text-2xl lg:text-3xl font-semibold text-white tracking-tight mb-2">We're Happy to Help</h2>
+            <p class="text-[14px] text-white/60 font-medium mb-8">Reach out via the contact form or chat with us directly on WhatsApp.</p>
             <div class="flex flex-wrap items-center justify-center gap-4">
-                <x-ui.button href="{{ route('contact') }}" variant="secondary" size="md">
-                    Contact Us
+                <x-ui.button href="{{ route('contact') }}" variant="black" size="md">
+                    <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    Send a Message
                 </x-ui.button>
-                <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank"
-                   class="inline-flex items-center justify-center gap-2 px-[18px] py-[10px] text-[13px] font-medium rounded-xl bg-[#25D366] text-white hover:brightness-110 transition-all">
-                    <svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.573-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.082 21.183c-1.653 0-3.331-.482-4.717-1.3l-5.365 1.488 1.474-5.26c-.822-1.391-1.309-3.093-1.309-4.821 0-5.319 4.316-9.635 9.636-9.635 5.316 0 9.632 4.316 9.632 9.635 0 5.317-4.316 9.631-9.351 9.631z"/></svg>
-                    WhatsApp
-                </a>
+                <x-ui.whatsapp-button label="Chat on WhatsApp" />
             </div>
         </div>
     </section>

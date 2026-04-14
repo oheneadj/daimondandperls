@@ -18,61 +18,121 @@
     @window-booking-info.window="showWindowPopup = true; windowDeliveryDate = $event.detail.date; windowIsNextWeek = $event.detail.isNextWeek"
 >
     <!-- Header Section -->
-    <header class="bg-base-200 border-b border-base-content/10 py-12 lg:py-20 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-        <div class="absolute bottom-0 left-0 w-48 h-48 bg-accent/10 rounded-full -ml-24 -mb-24 blur-3xl"></div>
-        
-        <div class="container mx-auto px-4 lg:px-8 relative">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest mb-6">
-                <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-                {{ __('Our culinary collections') }}
+    <header class="bg-primary relative overflow-hidden py-16 lg:py-24">
+        {{-- Crosshatch texture --}}
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.03\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]" aria-hidden="true"></div>
+
+        {{-- Blobs --}}
+        <div class="absolute top-0 right-0 size-[500px] bg-white/8 blur-[100px] rounded-full -translate-y-1/3 translate-x-1/4" aria-hidden="true"></div>
+        <div class="absolute bottom-0 left-1/4 size-[350px] bg-black/15 blur-[80px] rounded-full translate-y-1/2" aria-hidden="true"></div>
+        <div class="absolute top-1/2 left-0 size-[250px] bg-white/5 blur-[60px] rounded-full -translate-y-1/2 -translate-x-1/2" aria-hidden="true"></div>
+
+        {{-- Floating food image cards (desktop only) --}}
+        <div class="absolute right-0 top-0 bottom-0 w-[45%] hidden lg:flex items-center justify-end pr-8 xl:pr-16 gap-4" aria-hidden="true">
+            {{-- Main large image --}}
+            <div class="relative w-52 xl:w-64 aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl shadow-black/30 rotate-2">
+                <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?q=80&w=600" alt="" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                <div class="absolute bottom-3 left-3 right-3">
+                    <span class="text-white text-[10px] font-bold uppercase tracking-widest bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-full">Ghanaian Cuisine</span>
+                </div>
             </div>
-            <h1 class="text-4xl lg:text-7xl font-bold text-base-content mb-6 leading-[1.1]">
-                {{ __('Order a') }} <span class="text-primary">{{ __('meal package') }}</span> {{ __('or cater your') }} <span class="text-primary">{{ __('event') }} </span>{{ __('with us.') }}
+            {{-- Stacked smaller images --}}
+            <div class="flex flex-col gap-3">
+                <div class="w-36 xl:w-44 aspect-square rounded-2xl overflow-hidden shadow-xl shadow-black/20 -rotate-1">
+                    <img src="https://images.unsplash.com/photo-1574484284002-952d92456975?q=80&w=400" alt="" class="w-full h-full object-cover">
+                </div>
+                <div class="w-36 xl:w-44 aspect-square rounded-2xl overflow-hidden shadow-xl shadow-black/20 rotate-1">
+                    <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=400" alt="" class="w-full h-full object-cover">
+                </div>
+            </div>
+        </div>
+
+        {{-- Decorative floating pills --}}
+        <div class="absolute top-8 right-[48%] hidden lg:flex items-center gap-1.5 bg-white/15 backdrop-blur-sm text-white text-[10px] font-bold px-3 py-1.5 rounded-full" aria-hidden="true">
+            <span class="size-1.5 rounded-full bg-success"></span> 500+ Events Served
+        </div>
+        <div class="absolute bottom-8 right-[46%] hidden lg:flex items-center gap-1.5 bg-white/15 backdrop-blur-sm text-white text-[10px] font-bold px-3 py-1.5 rounded-full" aria-hidden="true">
+            <span class="size-1.5 rounded-full bg-accent"></span> FDA Certified
+        </div>
+
+        <div class="container mx-auto px-4 lg:px-8 relative z-10 lg:max-w-[55%] xl:max-w-[50%]">
+            <div class="inline-flex items-center gap-2 bg-white/15 text-white text-[11px] font-bold px-4 py-2 rounded-full uppercase tracking-widest mb-6">
+                <span class="size-2 rounded-full bg-accent animate-pulse"></span>
+                {{ __('Our Culinary Collections') }}
+            </div>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-semibold text-white leading-[1.1] tracking-tight">
+                Order a meal or cater your <span class="text-accent">event</span> with us.
             </h1>
-           
+            <p class="mt-4 text-[15px] text-white/60 font-medium max-w-lg">
+                Browse our full catalogue of catering packages — filter by category or search for a specific dish.
+            </p>
+
+            {{-- Quick stats row --}}
+            <div class="mt-8 flex items-center gap-6">
+                <div>
+                    <div class="text-xl font-bold text-white">{{ $packages->count() }}+</div>
+                    <div class="text-[10px] font-bold text-white/50 uppercase tracking-widest">Packages</div>
+                </div>
+                <div class="w-px h-8 bg-white/20"></div>
+                <div>
+                    <div class="text-xl font-bold text-white">{{ $categories->count() }}</div>
+                    <div class="text-[10px] font-bold text-white/50 uppercase tracking-widest">Categories</div>
+                </div>
+                <div class="w-px h-8 bg-white/20"></div>
+                <div>
+                    <div class="text-xl font-bold text-white">GHS 500+</div>
+                    <div class="text-[10px] font-bold text-white/50 uppercase tracking-widest">Starting from</div>
+                </div>
+            </div>
         </div>
     </header>
 
     <!-- Filter & Search Strip -->
-    <div class="sticky top-[68px] z-40 bg-white/90 backdrop-blur-md border-b border-base-content/5 py-5 shadow-sm">
-        <div class="container mx-auto px-4 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-6">
-            <div class="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide w-full sm:w-auto">
-                <button 
+    <div class="sticky top-[68px] z-40 bg-base-100/95 backdrop-blur-md border-b border-base-content/8 py-4 shadow-sm">
+        <div class="container mx-auto px-4 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 w-full sm:w-auto" style="scrollbar-width: none;">
+                <button
                     wire:click="$set('categoryId', null)"
                     @class([
-                        'inline-flex items-center px-5 py-2 text-[12px] font-bold rounded-full transition-all border',
-                        'bg-[#121212] text-white border-[#121212] shadow-md' => is_null($categoryId),
-                        'bg-transparent text-base-content/50 border-base-content/10 hover:bg-base-200' => !is_null($categoryId),
+                        'shrink-0 inline-flex items-center gap-1.5 px-4 py-2 text-[12px] font-bold rounded-lg transition-all',
+                        'bg-primary text-white shadow-sm' => is_null($categoryId),
+                        'bg-base-200 text-base-content/60 hover:bg-base-300 hover:text-base-content' => !is_null($categoryId),
                     ])
                 >
-                    {{ __('All Packages') }}
+                    @if(is_null($categoryId))
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    @endif
+                    {{ __('All') }}
                 </button>
                 @foreach($categories as $category)
                     <button
                         wire:click="$set('categoryId', {{ $category->id }})"
                         @class([
-                            'inline-flex items-center px-5 py-2 text-[12px] font-bold rounded-full transition-all border whitespace-nowrap',
-                            'bg-[#121212] text-white border-[#121212] shadow-md' => $categoryId === $category->id,
-                            'bg-transparent text-base-content/50 border-base-content/10 hover:bg-base-200' => $categoryId !== $category->id,
+                            'shrink-0 inline-flex items-center gap-1.5 px-4 py-2 text-[12px] font-bold rounded-lg transition-all whitespace-nowrap',
+                            'bg-primary text-white shadow-sm' => $categoryId === $category->id,
+                            'bg-base-200 text-base-content/60 hover:bg-base-300 hover:text-base-content' => $categoryId !== $category->id,
                         ])
                     >
+                        @if($categoryId === $category->id)
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        @endif
                         {{ $category->name }}
                     </button>
                 @endforeach
             </div>
 
-            <div class="relative w-full sm:w-[400px]">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <div class="relative w-full sm:w-80">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                     <svg class="w-4 h-4 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </div>
-                <input 
+                <input
                     wire:model.live.debounce.300ms="search"
-                    type="text" 
-                    placeholder="{{ __('Search for a specific dish or package...') }}" 
-                    class="w-full pl-11 pr-4 py-3 bg-base-200 border-none focus:ring-2 focus:ring-primary/20 rounded-2xl transition-all text-[14px] font-bold placeholder:text-base-content/30"
+                    type="text"
+                    placeholder="{{ __('Search packages...') }}"
+                    class="w-full pl-10 pr-4 py-2.5 bg-base-200 border-transparent focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg transition-all text-[13px] font-medium placeholder:text-base-content/30"
                 >
             </div>
         </div>

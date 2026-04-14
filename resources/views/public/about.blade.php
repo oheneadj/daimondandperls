@@ -4,23 +4,11 @@
     @endphp
 
     {{-- 1. Hero --}}
-    <section class="relative bg-base-200 py-20 lg:py-32 overflow-hidden">
-        <div class="absolute top-0 right-0 size-[500px] bg-primary/8 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/4" aria-hidden="true"></div>
-        <div class="absolute bottom-0 left-0 size-[400px] bg-success/10 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/4" aria-hidden="true"></div>
-
-        <div class="container mx-auto px-4 lg:px-8 text-center relative z-10">
-            <div class="inline-flex items-center gap-2 bg-primary/10 text-primary text-[11px] font-bold px-4 py-2 rounded-full border border-primary/20 uppercase tracking-widest mb-6 shadow-sm">
-                <span class="size-2 rounded-full bg-primary animate-pulse"></span>
-                Est. 2018 &mdash; Accra, Ghana
-            </div>
-
-            <h1 class="text-5xl lg:text-7xl font-semibold text-base-content tracking-tight mb-6">Crafted with Passion,<br class="hidden sm:block"> Served with Excellence</h1>
-
-            <p class="text-lg text-base-content/60 font-medium max-w-2xl mx-auto leading-relaxed">
-                Diamonds & Pearls Catering is Accra's premier catering partner — bringing authentic Ghanaian flavours and world-class hospitality to every milestone celebration.
-            </p>
-        </div>
-    </section>
+    <x-ui.page-hero
+        badge="Est. 2018 — Accra, Ghana"
+        title="Crafted with Passion,<br class='hidden sm:block'> Served with Excellence"
+        subtitle="Diamonds & Pearls Catering is Accra's premier catering partner — bringing authentic Ghanaian flavours and world-class hospitality to every milestone celebration."
+    />
 
     {{-- 2. Our Story --}}
     <section class="py-24 bg-base-100 relative overflow-hidden">
@@ -112,8 +100,19 @@
 
     {{-- 3. Mission & Vision --}}
     <section class="py-24 bg-[#18542A] relative overflow-hidden">
-        <div class="absolute top-0 right-0 size-[400px] bg-white/5 blur-[80px] rounded-full -translate-y-1/2 translate-x-1/4" aria-hidden="true"></div>
-        <div class="absolute bottom-0 left-0 size-[300px] bg-black/10 blur-[60px] rounded-full translate-y-1/2 -translate-x-1/4" aria-hidden="true"></div>
+        <div class="absolute top-0 right-0 size-[500px] bg-white/5 blur-[100px] rounded-full -translate-y-1/3 translate-x-1/3" aria-hidden="true"></div>
+        <div class="absolute bottom-0 left-0 size-[400px] bg-black/15 blur-[80px] rounded-full translate-y-1/3 -translate-x-1/4" aria-hidden="true"></div>
+        <div class="absolute top-1/2 left-1/2 size-[600px] bg-white/3 blur-[130px] rounded-full -translate-x-1/2 -translate-y-1/2" aria-hidden="true"></div>
+        {{-- Floating icons --}}
+        <div class="absolute top-10 left-10 text-white/8 hidden lg:block -rotate-12" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="0.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+        </div>
+        <div class="absolute bottom-10 right-10 text-white/6 hidden lg:block rotate-6" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="0.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        </div>
+        <div class="absolute top-1/3 right-8 text-white/5 hidden xl:block" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="0.9"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+        </div>
 
         <div class="container mx-auto px-4 lg:px-8 max-w-4xl relative z-10">
             <div class="text-center mb-16">
@@ -190,33 +189,31 @@
     </section>
 
     {{-- 5. Testimonials --}}
-    @php
-        $testimonials = [
-            ['quote' => "Diamonds & Pearls made our wedding day absolutely perfect. The food was incredible and every guest kept asking about the caterer. We couldn't be happier.", 'name' => 'Abena & Kweku Mensah', 'event' => 'Wedding Reception, 2024'],
-            ['quote' => "We hired them for our company's annual dinner and the professionalism was on another level. Hot food, on time, beautifully presented. Will book again.", 'name' => 'Efua Asante', 'event' => 'Corporate Dinner, 2024'],
-            ['quote' => 'From the naming ceremony to the cleanup, everything was flawless. Chef Grace and her team went above and beyond for our family.', 'name' => 'The Boateng Family', 'event' => 'Naming Ceremony, 2023'],
-        ];
-    @endphp
-    <section class="py-24 bg-base-100">
+    <section class="py-16 sm:py-24 bg-base-200">
         <div class="container mx-auto px-4 lg:px-8">
-            <div class="text-center mb-16">
-                <span class="inline-block text-[11px] font-bold text-primary uppercase tracking-[0.2em] mb-3 bg-primary/10 px-3 py-1 rounded-full">Client Stories</span>
-                <h2 class="text-4xl lg:text-5xl font-semibold text-base-content tracking-tight mt-4">What Our Clients Say</h2>
+            <div class="text-center mb-10 sm:mb-16">
+                <span class="text-[11px] font-bold text-primary uppercase tracking-[0.2em] mb-3 block">Client Stories</span>
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-semibold text-base-content tracking-tight">What our clients say</h2>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                @foreach($testimonials as $testimonial)
-                    <div class="bg-base-200 p-8 rounded-2xl relative">
-                        <div class="text-primary/20 mb-4">
-                            <svg class="size-10" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
-                        </div>
-                        <p class="text-[15px] text-base-content/70 font-medium leading-relaxed mb-6">{{ $testimonial['quote'] }}</p>
-                        <div>
-                            <p class="text-[14px] font-bold text-base-content">{{ $testimonial['name'] }}</p>
-                            <p class="text-[12px] text-primary font-medium">{{ $testimonial['event'] }}</p>
-                        </div>
-                    </div>
-                @endforeach
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
+                <x-ui.testimonial-card
+                    quote="Diamonds & Pearls made our wedding day absolutely perfect. The food was incredible and every guest kept asking about the caterer. We couldn't be happier."
+                    name="Abena & Kweku Mensah"
+                    event="Wedding Reception, 2024"
+                    initials="AM"
+                />
+                <x-ui.testimonial-card
+                    quote="We hired them for our company's annual dinner and the professionalism was on another level. Hot food, on time, beautifully presented. Will book again."
+                    name="Efua Asante"
+                    event="Corporate Dinner, 2024"
+                />
+                <x-ui.testimonial-card
+                    quote="From the naming ceremony to the cleanup, everything was flawless. Chef Grace and her team went above and beyond for our family."
+                    name="The Boateng Family"
+                    event="Naming Ceremony, 2023"
+                    initials="BF"
+                />
             </div>
         </div>
     </section>
@@ -267,13 +264,7 @@
                 <x-ui.button href="{{ route('packages.browse') }}" variant="primary" size="lg">
                     View Our Packages
                 </x-ui.button>
-                <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank"
-                   class="inline-flex items-center justify-center gap-2 px-[24px] py-[13px] text-[15px] font-medium rounded-xl bg-[#25D366] text-white hover:brightness-110 transition-all">
-                    <svg class="size-5" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.573-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.082 21.183c-1.653 0-3.331-.482-4.717-1.3l-5.365 1.488 1.474-5.26c-.822-1.391-1.309-3.093-1.309-4.821 0-5.319 4.316-9.635 9.636-9.635 5.316 0 9.632 4.316 9.632 9.635 0 5.317-4.316 9.631-9.351 9.631z"/>
-                    </svg>
-                    Chat on WhatsApp
-                </a>
+                <x-ui.whatsapp-button size="lg" label="Chat on WhatsApp" />
             </div>
 
             {{-- Social Links --}}

@@ -132,93 +132,110 @@
 
         <!-- Mobile Menu Slide-over -->
         <template x-teleport="body">
-            <div class="fixed inset-0 z-[100] lg:hidden" 
+            <div class="fixed inset-0 z-[100] lg:hidden"
                  x-show="mobileMenuOpen"
-             x-transition.opacity.duration.300ms
-             style="display: none;"
-             @keydown.escape.window="mobileMenuOpen = false">
-            
-            <!-- Backdrop -->
-            <div class="absolute inset-0 bg-neutral/80 backdrop-blur-sm" 
-                 @click="mobileMenuOpen = false"></div>
+                 x-transition.opacity.duration.300ms
+                 style="display: none;"
+                 @keydown.escape.window="mobileMenuOpen = false">
 
-            <!-- Slide-over panel -->
-            <div class="absolute inset-y-0 right-0 w-full max-w-[300px] sm:max-w-sm bg-base-100 shadow-2xl flex flex-col border-l border-base-content/10 transition-transform duration-300 transform"
-                 :class="mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'"
-                 @click.stop>
-                 
-                {{-- Decorative background blur --}}
-                <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-                <div class="absolute bottom-0 left-0 w-64 h-64 bg-accent/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+                <!-- Backdrop -->
+                <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="mobileMenuOpen = false"></div>
 
-                <!-- Header -->
-                <div class="flex items-center justify-between p-6 relative z-10 border-b border-base-content/10">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white text-[11px] font-bold shadow-md">D&P</div>
-                        <span class="text-xl font-bold text-base-content tracking-tight">Menu</span>
+                <!-- Slide-over panel -->
+                <div class="absolute inset-y-0 right-0 w-[85vw] max-w-[340px] bg-base-100 shadow-2xl flex flex-col transition-transform duration-300 transform"
+                     :class="mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'"
+                     @click.stop>
+
+                    {{-- Red hero header band --}}
+                    <div class="relative bg-primary overflow-hidden px-6 pt-6 pb-8">
+                        <div class="absolute top-0 right-0 size-40 bg-white/8 rounded-full blur-2xl -translate-y-1/2 translate-x-1/4"></div>
+                        <div class="absolute bottom-0 left-0 size-28 bg-black/15 rounded-full blur-xl translate-y-1/2 -translate-x-1/4"></div>
+
+                        <div class="relative z-10 flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="size-9 bg-white/20 rounded-full flex items-center justify-center text-white text-[11px] font-bold">D&P</div>
+                                <div>
+                                    <div class="text-[14px] font-bold text-white leading-tight">Diamonds & Pearls</div>
+                                    <div class="text-[10px] text-white/60 font-medium uppercase tracking-widest">Catering Services</div>
+                                </div>
+                            </div>
+                            <button @click="mobileMenuOpen = false" class="size-8 flex items-center justify-center bg-white/15 text-white hover:bg-white/25 rounded-lg transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {{-- Quick action in header --}}
+                        <a href="{{ route('event-booking') }}" class="relative z-10 flex items-center gap-2.5 bg-white/15 hover:bg-white/25 text-white text-[13px] font-bold px-4 py-3 rounded-xl transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+                            Plan an Event
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                        </a>
                     </div>
-                    <button @click="mobileMenuOpen = false" class="p-2.5 bg-base-200 text-base-content/60 hover:text-base-content hover:bg-base-300 rounded-full transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
 
-                <!-- Content -->
-                <div class="flex-1 overflow-y-auto px-6 py-8 relative z-10 flex flex-col gap-8">
-                    <nav class="space-y-2">
+                    <!-- Nav links -->
+                    <div class="flex-1 overflow-y-auto px-4 py-4">
                         @php
                             $mobileNavLinks = [
-                                ['route' => 'home', 'label' => 'Home'],
-                                ['route' => 'packages.browse', 'label' => 'Our Menu'],
-                                ['route' => 'booking.track', 'label' => 'Track Order'],
-                                ['route' => 'about', 'label' => 'About Us'],
-                                ['route' => 'contact', 'label' => 'Contact'],
+                                ['route' => 'home',           'label' => 'Home',        'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>'],
+                                ['route' => 'packages.browse','label' => 'Our Menu',    'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>'],
+                                ['route' => 'booking.track', 'label' => 'Track Order',  'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>'],
+                                ['route' => 'about',         'label' => 'About Us',     'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'],
+                                ['route' => 'contact',       'label' => 'Contact',      'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>'],
                             ];
-                            $eventBookingUrl = route('event-booking');
                         @endphp
-                        
-                        @foreach($mobileNavLinks as $link)
-                            <a href="{{ route($link['route']) }}" class="group flex items-center justify-between p-4 rounded-2xl text-[17px] font-bold {{ request()->routeIs($link['route']) ? 'bg-primary text-white shadow-md shadow-primary/20' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content' }} transition-all">
-                                {{ $link['label'] }}
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all {{ request()->routeIs($link['route']) ? 'opacity-100 translate-x-0 text-white' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                            </a>
-                        @endforeach
-                    </nav>
 
-                    <div class="space-y-4">
-                        <div class="h-px w-full bg-base-content/10 mt-2 mb-4"></div>
-                        <a href="{{ $eventBookingUrl }}" class="flex justify-center items-center gap-2  text-primary font-bold py-4 rounded-2xl text-[15px] border border-primary/20 hover:bg-primary/10 transition-all">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-                            </svg>
-                            Plan an Event
-                        </a>
-                        <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" class="flex justify-center items-center gap-2 bg-[#25D366] text-white font-bold py-4 rounded-2xl shadow-md text-[15px] hover:bg-[#20bd5a] hover:-translate-y-0.5 transition-all">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.573-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.082 21.183c-1.653 0-3.331-.482-4.717-1.3l-5.365 1.488 1.474-5.26c-.822-1.391-1.309-3.093-1.309-4.821 0-5.319 4.316-9.635 9.636-9.635 5.316 0 9.632 4.316 9.632 9.635 0 5.317-4.316 9.631-9.351 9.631z"/>
-                            </svg>
+                        <nav class="space-y-1">
+                            @foreach($mobileNavLinks as $link)
+                                @php $active = request()->routeIs($link['route']); @endphp
+                                <a href="{{ route($link['route']) }}"
+                                   class="flex items-center gap-3 px-4 py-3.5 rounded-xl text-[15px] font-semibold transition-all {{ $active ? 'bg-primary/8 text-primary' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content' }}">
+                                    <span class="size-8 rounded-lg flex items-center justify-center shrink-0 {{ $active ? 'bg-primary text-white' : 'bg-base-200 text-base-content/50' }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">{!! $link['icon'] !!}</svg>
+                                    </span>
+                                    {{ $link['label'] }}
+                                    @if($active)
+                                        <span class="ml-auto size-1.5 rounded-full bg-primary"></span>
+                                    @endif
+                                </a>
+                            @endforeach
+                        </nav>
+
+                        {{-- Divider --}}
+                        <div class="my-4 border-t border-base-content/8"></div>
+
+                        {{-- WhatsApp --}}
+                        <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank"
+                           class="flex items-center gap-3 px-4 py-3.5 rounded-xl text-[15px] font-semibold text-base-content/70 hover:bg-base-200 hover:text-base-content transition-all">
+                            <span class="size-8 rounded-lg bg-[#25D366]/15 text-[#25D366] flex items-center justify-center shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.573-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.082 21.183c-1.653 0-3.331-.482-4.717-1.3l-5.365 1.488 1.474-5.26c-.822-1.391-1.309-3.093-1.309-4.821 0-5.319 4.316-9.635 9.636-9.635 5.316 0 9.632 4.316 9.632 9.635 0 5.317-4.316 9.631-9.351 9.631z"/></svg>
+                            </span>
                             WhatsApp Us
                         </a>
+                    </div>
 
+                    <!-- Footer CTA -->
+                    <div class="px-4 pb-6 pt-2 border-t border-base-content/8 space-y-2.5">
                         @auth
-                            <a href="{{ route('admin.dashboard') }}" class="flex justify-center bg-base-content text-base-100 font-bold py-4 rounded-2xl uppercase tracking-wider text-[13px] hover:bg-base-content/90 transition-all">
+                            <a href="{{ route('admin.dashboard') }}"
+                               class="flex items-center justify-center gap-2 w-full bg-base-content text-base-100 font-bold py-3.5 rounded-xl text-[14px] hover:bg-base-content/90 transition-all">
                                 Go to Dashboard
                             </a>
                         @else
-                            <div class="grid grid-cols-2 gap-3">
-                                <a href="{{ route('packages.browse') }}" class="flex justify-center items-center bg-primary text-white font-bold py-4 rounded-2xl text-[14px] shadow-sm hover:bg-primary-hover hover:-translate-y-0.5 transition-all">
-                                    Book Now
-                                </a>
-                                <a href="{{ route('login') }}" class="flex justify-center items-center bg-base-200 border border-base-content/10 text-base-content font-bold py-4 rounded-2xl hover:bg-base-300 transition-all text-[14px]">
-                                    Log in
-                                </a>
-                            </div>
+                            <a href="{{ route('packages.browse') }}"
+                               class="flex items-center justify-center gap-2 w-full bg-primary text-white font-bold py-3.5 rounded-xl text-[14px] shadow-sm hover:bg-primary/90 transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                                Browse & Book
+                            </a>
+                            <a href="{{ route('login') }}"
+                               class="flex items-center justify-center w-full bg-base-200 text-base-content font-bold py-3.5 rounded-xl hover:bg-base-300 transition-all text-[14px]">
+                                Log in to your account
+                            </a>
                         @endauth
                     </div>
                 </div>
             </div>
-        </div>
         </template>
     </header>
 
@@ -354,12 +371,7 @@
                         <p class="text-[13px] text-white/45 leading-relaxed">
                             Ready to plan your next event? Reach out to us on WhatsApp for a quick response.
                         </p>
-                        <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" class="inline-flex items-center gap-2.5 bg-[#25D366] text-white text-[13px] font-bold px-5 py-3 rounded-xl hover:bg-[#20bd5a] transition-all shadow-lg shadow-[#25D366]/20 hover:shadow-[#25D366]/30 hover:-translate-y-0.5">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.573-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.082 21.183c-1.653 0-3.331-.482-4.717-1.3l-5.365 1.488 1.474-5.26c-.822-1.391-1.309-3.093-1.309-4.821 0-5.319 4.316-9.635 9.636-9.635 5.316 0 9.632 4.316 9.632 9.635 0 5.317-4.316 9.631-9.351 9.631z"/>
-                            </svg>
-                            Chat on WhatsApp
-                        </a>
+                        <x-ui.whatsapp-button label="Chat on WhatsApp" class="shadow-lg shadow-[#25D366]/20 hover:shadow-[#25D366]/30 hover:-translate-y-0.5" />
 
                         {{-- Social links --}}
                         <div class="flex items-center justify-center sm:justify-start gap-3 pt-2">
@@ -398,8 +410,8 @@
     <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank"
        class="fixed bottom-6 left-6 z-[100] group flex items-center justify-center size-[60px] bg-[#25D366] text-white rounded-full shadow-2xl shadow-[#25D366]/40 hover:scale-110 hover:shadow-[#25D366]/50 transition-all duration-300 animate-in slide-in-from-bottom-10 fade-in zoom-in"
        aria-label="Chat on WhatsApp">
-        <svg xmlns="http://www.w3.org/2000/svg" class="size-8 group-hover:rotate-12 transition-transform duration-300" viewBox="0 0 448 512" fill="currentColor">
-            <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
+        <svg xmlns="http://www.w3.org/2000/svg" class="size-8 group-hover:rotate-12 transition-transform duration-300" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.573-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.082 21.183c-1.653 0-3.331-.482-4.717-1.3l-5.365 1.488 1.474-5.26c-.822-1.391-1.309-3.093-1.309-4.821 0-5.319 4.316-9.635 9.636-9.635 5.316 0 9.632 4.316 9.632 9.635 0 5.317-4.316 9.631-9.351 9.631z"/>
         </svg>
         <span class="absolute -top-1 -right-1 flex h-3 w-3">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#25D366] opacity-75"></span>

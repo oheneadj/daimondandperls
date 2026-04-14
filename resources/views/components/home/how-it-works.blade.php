@@ -1,4 +1,4 @@
-<section class="py-16 sm:py-24 bg-base-100 border-b border-base-content/10">
+<section class="py-16 sm:py-24 bg-base-100">
     <div class="container mx-auto px-4 lg:px-8">
         <div class="text-center mb-10 sm:mb-16">
             <span class="text-[11px] font-bold text-primary uppercase tracking-[0.2em] mb-3 block">Simple Process</span>
@@ -29,7 +29,7 @@
                 @endforeach
             </div>
 
-            <div class="mt-10 sm:mt-16 flex flex-wrap justify-center items-center gap-4 sm:gap-6  hover:grayscale-0 transition-all duration-500">
+            <div class="mt-10 sm:mt-16 flex flex-wrap justify-center items-center gap-4 sm:gap-6 transition-all duration-500">
                 <span class="text-[10px] sm:text-[11px] font-bold text-base-content uppercase tracking-widest">Accepted Payments:</span>
                 <img src="{{ asset('logos/mtn-momo.png') }}" class="h-6 sm:h-8 object-contain" alt="MTN MoMo" loading="lazy">
                 <img src="{{ asset('logos/Telecel-Cash.jpg') }}" class="h-6 sm:h-8 object-contain rounded-md shadow-sm" alt="Telecel Cash" loading="lazy">
