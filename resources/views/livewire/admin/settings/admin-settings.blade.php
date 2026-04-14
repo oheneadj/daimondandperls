@@ -199,6 +199,30 @@
                         </form>
                     </x-ui.card>
                 </div>
+
+                {{-- Social Media Links --}}
+                <div class="lg:col-span-12">
+                    <x-ui.card class="shadow-sm">
+                        <div class="p-6 border-b border-base-content/5">
+                            <h3 class="text-[16px] font-bold text-base-content uppercase tracking-[0.05em]">{{ __('Social Media Links') }}</h3>
+                            <p class="text-[11px] text-base-content/40 font-medium mt-1">{{ __('These links appear on your public About page.') }}</p>
+                        </div>
+                        <form wire:submit.prevent="saveSocialLinks" class="p-6 space-y-5">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                <x-ui.input label="Facebook URL" wire:model="social_facebook" type="url" placeholder="https://facebook.com/yourpage" :error="$errors->first('social_facebook')" />
+                                <x-ui.input label="Instagram URL" wire:model="social_instagram" type="url" placeholder="https://instagram.com/yourhandle" :error="$errors->first('social_instagram')" />
+                                <x-ui.input label="Twitter / X URL" wire:model="social_twitter" type="url" placeholder="https://x.com/yourhandle" :error="$errors->first('social_twitter')" />
+                                <x-ui.input label="TikTok URL" wire:model="social_tiktok" type="url" placeholder="https://tiktok.com/@yourhandle" :error="$errors->first('social_tiktok')" />
+                            </div>
+                            <div class="pt-2 flex justify-end">
+                                <x-ui.button type="submit" variant="secondary" size="sm" wire:loading.attr="disabled">
+                                    <span wire:loading.remove wire:target="saveSocialLinks">{{ __('Save Social Links') }}</span>
+                                    <span wire:loading wire:target="saveSocialLinks">...</span>
+                                </x-ui.button>
+                            </div>
+                        </form>
+                    </x-ui.card>
+                </div>
             </div>
         @endif
 

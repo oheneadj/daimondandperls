@@ -69,7 +69,9 @@
       "Bash(vendor/bin/pint --dirty --format agent tests/Feature/AdminBookingsShowTest.php tests/Feature/Admin/Bookings/ShowTest.php)",
       "Bash(grep -n \"role_user\\\\|user_id\\\\|role_id\" /home/oheneadj/server/dpc/database/migrations/*roles*)",
       "Bash(grep -n \"uuid\\\\|uuids\" /home/oheneadj/server/dpc/database/migrations/*roles*)",
-      "Bash(vendor/bin/pint --dirty --format agent tests/)"
+      "Bash(vendor/bin/pint --dirty --format agent tests/)",
+      "Bash(head -50 /home/oheneadj/server/dpc/resources/views/booking/*.blade.php)",
+      "Bash(vendor/bin/pint --dirty --format agent app/Livewire/Admin/Settings/AdminSettings.php)"
     ],
     "additionalDirectories": [
       "/home/oheneadj/server/dpc/resources/views/components",

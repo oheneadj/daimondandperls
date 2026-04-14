@@ -1,6 +1,6 @@
 <div class="bg-base-200 min-h-screen py-10 lg:py-20 px-4">
     <div class="container mx-auto max-w-xl">
-        <div class="bg-base-100 border border-base-content/10 rounded-[32px] overflow-hidden shadow-md">
+        <div class="bg-base-100 border border-base-content/10 rounded-2xl overflow-hidden shadow-md">
             {{-- Header --}}
             <div class="p-8 lg:p-12 text-center border-b border-base-content/10 bg-base-200/30">
                 <div class="size-16 bg-primary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm rotate-3">
@@ -17,7 +17,7 @@
             {{-- Form --}}
             <div class="p-8 lg:p-12 space-y-8">
                 @if($message)
-                    <div class="bg-dp-danger/5 border border-dp-danger/20 p-5 rounded-2xl flex items-start gap-4 animate-fade-in text-left">
+                    <div class="bg-error/5 border border-error/20 p-5 rounded-2xl flex items-start gap-4 text-left">
                         <div class="bg-white size-8 rounded-full shadow-sm shrink-0 flex items-center justify-center mt-0.5">
                             <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                         </div>
@@ -43,7 +43,7 @@
                     />
 
                     <div class="pt-4">
-                        <x-ui.button type="submit" variant="primary" class="w-full h-12">
+                        <x-ui.button type="submit" variant="primary" size="lg" class="w-full">
                             {{ __('Resume Booking') }}
                         </x-ui.button>
                     </div>

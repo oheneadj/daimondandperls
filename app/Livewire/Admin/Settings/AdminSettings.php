@@ -74,6 +74,15 @@ class AdminSettings extends Component
 
     public ?string $branch_code = '';
 
+    // Social Media Links
+    public ?string $social_facebook = '';
+
+    public ?string $social_instagram = '';
+
+    public ?string $social_twitter = '';
+
+    public ?string $social_tiktok = '';
+
     public function mount(): void
     {
         $this->authorizePermission('manage_settings');
@@ -100,6 +109,11 @@ class AdminSettings extends Component
         $this->account_name = $settings->get('account_name')?->value ?? '';
         $this->account_number = $settings->get('account_number')?->value ?? '';
         $this->branch_code = $settings->get('branch_code')?->value ?? '';
+
+        $this->social_facebook = $settings->get('social_facebook')?->value ?? '';
+        $this->social_instagram = $settings->get('social_instagram')?->value ?? '';
+        $this->social_twitter = $settings->get('social_twitter')?->value ?? '';
+        $this->social_tiktok = $settings->get('social_tiktok')?->value ?? '';
     }
 
     public function setTab(string $tab): void
@@ -233,6 +247,23 @@ class AdminSettings extends Component
         $this->updateSetting('event_lead_days', $this->event_lead_days, \App\Enums\SettingType::Integer, 'event');
 
         $this->dispatch('banner', style: 'success', message: 'Event booking settings updated.');
+    }
+
+    public function saveSocialLinks(): void
+    {
+        $this->validate([
+            'social_facebook' => 'nullable|url|max:255',
+            'social_instagram' => 'nullable|url|max:255',
+            'social_twitter' => 'nullable|url|max:255',
+            'social_tiktok' => 'nullable|url|max:255',
+        ]);
+
+        $this->updateSetting('social_facebook', $this->social_facebook, \App\Enums\SettingType::String, 'social');
+        $this->updateSetting('social_instagram', $this->social_instagram, \App\Enums\SettingType::String, 'social');
+        $this->updateSetting('social_twitter', $this->social_twitter, \App\Enums\SettingType::String, 'social');
+        $this->updateSetting('social_tiktok', $this->social_tiktok, \App\Enums\SettingType::String, 'social');
+
+        $this->dispatch('banner', style: 'success', message: 'Social media links updated.');
     }
 
     public function saveBankDetails(): void

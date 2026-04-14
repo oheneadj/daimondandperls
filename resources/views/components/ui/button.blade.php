@@ -7,7 +7,7 @@
 ])
 
 @php
-    $baseClasses = 'btn border-none inline-flex items-center justify-center font-medium rounded-xl transition-all duration-150 focus:outline-none focus:ring-3 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap decoration-none';
+    $baseClasses = 'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-150 focus:outline-none focus:ring-3 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap no-underline';
     
     $variants = [
         'primary' => 'bg-primary text-primary-content hover:brightness-110 focus:ring-primary/30',
