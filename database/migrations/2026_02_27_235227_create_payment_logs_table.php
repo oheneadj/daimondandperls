@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('payment_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('payment_id')->constrained()->onDelete('cascade')->index();
+            $table->foreignId('payment_id')->constrained('payments', 'id', 'fk_pl_payment_id')->onDelete('cascade')->index();
             $table->string('event', 100)->index();
             $table->string('status', 50)->nullable();
             $table->string('gateway_ref', 100)->nullable();
