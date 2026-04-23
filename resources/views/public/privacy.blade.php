@@ -148,7 +148,16 @@
 
     {{-- Bottom CTA --}}
     <section class="bg-[#18542A] py-16 lg:py-20 relative overflow-hidden">
-        <div class="absolute top-0 right-0 size-[300px] bg-white/5 blur-[60px] rounded-full -translate-y-1/2 translate-x-1/4" aria-hidden="true"></div>
+        <div class="absolute top-0 right-0 size-[450px] bg-white/5 blur-[100px] rounded-full -translate-y-1/3 translate-x-1/3" aria-hidden="true"></div>
+        <div class="absolute bottom-0 left-0 size-[350px] bg-black/15 blur-[80px] rounded-full translate-y-1/3 -translate-x-1/4" aria-hidden="true"></div>
+        <div class="absolute top-1/2 left-1/2 size-[500px] bg-white/3 blur-[100px] rounded-full -translate-x-1/2 -translate-y-1/2" aria-hidden="true"></div>
+        {{-- Floating icons --}}
+        <div class="absolute top-4 left-8 text-white/8 hidden lg:block -rotate-6" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="0.9"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </div>
+        <div class="absolute bottom-4 right-8 text-white/6 hidden lg:block rotate-12" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="0.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
         <div class="container mx-auto px-4 lg:px-8 max-w-4xl text-center relative z-10">
             <p class="text-[11px] font-bold text-white/50 uppercase tracking-widest mb-3">Still have questions?</p>
             <h2 class="text-2xl lg:text-3xl font-semibold text-white tracking-tight mb-2">We're Happy to Help</h2>

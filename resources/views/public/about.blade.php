@@ -254,40 +254,57 @@
         $socialTwitter = \App\Models\Setting::where('key', 'social_twitter')->value('value');
         $socialTiktok = \App\Models\Setting::where('key', 'social_tiktok')->value('value');
     @endphp
-    <section class="py-24 lg:py-32 bg-base-200">
-        <div class="container mx-auto px-4 lg:px-8 text-center max-w-3xl">
-            <h2 class="text-4xl lg:text-5xl font-semibold text-base-content tracking-tight mb-6">Ready to Taste the Difference?</h2>
-            <p class="text-[16px] text-base-content/60 font-medium mb-12 leading-relaxed">
+    <section class="py-24 lg:py-32 bg-[#18542A] relative overflow-hidden">
+        {{-- Blobs --}}
+        <div class="absolute top-0 right-0 size-[500px] bg-white/5 blur-[100px] rounded-full -translate-y-1/3 translate-x-1/3" aria-hidden="true"></div>
+        <div class="absolute bottom-0 left-0 size-[400px] bg-black/15 blur-[80px] rounded-full translate-y-1/3 -translate-x-1/4" aria-hidden="true"></div>
+        <div class="absolute top-1/2 left-1/2 size-[700px] bg-white/3 blur-[150px] rounded-full -translate-x-1/2 -translate-y-1/2" aria-hidden="true"></div>
+        {{-- Floating icons --}}
+        <div class="absolute top-10 left-12 text-white/8 hidden lg:block -rotate-12" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="0.8"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+        </div>
+        <div class="absolute bottom-10 right-12 text-white/6 hidden lg:block rotate-6" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="0.8"><path stroke-linecap="round" stroke-linejoin="round" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0A1.994 1.994 0 013 15.546M3 19.091c.523 0 1.046-.151 1.5-.454a2.704 2.704 0 013 0 2.704 2.704 0 003 0 2.704 2.704 0 013 0 2.704 2.704 0 003 0 2.704 2.704 0 011.5.454M12 9.75v5.25M12 9.75a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z"/></svg>
+        </div>
+
+        <div class="container mx-auto px-4 lg:px-8 text-center max-w-3xl relative z-10">
+            <div class="inline-flex items-center gap-2 bg-white/15 text-white text-[11px] font-bold px-4 py-2 rounded-full uppercase tracking-widest mb-6">
+                <span class="size-2 rounded-full bg-accent animate-pulse"></span>
+                Work With Us
+            </div>
+            <h2 class="text-4xl lg:text-5xl font-semibold text-white tracking-tight mb-6">Ready to Taste the Difference?</h2>
+            <p class="text-[16px] text-white/70 font-medium mb-12 leading-relaxed">
                 Let us make your next event unforgettable. Browse our packages or chat with us directly to get started.
             </p>
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-                <x-ui.button href="{{ route('packages.browse') }}" variant="primary" size="lg">
+                <a href="{{ route('packages.browse') }}" class="inline-flex items-center justify-center gap-2.5 bg-white text-[#18542A] text-[15px] font-bold px-8 py-4 rounded-xl hover:bg-base-100 hover:scale-105 transition-all shadow-xl shadow-black/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7"/></svg>
                     View Our Packages
-                </x-ui.button>
-                <x-ui.whatsapp-button size="lg" label="Chat on WhatsApp" />
+                </a>
+                <x-ui.whatsapp-button size="lg" variant="white" label="Chat on WhatsApp" class="hover:scale-105" />
             </div>
 
             {{-- Social Links --}}
             @if($socialFacebook || $socialInstagram || $socialTwitter || $socialTiktok)
                 <div class="flex items-center justify-center gap-4">
-                    <p class="text-[12px] text-base-content/40 font-medium uppercase tracking-widest">Follow Us</p>
+                    <p class="text-[12px] text-white/40 font-medium uppercase tracking-widest">Follow Us</p>
                     @if($socialFacebook)
-                        <a href="{{ $socialFacebook }}" target="_blank" class="size-10 bg-base-100 rounded-xl flex items-center justify-center text-base-content/40 hover:text-primary hover:bg-primary/10 transition-all">
+                        <a href="{{ $socialFacebook }}" target="_blank" class="size-10 bg-white/10 rounded-xl flex items-center justify-center text-white/50 hover:text-white hover:bg-white/20 transition-all">
                             <svg class="size-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
                         </a>
                     @endif
                     @if($socialInstagram)
-                        <a href="{{ $socialInstagram }}" target="_blank" class="size-10 bg-base-100 rounded-xl flex items-center justify-center text-base-content/40 hover:text-primary hover:bg-primary/10 transition-all">
+                        <a href="{{ $socialInstagram }}" target="_blank" class="size-10 bg-white/10 rounded-xl flex items-center justify-center text-white/50 hover:text-white hover:bg-white/20 transition-all">
                             <svg class="size-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
                         </a>
                     @endif
                     @if($socialTwitter)
-                        <a href="{{ $socialTwitter }}" target="_blank" class="size-10 bg-base-100 rounded-xl flex items-center justify-center text-base-content/40 hover:text-primary hover:bg-primary/10 transition-all">
+                        <a href="{{ $socialTwitter }}" target="_blank" class="size-10 bg-white/10 rounded-xl flex items-center justify-center text-white/50 hover:text-white hover:bg-white/20 transition-all">
                             <svg class="size-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                         </a>
                     @endif
                     @if($socialTiktok)
-                        <a href="{{ $socialTiktok }}" target="_blank" class="size-10 bg-base-100 rounded-xl flex items-center justify-center text-base-content/40 hover:text-primary hover:bg-primary/10 transition-all">
+                        <a href="{{ $socialTiktok }}" target="_blank" class="size-10 bg-white/10 rounded-xl flex items-center justify-center text-white/50 hover:text-white hover:bg-white/20 transition-all">
                             <svg class="size-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.79a4.85 4.85 0 01-1.02-.1z"/></svg>
                         </a>
                     @endif

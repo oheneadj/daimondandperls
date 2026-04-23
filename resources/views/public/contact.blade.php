@@ -111,8 +111,19 @@
 
     {{-- FAQ --}}
     <section class="py-20 lg:py-24 bg-[#18542A] relative overflow-hidden">
-        <div class="absolute top-0 right-0 size-[400px] bg-white/5 blur-[80px] rounded-full -translate-y-1/2 translate-x-1/4" aria-hidden="true"></div>
-        <div class="absolute bottom-0 left-0 size-[300px] bg-black/10 blur-[60px] rounded-full translate-y-1/2 -translate-x-1/4" aria-hidden="true"></div>
+        <div class="absolute top-0 right-0 size-[500px] bg-white/5 blur-[100px] rounded-full -translate-y-1/3 translate-x-1/3" aria-hidden="true"></div>
+        <div class="absolute bottom-0 left-0 size-[400px] bg-black/15 blur-[80px] rounded-full translate-y-1/3 -translate-x-1/4" aria-hidden="true"></div>
+        <div class="absolute top-1/2 left-1/2 size-[600px] bg-white/3 blur-[120px] rounded-full -translate-x-1/2 -translate-y-1/2" aria-hidden="true"></div>
+        {{-- Floating icons --}}
+        <div class="absolute top-10 left-10 text-white/8 hidden lg:block -rotate-12" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="0.8"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div class="absolute bottom-10 right-10 text-white/6 hidden lg:block rotate-6" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="0.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+        <div class="absolute top-1/3 right-8 text-white/5 hidden xl:block" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="0.9"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/></svg>
+        </div>
 
         <div class="container mx-auto px-4 lg:px-8 max-w-3xl relative z-10">
             <div class="text-center mb-12">

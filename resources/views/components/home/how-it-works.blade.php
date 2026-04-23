@@ -12,10 +12,10 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4 relative z-10">
                 @php
                     $steps = [
-                        ['num' => '1', 'title' => 'Choose Package', 'desc' => 'Browse our curated packages and find the perfect match for your event size and budget.'],
-                        ['num' => '2', 'title' => 'Book Online', 'desc' => 'Fill out your event details, location, and guest count securely on our platform.'],
-                        ['num' => '3', 'title' => 'Pay Deposit', 'desc' => 'Secure your date instantly with a Momo or card payment. Minimum deposit rules apply.'],
-                        ['num' => '4', 'title' => 'We Deliver', 'desc' => 'Our team arrives early to set up, serve, and clean up. You enjoy your special day.'],
+                        ['num' => '1', 'title' => 'Browse & Add to Cart', 'desc' => 'Explore our menu packages and add your selections to the cart. Mix and match to suit your guest count.'],
+                        ['num' => '2', 'title' => 'Choose Booking Type', 'desc' => 'Tell us whether you need a meal delivery or full event catering — we tailor the process to your needs.'],
+                        ['num' => '3', 'title' => 'Confirm & Pay', 'desc' => 'Enter your contact and delivery details, then pay securely via MoMo or card to lock in your booking.'],
+                        ['num' => '4', 'title' => 'Track Your Order', 'desc' => 'Get a booking reference by SMS and email. Use it anytime to check your order status in real time.'],
                     ];
                 @endphp
                 @foreach($steps as $step)

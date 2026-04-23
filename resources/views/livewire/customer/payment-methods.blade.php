@@ -114,7 +114,7 @@
                             'bg-primary text-white hover:bg-primary/90 hover:-translate-y-0.5 active:translate-y-0' => $this->isMomoFormValid,
                             'bg-base-content/10 text-base-content/30 cursor-not-allowed' => !$this->isMomoFormValid,
                         ]) @if(!$this->isMomoFormValid) disabled @endif wire:loading.attr="disabled">
-                            <span wire:loading.remove wire:target="save">{{ $editingId ? 'Update Account' : 'Save MoMo Account' }}</span>
+                            <span wire:loading.remove wire:target="save">{{ $editingId ? 'Update Payment Method' : 'Save Payment Method' }}</span>
                             <span wire:loading wire:target="save" class="flex items-center gap-2">
                                 <span class="loading loading-spinner loading-xs"></span>
                                 Saving...

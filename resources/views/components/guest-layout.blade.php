@@ -55,7 +55,8 @@
             <!-- Right Actions -->
             <div class="flex items-center gap-3">
 
-                 <a href="{{ route('event-booking') }}" class="h-full hidden sm:flex items-center text-[13px] font-bold text-white bg-green-500 px-4 py-2 rounded-full border border-green-500/20 hover:bg-green-600 transition-all">
+                <a href="{{ route('event-booking') }}" class="hidden sm:inline-flex items-center gap-2 text-[13px] font-bold text-white bg-[#18542A] hover:bg-[#0f3a1c] transition-all px-4 py-2.5 rounded-xl shadow-sm shadow-[#18542A]/20 hover:shadow-[#18542A]/30 hover:-translate-y-px">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                     Plan an Event
                 </a>
                 @auth
@@ -112,19 +113,20 @@
                         </div>
                     </div>
                 @else
-                    <a href="{{ route('login') }}" class="hidden sm:inline-flex items-center gap-2 text-[13px] font-bold text-white bg-primary hover:bg-primary/90 transition-all px-4 py-2 rounded-full shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    <a href="{{ route('login') }}" class="hidden sm:inline-flex items-center gap-2 text-[13px] font-bold text-base-content/70 hover:text-primary border border-base-content/15 hover:border-primary/30 hover:bg-primary/5 transition-all px-4 py-2.5 rounded-xl">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                         </svg>
                         Log in
                     </a>
                 @endauth
 
                 <!-- Mobile Menu Toggle -->
-                <button @click="mobileMenuOpen = true" class="lg:hidden p-2 text-base-content hover:bg-base-200-mid rounded-xl transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                <button @click="mobileMenuOpen = true" class="lg:hidden flex items-center gap-1.5 px-3 py-2 text-base-content/70 hover:text-primary hover:bg-primary/8 rounded-xl transition-all" aria-label="Open menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
+                    <span class="text-[12px] font-bold uppercase tracking-widest">Menu</span>
                 </button>
             </div>
             </div>
