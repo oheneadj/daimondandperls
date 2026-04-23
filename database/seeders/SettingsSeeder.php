@@ -9,57 +9,66 @@ use Illuminate\Database\Seeder;
 
 class SettingsSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $settings = [
+            // ── Business ────────────────────────────────────────────────────
             [
                 'key' => 'business_name',
-                'value' => 'Delicious Catering Co.',
+                'value' => 'Diamonds & Pearls Catering Services',
                 'type' => 'string',
                 'label' => 'Business Name',
                 'group' => 'business',
             ],
             [
                 'key' => 'business_phone',
-                'value' => '+233200000000',
+                'value' => '+233244203181',
                 'type' => 'string',
                 'label' => 'Business Phone',
                 'group' => 'business',
             ],
             [
+                'key' => 'business_whatsapp',
+                'value' => '233244203181',
+                'type' => 'string',
+                'label' => 'Business WhatsApp Number (no +)',
+                'group' => 'business',
+            ],
+            [
                 'key' => 'business_email',
-                'value' => 'info@catering.com',
+                'value' => 'graceayesu@yahoo.com',
                 'type' => 'string',
                 'label' => 'Business Email',
                 'group' => 'business',
             ],
             [
+                'key' => 'business_address',
+                'value' => 'P.O. Box 18123, Accra, Ghana',
+                'type' => 'string',
+                'label' => 'Business Address',
+                'group' => 'business',
+            ],
+            [
+                'key' => 'booking_ref_prefix',
+                'value' => 'CAT',
+                'type' => 'string',
+                'label' => 'Booking Reference Prefix',
+                'group' => 'business',
+            ],
+
+            // ── Payment ─────────────────────────────────────────────────────
+            [
                 'key' => 'payment_gateway',
-                'value' => 'paystack',
+                'value' => 'moolre',
                 'type' => 'string',
                 'label' => 'Active Payment Gateway',
                 'group' => 'payment',
             ],
-            [
-                'key' => 'paystack_public_key',
-                'value' => '',
-                'type' => 'string',
-                'label' => 'Paystack Public Key',
-                'group' => 'payment',
-            ],
-            [
-                'key' => 'paystack_secret_key',
-                'value' => '',
-                'type' => 'string',
-                'label' => 'Paystack Secret Key',
-                'group' => 'payment',
-            ],
+
+            // ── Notifications ───────────────────────────────────────────────
             [
                 'key' => 'sms_enabled',
-                'value' => '0',
+                'value' => '1',
                 'type' => 'boolean',
                 'label' => 'Enable SMS Notifications',
                 'group' => 'notifications',
@@ -71,12 +80,28 @@ class SettingsSeeder extends Seeder
                 'label' => 'Enable Email Notifications',
                 'group' => 'notifications',
             ],
+
+            // ── Social ───────────────────────────────────────────────────────
             [
-                'key' => 'booking_ref_prefix',
-                'value' => 'CAT',
+                'key' => 'social_facebook',
+                'value' => '',
                 'type' => 'string',
-                'label' => 'Booking Reference Prefix',
-                'group' => 'business',
+                'label' => 'Facebook URL',
+                'group' => 'social',
+            ],
+            [
+                'key' => 'social_instagram',
+                'value' => '',
+                'type' => 'string',
+                'label' => 'Instagram URL',
+                'group' => 'social',
+            ],
+            [
+                'key' => 'social_tiktok',
+                'value' => '',
+                'type' => 'string',
+                'label' => 'TikTok URL',
+                'group' => 'social',
             ],
         ];
 
