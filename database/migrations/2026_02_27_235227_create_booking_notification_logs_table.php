@@ -15,7 +15,8 @@ return new class extends Migration
     {
         Schema::create('booking_notification_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('booking_id')->constrained('bookings', 'id', 'fk_bnl_booking_id')->onDelete('cascade')->index();
+            $table->unsignedBigInteger('booking_id')->index();
+            $table->foreign('booking_id', 'fk_bnl_booking_id')->references('id')->on('bookings')->onDelete('cascade');
             $table->string('channel');
             $table->string('recipient', 150);
             $table->string('template', 100);
