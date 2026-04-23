@@ -123,9 +123,17 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::get('design-system', \App\Livewire\Admin\DesignSystem::class)->name('design-system');
     });
 
-// Moolre Payment Webhook (CSRF exempt via bootstrap/app.php)
-Route::post('/webhooks/moolre', \App\Http\Controllers\MoolreWebhookController::class)
+// Payment Webhooks — CSRF exempt (see bootstrap/app.php)
+Route::post('/webhooks/moolre', \App\Http\Controllers\Webhooks\MoolreWebhookController::class)
     ->name('webhooks.moolre');
+
+Route::post('/webhooks/transflow', \App\Http\Controllers\Webhooks\TransflowWebhookController::class)
+    ->name('webhooks.transflow');
+
+// Transflow customer browser return URL (GET — no CSRF needed)
+// Called after the customer completes or abandons payment on Transflow's hosted page
+Route::get('/booking/payment/return/{booking:reference}', \App\Http\Controllers\Booking\TransflowReturnController::class)
+    ->name('booking.payment.return');
 
 // Public Invoices (Signed)
 Route::get('/invoice/{reference}/download', [\App\Http\Controllers\InvoiceController::class, 'download'])

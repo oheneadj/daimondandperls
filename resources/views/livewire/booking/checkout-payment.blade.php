@@ -188,6 +188,25 @@
                                     </div>
 
                                 @else
+                                    {{-- Redirect-based gateway (e.g. Transflow): single button, no form --}}
+                                    @if($this->isRedirectGateway)
+                                        <div class="py-6 text-center space-y-4">
+                                            <p class="text-sm text-base-content/60">
+                                                You'll be securely redirected to complete your payment. Supports MoMo and card.
+                                            </p>
+                                            <x-app.button type="button" variant="primary" size="lg" class="w-full"
+                                                wireClick="initiateCheckout" wireTarget="initiateCheckout"
+                                                loadingText="Redirecting...">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                </svg>
+                                                Pay GH₵ {{ number_format($booking->total_amount, 2) }} — Proceed to Checkout
+                                            </x-app.button>
+                                        </div>
+                                    @else
+                                    {{-- Direct MoMo gateway (e.g. Moolre): network + number form --}}
                                     @php
                                         $networks = [
                                             ['id' => '13', 'name' => 'MTN Mobile Money', 'logo' => 'logos/mtn-momo.png'],
@@ -345,7 +364,8 @@
                                                 </x-app.button>
                                             </div>
                                         @endif
-                                @endif
+                                    @endif {{-- end @else (direct MoMo form) --}}
+                                @endif {{-- end @else (form step) --}}
                             </div>
 
                         </div>

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Booking;
 
+use App\Contracts\PaymentGatewayContract;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
@@ -13,7 +14,8 @@ use App\Models\Payment;
 use App\Notifications\BookingConfirmedNotification;
 use App\Services\CartService;
 use App\Services\InvoiceService;
-use App\Services\MoolrePaymentService;
+use App\Services\Payment\MoolreGateway;
+use App\Services\Payment\PaymentManager;
 use App\Traits\HandlesMomoValidation;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -73,6 +75,16 @@ class CheckoutPayment extends Component
         return $this->getMomoPlaceholder($this->momoNetwork);
     }
 
+    /**
+     * True when the active gateway uses a hosted redirect page (e.g. Transflow).
+     * False for direct MoMo gateways that we prompt via our own UI (e.g. Moolre).
+     * Used by the blade view to show the right payment form.
+     */
+    public function getIsRedirectGatewayProperty(): bool
+    {
+        return in_array(app(PaymentManager::class)->getDefaultDriver(), ['transflow']);
+    }
+
     public function mount(Booking $booking): void
     {
         $this->booking = $booking->load(['items.package', 'customer']);
@@ -80,6 +92,14 @@ class CheckoutPayment extends Component
 
         if (session()->has('error')) {
             $this->errorMessage = session('error');
+        }
+
+        // TransflowReturnController sends the customer back here with this flag
+        // when verify() hasn't confirmed the payment yet — show the awaiting screen
+        if (session()->pull('payment_awaiting')) {
+            $this->paymentStep = 'awaiting';
+
+            return;
         }
 
         if ($this->booking->payment_status === PaymentStatus::Paid) {
@@ -177,6 +197,38 @@ class CheckoutPayment extends Component
     }
 
     /**
+     * Start payment for redirect-based gateways (e.g. Transflow).
+     *
+     * Calls initiate() on the active gateway, stores the transactionReference,
+     * then redirects the customer's browser to the hosted checkout page.
+     * The customer returns to TransflowReturnController after paying.
+     */
+    public function initiateCheckout(PaymentGatewayContract $gateway): void
+    {
+        $this->loading = 'initiateCheckout';
+        $this->errorMessage = null;
+
+        $result = $gateway->initiate($this->booking);
+
+        if ($result->isRedirect()) {
+            // Save the gateway's transactionReference so the webhook and return
+            // controller can look up this booking later
+            $this->booking->update([
+                'payment_reference' => $result->reference,
+                'payment_status' => PaymentStatus::Pending,
+            ]);
+
+            $this->redirect($result->redirectUrl);
+
+            return;
+        }
+
+        // Gateway returned an error instead of a redirect URL
+        $this->handlePaymentError($result->raw ?? [], 'initiate-redirect');
+        $this->loading = null;
+    }
+
+    /**
      * Classify a Moolre error response, log it, and set the appropriate error property.
      * Fatal errors (merchant/gateway config) go to $fatalError; retryable ones to $errorMessage.
      *
@@ -220,7 +272,7 @@ class CheckoutPayment extends Component
         }
     }
 
-    public function processMobileMoney(MoolrePaymentService $moolre): void
+    public function processMobileMoney(PaymentGatewayContract $gateway): void
     {
         $this->loading = 'processMobileMoney';
         $this->errorMessage = null;
@@ -237,36 +289,38 @@ class CheckoutPayment extends Component
             'momoNumber.regex' => 'This number doesn\'t match the selected network. Please check the prefix.',
         ]);
 
-        $response = $moolre->initiatePayment($this->booking, $this->momoNetwork, $this->momoNumber);
-        $code = $response['code'] ?? null;
+        $result = $gateway->initiate($this->booking, [
+            'channel' => $this->momoNetwork,
+            'payer' => $this->momoNumber,
+        ]);
 
-        if ($code === 'TP14') {
+        if ($result->requiresOtp()) {
             // OTP required — persist channel/number so refresh can restore this step
             $this->booking->update([
                 'payment_channel' => $this->momoNetwork,
                 'payer_number' => $this->momoNumber,
             ]);
 
-            $this->otpMessage = $response['message'] ?? 'A verification code has been sent to your phone.';
+            $this->otpMessage = $result->message;
             $this->paymentStep = 'otp';
-        } elseif (isset($response['status']) && $response['status'] == 1) {
+        } elseif ($result->isPromptSent()) {
             // Payment prompt sent directly (no OTP required)
             $this->booking->update([
                 'payment_channel' => $this->momoNetwork,
                 'payer_number' => $this->momoNumber,
                 'payment_status' => PaymentStatus::Pending,
-                'payment_reference' => $response['data'] ?? null,
+                'payment_reference' => $result->reference,
             ]);
 
             $this->paymentStep = 'awaiting';
         } else {
-            $this->handlePaymentError($response, 'initiate');
+            $this->handlePaymentError($result->raw ?? [], 'initiate');
         }
 
         $this->loading = null;
     }
 
-    public function submitOtp(MoolrePaymentService $moolre): void
+    public function submitOtp(MoolreGateway $gateway): void
     {
         $this->loading = 'submitOtp';
         $this->errorMessage = null;
@@ -278,45 +332,39 @@ class CheckoutPayment extends Component
             'otpCode.size' => 'The verification code must be exactly 6 digits.',
         ]);
 
-        $response = $moolre->submitOtp($this->booking, $this->momoNetwork, $this->momoNumber, $this->otpCode);
-        $code = $response['code'] ?? null;
+        // submitOtp internally re-initiates after OTP verification (TP17 → prompt)
+        $result = $gateway->submitOtp($this->booking, $this->momoNetwork, $this->momoNumber, $this->otpCode);
 
-        if ($code === 'TP17') {
-            // OTP verified — re-initiate to trigger the actual payment prompt
-            $initResponse = $moolre->initiatePayment($this->booking, $this->momoNetwork, $this->momoNumber);
+        if ($result->isPromptSent()) {
+            $this->booking->update([
+                'payment_status' => PaymentStatus::Pending,
+                'payment_reference' => $result->reference,
+            ]);
 
-            if (isset($initResponse['status']) && $initResponse['status'] == 1) {
-                $this->booking->update([
-                    'payment_status' => PaymentStatus::Pending,
-                    'payment_reference' => $initResponse['data'] ?? null,
-                ]);
-
-                $this->otpCode = '';
-                $this->paymentStep = 'awaiting';
-            } else {
-                $this->handlePaymentError($initResponse, 'otp-reinitiate');
-            }
-        } elseif ($code === 'TP15') {
-            $this->errorMessage = 'Invalid verification code. Please check and try again.';
-        } else {
-            $this->handlePaymentError($response, 'otp-submit');
+            $this->otpCode = '';
+            $this->paymentStep = 'awaiting';
+        } elseif ($result->failed()) {
+            $message = $result->message ?? 'An unexpected error occurred. Please try again.';
+            $this->errorMessage = $message;
         }
 
         $this->loading = null;
     }
 
-    public function resendOtp(MoolrePaymentService $moolre): void
+    public function resendOtp(PaymentGatewayContract $gateway): void
     {
         $this->errorMessage = null;
         $this->otpCode = '';
 
-        $response = $moolre->initiatePayment($this->booking, $this->momoNetwork, $this->momoNumber);
-        $code = $response['code'] ?? null;
+        $result = $gateway->initiate($this->booking, [
+            'channel' => $this->momoNetwork,
+            'payer' => $this->momoNumber,
+        ]);
 
-        if ($code === 'TP14') {
+        if ($result->requiresOtp()) {
             $this->otpMessage = 'A new verification code has been sent to your phone.';
         } else {
-            $this->handlePaymentError($response, 'resend-otp');
+            $this->handlePaymentError($result->raw ?? [], 'resend-otp');
         }
     }
 

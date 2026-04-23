@@ -9,14 +9,23 @@ use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Package;
 use App\Notifications\BookingConfirmedNotification;
-use App\Services\MoolrePaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    // Force Moolre as the active gateway for all checkout UI tests
+    config([
+        'payments.default' => 'moolre',
+        'payments.gateways.moolre.base_url' => 'https://api.moolre.test/open/transact',
+        'payments.gateways.moolre.api_user' => 'test-user',
+        'payments.gateways.moolre.pub_key' => 'test-pubkey',
+        'payments.gateways.moolre.merchant_id' => 'test-merchant',
+    ]);
+
     $this->customer = Customer::factory()->create();
     $this->category = Category::factory()->create();
     $this->package = Package::factory()->create(['category_id' => $this->category->id, 'price' => 500]);
@@ -32,16 +41,9 @@ beforeEach(function () {
 // ── Happy path: no OTP required ──────────────────────────────────────────────
 
 it('skips OTP and enters awaiting state when Moolre returns TR099', function () {
-    $this->mock(MoolrePaymentService::class, function ($mock) {
-        $mock->shouldReceive('initiatePayment')
-            ->once()
-            ->andReturn([
-                'status' => 1,
-                'code' => 'TR099',
-                'data' => 'MOOLRE-TEST-123',
-                'message' => 'Success',
-            ]);
-    });
+    Http::fake([
+        '*/payment' => Http::response(['status' => 1, 'code' => 'TR099', 'data' => 'MOOLRE-TEST-123', 'message' => 'Success'], 200),
+    ]);
 
     Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
         ->set('momoNetwork', '13')
@@ -59,15 +61,9 @@ it('skips OTP and enters awaiting state when Moolre returns TR099', function () 
 // ── OTP flow ─────────────────────────────────────────────────────────────────
 
 it('enters OTP state when Moolre returns TP14', function () {
-    $this->mock(MoolrePaymentService::class, function ($mock) {
-        $mock->shouldReceive('initiatePayment')
-            ->once()
-            ->andReturn([
-                'status' => 0,
-                'code' => 'TP14',
-                'message' => 'Please complete the verification sent via SMS.',
-            ]);
-    });
+    Http::fake([
+        '*/payment' => Http::response(['status' => 0, 'code' => 'TP14', 'message' => 'Please complete the verification sent via SMS.'], 200),
+    ]);
 
     Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
         ->set('momoNetwork', '13')
@@ -105,15 +101,11 @@ it('submits OTP and enters awaiting state on TP17 then TR099', function () {
         'payer_number' => '0541234567',
     ]);
 
-    $this->mock(MoolrePaymentService::class, function ($mock) {
-        $mock->shouldReceive('submitOtp')
-            ->once()
-            ->andReturn(['status' => 0, 'code' => 'TP17', 'message' => 'OTP verified.']);
-
-        $mock->shouldReceive('initiatePayment')
-            ->once()
-            ->andReturn(['status' => 1, 'code' => 'TR099', 'data' => 'MOOLRE-REF-999', 'message' => 'Prompt sent.']);
-    });
+    Http::fake([
+        '*/payment' => Http::sequence()
+            ->push(['code' => 'TP17', 'message' => 'OTP verified.'], 200)
+            ->push(['status' => 1, 'code' => 'TR099', 'data' => 'MOOLRE-REF-999', 'message' => 'Prompt sent.'], 200),
+    ]);
 
     Livewire::test(CheckoutPayment::class, ['booking' => $this->booking->fresh()])
         ->assertSet('paymentStep', 'otp')
@@ -131,11 +123,9 @@ it('submits OTP and enters awaiting state on TP17 then TR099', function () {
 it('shows error and stays on OTP step for invalid OTP (TP15)', function () {
     $this->booking->update(['payment_channel' => '13', 'payer_number' => '0541234567']);
 
-    $this->mock(MoolrePaymentService::class, function ($mock) {
-        $mock->shouldReceive('submitOtp')
-            ->once()
-            ->andReturn(['status' => 0, 'code' => 'TP15', 'message' => 'Invalid OTP.']);
-    });
+    Http::fake([
+        '*/payment' => Http::response(['status' => 0, 'code' => 'TP15', 'message' => 'Invalid OTP.'], 200),
+    ]);
 
     Livewire::test(CheckoutPayment::class, ['booking' => $this->booking->fresh()])
         ->set('otpCode', '000000')

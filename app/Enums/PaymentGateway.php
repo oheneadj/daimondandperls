@@ -10,5 +10,6 @@ enum PaymentGateway: string
     case Flutterwave = 'flutterwave';
     case Hubtel = 'hubtel';
     case Moolre = 'moolre';
+    case Transflow = 'transflow';
     case Manual = 'manual';
 }

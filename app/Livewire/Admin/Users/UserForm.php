@@ -26,7 +26,7 @@ class UserForm extends Component
 
     public string $email = '';
 
-    public string $phone = '';
+    public ?string $phone = null;
 
     public ?int $selectedRole = null;
 
@@ -54,7 +54,7 @@ class UserForm extends Component
                 Rule::unique('users', 'email')->ignore($this->user?->id),
             ],
             'phone' => [
-                'required', 'string', 'max:20',
+                'nullable', 'string', 'max:20',
                 Rule::unique('users', 'phone')->ignore($this->user?->id),
             ],
             'selectedRole' => 'required|integer|exists:roles,id',

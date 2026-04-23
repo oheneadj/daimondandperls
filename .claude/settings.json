@@ -78,7 +78,8 @@
     "additionalDirectories": [
       "/home/oheneadj/server/dpc/resources/views/components",
       "/home/oheneadj/.claude/plans",
-      "/home/oheneadj/server/dpc/resources/views/components/customer/⚡payment-methods"
+      "/home/oheneadj/server/dpc/resources/views/components/customer/⚡payment-methods",
+      "/home/oheneadj/server/dpc"
     ]
   }
 }

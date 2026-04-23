@@ -58,8 +58,8 @@ class SettingsSeeder extends Seeder
 
             // ── Payment ─────────────────────────────────────────────────────
             [
-                'key' => 'payment_gateway',
-                'value' => 'moolre',
+                'key' => 'active_payment_gateway',
+                'value' => 'transflow',
                 'type' => 'string',
                 'label' => 'Active Payment Gateway',
                 'group' => 'payment',
