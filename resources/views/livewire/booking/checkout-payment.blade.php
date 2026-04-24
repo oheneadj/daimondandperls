@@ -325,7 +325,7 @@
                                     @endif
 
                                     {{-- New MoMo number form --}}
-                                    @if ($paymentChoice === 'new_momo' || ($paymentChoice === '' && $savedMethods->isEmpty()))
+                                    @if (($paymentChoice === 'new_momo' || $paymentChoice === '') && $savedMethods->isEmpty())
                                         <div class="space-y-6">
                                             <!-- Network Selection -->
                                             <div>
