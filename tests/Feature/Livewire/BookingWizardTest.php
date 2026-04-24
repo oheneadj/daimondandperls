@@ -30,9 +30,9 @@ function setupCart(int $count = 1, float $price = 100): array
 }
 
 /**
- * Fill in contact and payment fields on the single-screen booking wizard.
+ * Fill in contact fields on the booking wizard.
  */
-function fillContact(\Livewire\Features\SupportTesting\Testable $component, array $contact = [], string $network = '13', string $number = '0241234567'): \Livewire\Features\SupportTesting\Testable
+function fillContact(\Livewire\Features\SupportTesting\Testable $component, array $contact = []): \Livewire\Features\SupportTesting\Testable
 {
     $contact = array_merge([
         'name' => 'John Doe Test',
@@ -43,9 +43,7 @@ function fillContact(\Livewire\Features\SupportTesting\Testable $component, arra
     return $component
         ->set('name', $contact['name'])
         ->set('phone', $contact['phone'])
-        ->set('email', $contact['email'])
-        ->set('momoNetwork', $network)
-        ->set('momoNumber', $number);
+        ->set('email', $contact['email']);
 }
 
 // ── Core Flow Tests ──────────────────────────────────────────
@@ -157,8 +155,6 @@ it('attaches booking to authenticated user customer record', function () {
         ->test(BookingWizard::class)
         ->assertSet('name', 'OTP User')
         ->assertSet('phone', '0241234567')
-        ->set('momoNetwork', '13')
-        ->set('momoNumber', '0241234567')
         ->call('confirmBooking')
         ->assertRedirect();
 
@@ -356,8 +352,6 @@ it('persists delivery location through OTP wizard state', function () {
         ->set('deliveryLocation', 'Tema')
         ->set('name', 'OTP State User')
         ->set('phone', '0244555666')
-        ->set('momoNetwork', '13')
-        ->set('momoNumber', '0241234567')
         ->set('otpStep', 2)
         ->set('otp', '123456')
         ->call('verifyOtp');
