@@ -43,6 +43,8 @@ class CheckoutPayment extends Component
     /** @var Collection<int, \App\Models\CustomerPaymentMethod> */
     public Collection $savedMethods;
 
+    public bool $showNewMomoForm = false;
+
     // New number entry
     public string $momoNetwork = '';
 
@@ -117,7 +119,28 @@ class CheckoutPayment extends Component
         if ($method) {
             $this->selectedMethodId = $id;
             $this->paymentChoice = 'saved';
+            $this->showNewMomoForm = false;
         }
+    }
+
+    public function toggleNewMomoForm(): void
+    {
+        $this->showNewMomoForm = ! $this->showNewMomoForm;
+        $this->paymentChoice = $this->showNewMomoForm ? 'new_momo' : 'saved';
+
+        if (! $this->showNewMomoForm) {
+            $default = $this->savedMethods->firstWhere('is_default', true)
+                ?? $this->savedMethods->first();
+            if ($default) {
+                $this->selectedMethodId = $default->id;
+            }
+        }
+    }
+
+    public function selectCard(): void
+    {
+        $this->paymentChoice = 'card';
+        $this->showNewMomoForm = false;
     }
 
     /**

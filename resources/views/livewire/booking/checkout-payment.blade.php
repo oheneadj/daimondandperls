@@ -208,29 +208,77 @@
                                                         </div>
                                                     </button>
                                                 @endforeach
+                                            </div>
 
-                                                {{-- Add a new MoMo number --}}
-                                                <button type="button" wire:click="$set('paymentChoice', 'new_momo')"
-                                                    class="w-full flex items-center gap-4 px-2 py-4 text-left transition-colors hover:bg-base-200/50 group">
-                                                    <div class="size-8 bg-base-200 rounded-md flex items-center justify-center shrink-0">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                                        </svg>
-                                                    </div>
-                                                    <span class="text-[15px] font-medium text-base-content flex-1">Add a new MoMo number</span>
-                                                    <div @class([
-                                                        'size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all',
-                                                        'border-primary' => $paymentChoice === 'new_momo',
-                                                        'border-base-content/20 group-hover:border-base-content/40' => $paymentChoice !== 'new_momo',
-                                                    ])>
-                                                        @if($paymentChoice === 'new_momo')
-                                                            <div class="size-2.5 rounded-full bg-primary"></div>
-                                                        @endif
-                                                    </div>
-                                                </button>
+                                            {{-- Use a different number toggle --}}
+                                            <button type="button" wire:click="toggleNewMomoForm"
+                                                class="mt-3 flex items-center gap-2 px-2 py-2 text-[13px] font-medium text-primary hover:text-primary/70 transition-colors">
+                                                @if($showNewMomoForm)
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                    Cancel
+                                                @else
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                                    </svg>
+                                                    Use a different number
+                                                @endif
+                                            </button>
 
-                                                {{-- Pay by card --}}
-                                                <button type="button" wire:click="$set('paymentChoice', 'card')"
+                                            @if($showNewMomoForm)
+                                                {{-- Inline new MoMo form --}}
+                                                <div class="mt-4 space-y-6 pb-2 border-t border-base-content/5 pt-4">
+                                                    <div>
+                                                        <label class="text-dp-sm font-medium text-base-content block mb-3">Select Network</label>
+                                                        <div class="divide-y divide-base-content/5">
+                                                            @foreach($networks as $network)
+                                                                <button type="button" wire:click="$set('momoNetwork', '{{ $network['id'] }}')"
+                                                                    class="w-full flex items-center gap-4 px-2 py-4 text-left transition-colors hover:bg-base-200/50 group">
+                                                                    <img src="{{ asset($network['logo']) }}"
+                                                                        class="size-8 object-contain rounded-md shrink-0"
+                                                                        alt="{{ $network['name'] }}">
+                                                                    <span class="text-[15px] font-medium text-base-content flex-1">{{ $network['name'] }}</span>
+                                                                    <div @class([
+                                                                        'size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all',
+                                                                        'border-primary' => $momoNetwork == $network['id'],
+                                                                        'border-base-content/20 group-hover:border-base-content/40' => $momoNetwork != $network['id'],
+                                                                    ])>
+                                                                        @if($momoNetwork == $network['id'])
+                                                                            <div class="size-2.5 rounded-full bg-primary"></div>
+                                                                        @endif
+                                                                    </div>
+                                                                </button>
+                                                            @endforeach
+                                                        </div>
+                                                        @error('momoNetwork') <p class="text-xs text-error flex items-center gap-1 mt-2"><span>⚠</span> {{ $message }}</p> @enderror
+                                                    </div>
+
+                                                    <x-app.input name="momoNumber" type="tel" label="Mobile Money Number"
+                                                        wire:model.live="momoNumber" inputmode="numeric" pattern="[0-9]*" maxlength="10"
+                                                        :placeholder="match ($momoNetwork) { '13' => '024 / 054 / 055 / 059', '6' => '020 / 050', '7' => '026 / 056 / 027 / 057', default => 'Select a network first'}"
+                                                        :disabled="empty($momoNetwork)" :hint="($momoNetwork && strlen($momoNumber) > 0 && strlen($momoNumber) < 10) ? match ($momoNetwork) { '13' => 'Accepted prefixes: 024, 054, 055, 059', '6' => 'Accepted prefixes: 020, 050', '7' => 'Accepted prefixes: 026, 056, 027, 057', default => null} : null">
+                                                        <x-slot:icon>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                            </svg>
+                                                        </x-slot:icon>
+                                                    </x-app.input>
+
+                                                    @if($momoNumber && strlen($momoNumber) === 10 && !$this->isMomoFormValid)
+                                                        <p class="text-xs text-error flex items-center gap-1 -mt-4"><span>⚠</span> This number doesn't match the selected network</p>
+                                                    @endif
+
+                                                    <label class="flex items-center gap-3 cursor-pointer">
+                                                        <input type="checkbox" wire:model="saveNewMethod" class="checkbox checkbox-primary checkbox-sm">
+                                                        <span class="text-[13px] text-base-content/70">Save this number to my account</span>
+                                                    </label>
+                                                </div>
+                                            @endif
+
+                                            {{-- Pay by card --}}
+                                            <div class="divide-y divide-base-content/5 mt-3 border-t border-base-content/5">
+                                                <button type="button" wire:click="selectCard"
                                                     class="w-full flex items-center gap-4 px-2 py-4 text-left transition-colors hover:bg-base-200/50 group">
                                                     <div class="size-8 bg-base-200 rounded-md flex items-center justify-center shrink-0">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
