@@ -1,574 +1,553 @@
 <div class="space-y-6 pb-10">
+
     {{-- Page Header --}}
     <div>
-        <h1 class="text-[24px] md:text-[28px] font-semibold text-base-content leading-tight">
-            {{ __('Application Settings') }}
-        </h1>
-        <p class="text-[13px] md:text-[14px] text-base-content/50 mt-1">{{ __('Configure your business identity, integration keys, and monitor system health.') }}</p>
+        <h1 class="text-2xl font-bold text-base-content">{{ __('Settings') }}</h1>
+        <p class="text-sm text-base-content/50 mt-0.5">{{ __('Manage your business profile, payment gateway, and system preferences.') }}</p>
     </div>
 
     {{-- Tab Navigation --}}
-    <div class="flex items-center gap-2 bg-base-200 p-1.5 rounded-lg border border-base-content/5 w-full sm:w-fit shadow-sm overflow-x-auto">
+    <div class="flex items-center gap-1 bg-base-200 p-1 rounded-xl w-full sm:w-fit overflow-x-auto">
         @foreach([
-            'company' => ['label' => 'Company', 'icon' => '<path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'],
-            'app' => ['label' => 'App & API', 'icon' => '<path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'],
-            'system' => ['label' => 'System Overview', 'icon' => '<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>']
+            'company' => ['label' => 'Company',       'icon' => 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5'],
+            'app'     => ['label' => 'App Settings',  'icon' => 'M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4'],
+            'system'  => ['label' => 'System',        'icon' => 'M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18'],
         ] as $key => $tabInfo)
             <button wire:click="setTab('{{ $key }}')"
-                    class="inline-flex items-center gap-2 sm:gap-2.5 px-3 sm:px-5 py-2 text-[11px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.15em] rounded-md transition-all duration-200 whitespace-nowrap {{ $tab === $key ? 'bg-white text-primary shadow-sm border border-base-content/5' : 'text-base-content/40 hover:text-base-content' }}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0 {{ $tab === $key ? 'text-primary' : 'text-base-content/20' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    {!! $tabInfo['icon'] !!}
+                class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 whitespace-nowrap
+                    {{ $tab === $key
+                        ? 'bg-white text-primary shadow-sm'
+                        : 'text-base-content/50 hover:text-base-content hover:bg-base-200' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="{{ $tabInfo['icon'] }}"/>
                 </svg>
                 {{ __($tabInfo['label']) }}
             </button>
         @endforeach
     </div>
 
-    <div class="mt-6">
-        {{-- Company Tab --}}
-        @if($tab === 'company')
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                {{-- Left: Identity & Branding --}}
-                <div class="lg:col-span-7 space-y-6">
-                    <x-ui.card class="shadow-sm overflow-hidden" accent="primary">
-                        <div class="p-6 border-b border-base-content/5">
-                            <h3 class="text-[16px] font-bold text-base-content uppercase tracking-[0.05em]">{{ __('Business Identity') }}</h3>
-                            <p class="text-[11px] text-base-content/40 font-medium mt-1">{{ __('Manage your branding and public presence.') }}</p>
-                        </div>
-                        <form class="p-6 space-y-6"
-                            x-data="{ uploading: false }"
-                            @filepond-start.document="uploading = true"
-                            @filepond-end.document="uploading = false"
-                            @submit.prevent="if (!uploading) $wire.saveBusinessInfo()"
-                        >
-                            @if (session()->has('business_info_success'))
-                                <x-ui.alert type="success" class="mb-4">
-                                    {{ session('business_info_success') }}
-                                </x-ui.alert>
-                            @endif
+    {{-- ── Company Tab ─────────────────────────────────────────────────────── --}}
+    @if($tab === 'company')
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
 
-                                {{-- Logo Upload (FilePond Profile Design) --}}
-                                <div class="flex flex-col sm:flex-row items-center gap-8 pb-8 border-b border-base-content/5">
-                                    <div class="w-32 h-32 flex-shrink-0" 
-                                        data-logo-url="{{ $current_logo_path ? Storage::url($current_logo_path) : '' }}"
-                                        x-data="{
-                                            pond: null,
-                                            initPond() {
-                                                if (!window.FilePond) {
-                                                    setTimeout(() => this.initPond(), 100);
-                                                    return;
-                                                }
-                                                if (this.pond) return;
-
-                                                this.pond = window.FilePond.create($refs.logoPond, {
-                                                    labelIdle: '<svg xmlns=\'http://www.w3.org/2000/svg\' class=\'w-8 h-8 opacity-20\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\' /></svg>',
-                                                    imagePreviewHeight: 128,
-                                                    imageCropAspectRatio: '1:1',
-                                                    imageResizeTargetWidth: 256,
-                                                    imageResizeTargetHeight: 256,
-                                                    stylePanelLayout: 'compact circle',
-                                                    styleLoadIndicatorPosition: 'center bottom',
-                                                    styleProgressIndicatorPosition: 'right bottom',
-                                                    styleButtonRemoveItemPosition: 'left bottom',
-                                                    styleButtonProcessItemPosition: 'right bottom',
-                                                    allowImagePreview: true,
-                                                    credits: false,
-                                                    acceptedFileTypes: ['image/png', 'image/webp', 'image/jpeg', 'image/jpg'],
-                                                    server: {
-                                                        process: (fieldName, file, metadata, load, error, progress, abort) => {
-                                                            document.dispatchEvent(new CustomEvent('filepond-start'));
-                                                            $wire.upload('business_logo', file,
-                                                                (uploadedFilename) => { load(uploadedFilename); document.dispatchEvent(new CustomEvent('filepond-end')); },
-                                                                () => { error('Upload failed'); document.dispatchEvent(new CustomEvent('filepond-end')); },
-                                                                (progressValue) => { progress(true, progressValue, 100); }
-                                                            );
-                                                        }
-                                                    }
-                                                });
-
-                                                const logoUrl = $el.dataset.logoUrl;
-                                                if (logoUrl) {
-                                                    fetch(logoUrl)
-                                                        .then(res => res.blob())
-                                                        .then(blob => {
-                                                            const parts = logoUrl.split('/');
-                                                            const filename = parts[parts.length - 1];
-                                                            const file = new File([blob], filename, { type: blob.type });
-                                                            this.pond.addFile(file, { index: 0 });
-                                                        })
-                                                        .catch(err => console.warn('Logo preview failed:', err));
+            {{-- Business Identity (left) --}}
+            <div class="lg:col-span-7">
+                <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-base-content/5">
+                        <h3 class="text-sm font-bold text-base-content">{{ __('Business Identity') }}</h3>
+                        <p class="text-xs text-base-content/40 mt-0.5">{{ __('Your public-facing business name, contact info, and branding.') }}</p>
+                    </div>
+                    <form class="px-6 py-5 space-y-5"
+                        x-data="{ uploading: false }"
+                        @filepond-start.document="uploading = true"
+                        @filepond-end.document="uploading = false"
+                        @submit.prevent="if (!uploading) $wire.saveBusinessInfo()"
+                    >
+                        {{-- Logo Upload --}}
+                        <div class="flex flex-col sm:flex-row items-center gap-6 pb-5 border-b border-base-content/5">
+                            <div class="w-28 h-28 shrink-0"
+                                data-logo-url="{{ $current_logo_path ? Storage::url($current_logo_path) : '' }}"
+                                x-data="{
+                                    pond: null,
+                                    initPond() {
+                                        if (!window.FilePond) { setTimeout(() => this.initPond(), 100); return; }
+                                        if (this.pond) return;
+                                        this.pond = window.FilePond.create($refs.logoPond, {
+                                            labelIdle: '<svg xmlns=\'http://www.w3.org/2000/svg\' class=\'w-7 h-7 opacity-20\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\' /></svg>',
+                                            imagePreviewHeight: 112,
+                                            imageCropAspectRatio: '1:1',
+                                            imageResizeTargetWidth: 256,
+                                            imageResizeTargetHeight: 256,
+                                            stylePanelLayout: 'compact circle',
+                                            styleLoadIndicatorPosition: 'center bottom',
+                                            styleProgressIndicatorPosition: 'right bottom',
+                                            styleButtonRemoveItemPosition: 'left bottom',
+                                            styleButtonProcessItemPosition: 'right bottom',
+                                            allowImagePreview: true,
+                                            credits: false,
+                                            acceptedFileTypes: ['image/png', 'image/webp', 'image/jpeg'],
+                                            server: {
+                                                process: (fieldName, file, metadata, load, error, progress, abort) => {
+                                                    document.dispatchEvent(new CustomEvent('filepond-start'));
+                                                    $wire.upload('business_logo', file,
+                                                        (uploadedFilename) => { load(uploadedFilename); document.dispatchEvent(new CustomEvent('filepond-end')); },
+                                                        () => { error('Upload failed'); document.dispatchEvent(new CustomEvent('filepond-end')); },
+                                                        (progressValue) => { progress(true, progressValue, 100); }
+                                                    );
                                                 }
                                             }
-                                        }"
-                                        x-init="initPond"
-                                        wire:ignore
-                                    >
-                                        <div class="filepond-container-refined profile-pond-wrapper">
-                                            <input type="file" x-ref="logoPond" />
-                                        </div>
-                                    </div>
-
-                                    <div class="flex-1 space-y-3">
-                                        <div class="space-y-1">
-                                            <h4 class="text-[14px] font-bold text-base-content">{{ __('Business Emblem') }}</h4>
-                                            <p class="text-[11px] text-base-content/40 leading-relaxed max-w-xs">
-                                                {{ __('Upload a high-resolution logo. We support PNG, WebP, and JPEG formats (max 2MB).') }}
-                                            </p>
-                                        </div>
-                                        
-                                        @if ($current_logo_path && !$business_logo)
-                                            <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-base-200 rounded-full border border-base-content/5">
-                                                <div class="w-4 h-4 rounded-full overflow-hidden shadow-sm">
-                                                    <img src="{{ Storage::url($current_logo_path) }}" class="w-full h-full object-cover">
-                                                </div>
-                                                <span class="text-[10px] font-bold text-base-content/60 uppercase tracking-tighter">{{ __('Active Logo') }}</span>
-                                            </div>
-                                        @endif
-
-                                        @error('business_logo') <p class="text-error text-[11px] font-bold mt-1 tracking-tight">{{ $message }}</p> @enderror
-                                    </div>
+                                        });
+                                        const logoUrl = $el.dataset.logoUrl;
+                                        if (logoUrl) {
+                                            fetch(logoUrl).then(res => res.blob()).then(blob => {
+                                                const parts = logoUrl.split('/');
+                                                const file = new File([blob], parts[parts.length - 1], { type: blob.type });
+                                                this.pond.addFile(file, { index: 0 });
+                                            }).catch(err => console.warn('Logo preview failed:', err));
+                                        }
+                                    }
+                                }"
+                                x-init="initPond"
+                                wire:ignore
+                            >
+                                <div class="filepond-container-refined profile-pond-wrapper">
+                                    <input type="file" x-ref="logoPond" />
                                 </div>
-
-                            <div class="grid grid-cols-1 gap-5">
-                                <x-ui.input label="Official Business Name" wire:model="business_name" required placeholder="e.g. Diamonds & Pearls" :error="$errors->first('business_name')" />
                             </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <x-ui.input label="Contact Phone Number" wire:model="business_phone" required placeholder="+233 ..." :error="$errors->first('business_phone')" />
-                                <x-ui.input label="WhatsApp Number" wire:model="business_whatsapp" placeholder="233244203181 (Optional)" :error="$errors->first('business_whatsapp')" />
+                            <div class="flex-1 space-y-2">
+                                <p class="text-sm font-semibold text-base-content">{{ __('Business Logo') }}</p>
+                                <p class="text-xs text-base-content/40 leading-relaxed">PNG, WebP, or JPEG — max 2 MB. Used on invoices and public pages.</p>
+                                @error('business_logo')
+                                    <p class="text-xs text-error font-semibold">{{ $message }}</p>
+                                @enderror
                             </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <x-ui.input label="Primary Email Address" wire:model="business_email" type="email" required placeholder="contact@example.com" :error="$errors->first('business_email')" />
-                            </div>
-
-                            <div class="grid grid-cols-1 gap-5">
-                                <x-ui.textarea label="Physical/Head Office Address" wire:model="business_address" rows="3" required placeholder="House No, Street, City" :error="$errors->first('business_address')" />
-                            </div>
-
-                            <div class="pt-4 flex justify-end">
-                                <button type="submit"
-                                    x-bind:disabled="uploading"
-                                    x-bind:class="uploading ? 'opacity-60 cursor-not-allowed' : ''"
-                                    wire:loading.attr="disabled"
-                                    class="btn border-none inline-flex items-center justify-center font-medium rounded-xl transition-all duration-150 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed bg-primary text-primary-content hover:brightness-110 px-[18px] py-[10px] text-[13px] gap-2"
-                                >
-                                    <span x-show="uploading" class="flex items-center gap-2">
-                                        <span class="loading loading-spinner loading-xs"></span>
-                                        {{ __('Uploading logo...') }}
-                                    </span>
-                                    <span x-show="!uploading" wire:loading.remove wire:target="saveBusinessInfo">{{ __('Verify & Save Changes') }}</span>
-                                    <span wire:loading wire:target="saveBusinessInfo" class="flex items-center gap-2">
-                                        <span class="loading loading-spinner loading-xs"></span>
-                                        {{ __('Persisting...') }}
-                                    </span>
-                                </button>
-                            </div>
-                        </form>
-                    </x-ui.card>
-                </div>
-
-                {{-- Right: Banking --}}
-                <div class="lg:col-span-5">
-                    <x-ui.card class="shadow-sm">
-                        <div class="p-6 border-b border-base-content/5">
-                            <h3 class="text-[16px] font-bold text-base-content uppercase tracking-[0.05em]">{{ __('Bank Transfer Details') }}</h3>
-                            <p class="text-[11px] text-base-content/40 font-medium mt-1">{{ __('Visible on invoices for manual payments.') }}</p>
                         </div>
-                        <form wire:submit.prevent="saveBankDetails" class="p-6 space-y-5">
-                            @if (session()->has('bank_details_success'))
-                                <x-ui.alert type="success" class="mb-4">
-                                    {{ session('bank_details_success') }}
-                                </x-ui.alert>
-                            @endif
 
-                            <x-ui.input label="Financial Institution" wire:model="bank_name" placeholder="e.g. Ecobank Ghana" required :error="$errors->first('bank_name')" />
-                            <x-ui.input label="Official Account Name" wire:model="account_name" placeholder="e.g. Diamonds & Pearls Ltd" required :error="$errors->first('account_name')" />
-                            
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <x-ui.input label="Account Number" wire:model="account_number" placeholder="Enter number" required :error="$errors->first('account_number')" />
-                                <x-ui.input label="Branch Code" wire:model="branch_code" placeholder="Optional" :error="$errors->first('branch_code')" />
-                            </div>
+                        <x-ui.input label="Business Name" wire:model="business_name" required placeholder="e.g. Diamonds & Pearls" :error="$errors->first('business_name')" />
 
-                            <div class="pt-4 flex justify-end">
-                                <x-ui.button type="submit" variant="accent" size="sm" wire:loading.attr="disabled">
-                                    <span wire:loading.remove wire:target="saveBankDetails">{{ __('Save Bank Setup') }}</span>
-                                    <span wire:loading wire:target="saveBankDetails">...</span>
-                                </x-ui.button>
-                            </div>
-                        </form>
-                    </x-ui.card>
-                </div>
-
-                {{-- Social Media Links --}}
-                <div class="lg:col-span-12">
-                    <x-ui.card class="shadow-sm">
-                        <div class="p-6 border-b border-base-content/5">
-                            <h3 class="text-[16px] font-bold text-base-content uppercase tracking-[0.05em]">{{ __('Social Media Links') }}</h3>
-                            <p class="text-[11px] text-base-content/40 font-medium mt-1">{{ __('These links appear on your public About page.') }}</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <x-ui.input label="Phone Number" wire:model="business_phone" required placeholder="+233 ..." :error="$errors->first('business_phone')" />
+                            <x-ui.input label="WhatsApp Number" wire:model="business_whatsapp" placeholder="233244... (no +)" :error="$errors->first('business_whatsapp')" />
                         </div>
-                        <form wire:submit.prevent="saveSocialLinks" class="p-6 space-y-5">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                <x-ui.input label="Facebook URL" wire:model="social_facebook" type="url" placeholder="https://facebook.com/yourpage" :error="$errors->first('social_facebook')" />
-                                <x-ui.input label="Instagram URL" wire:model="social_instagram" type="url" placeholder="https://instagram.com/yourhandle" :error="$errors->first('social_instagram')" />
-                                <x-ui.input label="Twitter / X URL" wire:model="social_twitter" type="url" placeholder="https://x.com/yourhandle" :error="$errors->first('social_twitter')" />
-                                <x-ui.input label="TikTok URL" wire:model="social_tiktok" type="url" placeholder="https://tiktok.com/@yourhandle" :error="$errors->first('social_tiktok')" />
-                            </div>
-                            <div class="pt-2 flex justify-end">
-                                <x-ui.button type="submit" variant="secondary" size="sm" wire:loading.attr="disabled">
-                                    <span wire:loading.remove wire:target="saveSocialLinks">{{ __('Save Social Links') }}</span>
-                                    <span wire:loading wire:target="saveSocialLinks">...</span>
-                                </x-ui.button>
-                            </div>
-                        </form>
-                    </x-ui.card>
+
+                        <x-ui.input label="Email Address" wire:model="business_email" type="email" required placeholder="contact@example.com" :error="$errors->first('business_email')" />
+
+                        <x-ui.textarea label="Business Address" wire:model="business_address" rows="2" required placeholder="House No, Street, City" :error="$errors->first('business_address')" />
+
+                        <div class="flex justify-end pt-2">
+                            <button type="submit"
+                                x-bind:disabled="uploading"
+                                wire:loading.attr="disabled"
+                                class="btn border-none inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-primary text-primary-content hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <span x-show="uploading" class="flex items-center gap-2">
+                                    <span class="loading loading-spinner loading-xs"></span> {{ __('Uploading...') }}
+                                </span>
+                                <span x-show="!uploading" wire:loading.remove wire:target="saveBusinessInfo">{{ __('Save Changes') }}</span>
+                                <span wire:loading wire:target="saveBusinessInfo" class="flex items-center gap-2">
+                                    <span class="loading loading-spinner loading-xs"></span> {{ __('Saving...') }}
+                                </span>
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-        @endif
 
-        {{-- App Tab --}}
-        @if($tab === 'app')
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {{-- Right column --}}
+            <div class="lg:col-span-5 space-y-6">
 
-                {{-- Delivery Locations --}}
-                <x-ui.card class="shadow-sm overflow-hidden lg:col-span-2" accent="secondary">
-                    <div class="p-6 border-b border-base-content/5 flex items-center justify-between gap-4">
-                        <div>
-                            <h3 class="text-[16px] font-bold text-base-content uppercase tracking-[0.05em]">{{ __('Delivery Locations') }}</h3>
-                            <p class="text-[11px] text-base-content/40 font-medium mt-1">{{ __('Zones customers can select when placing a meal order.') }}</p>
-                        </div>
-                        <x-ui.button type="button" variant="secondary" size="sm" wire:click="openAddLocationModal">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            {{ __('Add Location') }}
-                        </x-ui.button>
+                {{-- Bank Details --}}
+                <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-base-content/5">
+                        <h3 class="text-sm font-bold text-base-content">{{ __('Bank Transfer Details') }}</h3>
+                        <p class="text-xs text-base-content/40 mt-0.5">{{ __('Shown on invoices for manual bank payments.') }}</p>
                     </div>
+                    <form wire:submit.prevent="saveBankDetails" class="px-6 py-5 space-y-4">
+                        <x-ui.input label="Bank Name" wire:model="bank_name" placeholder="e.g. Ecobank Ghana" required :error="$errors->first('bank_name')" />
+                        <x-ui.input label="Account Name" wire:model="account_name" placeholder="e.g. Diamonds & Pearls Ltd" required :error="$errors->first('account_name')" />
+                        <div class="grid grid-cols-2 gap-4">
+                            <x-ui.input label="Account Number" wire:model="account_number" placeholder="0012345678" required :error="$errors->first('account_number')" />
+                            <x-ui.input label="Branch Code" wire:model="branch_code" placeholder="Optional" :error="$errors->first('branch_code')" />
+                        </div>
+                        <div class="flex justify-end pt-2">
+                            <x-ui.button type="submit" variant="secondary" size="sm" wire:loading.attr="disabled">
+                                <span wire:loading.remove wire:target="saveBankDetails">{{ __('Save Details') }}</span>
+                                <span wire:loading wire:target="saveBankDetails">{{ __('Saving...') }}</span>
+                            </x-ui.button>
+                        </div>
+                    </form>
+                </div>
 
-                    <div class="p-6">
-                        @if(empty($delivery_locations))
-                            <div class="flex flex-col items-center justify-center py-10 text-center">
-                                <div class="size-14 bg-base-200 rounded-full flex items-center justify-center mb-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </div>
+
+            {{-- Social Media (full width) --}}
+            <div class="lg:col-span-12">
+                <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-base-content/5">
+                        <h3 class="text-sm font-bold text-base-content">{{ __('Social Media') }}</h3>
+                        <p class="text-xs text-base-content/40 mt-0.5">{{ __('Links displayed on the public About page.') }}</p>
+                    </div>
+                    <form wire:submit.prevent="saveSocialLinks" class="px-6 py-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {{-- Facebook --}}
+                            <div class="flex items-center gap-3 bg-base-100 border border-base-content/8 rounded-xl px-4 py-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#1877F2] shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.696 4.533-4.696 1.313 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
+                                </svg>
+                                <input type="url" wire:model="social_facebook" placeholder="facebook.com/yourpage"
+                                    class="flex-1 bg-transparent text-sm text-base-content placeholder:text-base-content/30 outline-none min-w-0" />
+                            </div>
+                            {{-- Instagram --}}
+                            <div class="flex items-center gap-3 bg-base-100 border border-base-content/8 rounded-xl px-4 py-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none">
+                                    <defs>
+                                        <linearGradient id="ig" x1="0%" y1="100%" x2="100%" y2="0%">
+                                            <stop offset="0%" stop-color="#FED373"/>
+                                            <stop offset="30%" stop-color="#F15245"/>
+                                            <stop offset="60%" stop-color="#D92E7F"/>
+                                            <stop offset="100%" stop-color="#9B36B7"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <rect width="24" height="24" rx="6" fill="url(#ig)"/>
+                                    <circle cx="12" cy="12" r="4" stroke="white" stroke-width="1.8" fill="none"/>
+                                    <circle cx="17.5" cy="6.5" r="1.2" fill="white"/>
+                                </svg>
+                                <input type="url" wire:model="social_instagram" placeholder="instagram.com/yourhandle"
+                                    class="flex-1 bg-transparent text-sm text-base-content placeholder:text-base-content/30 outline-none min-w-0" />
+                            </div>
+                            {{-- TikTok --}}
+                            <div class="flex items-center gap-3 bg-base-100 border border-base-content/8 rounded-xl px-4 py-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-base-content shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.37 6.37 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.27 8.27 0 004.83 1.54V6.79a4.85 4.85 0 01-1.06-.1z"/>
+                                </svg>
+                                <input type="url" wire:model="social_tiktok" placeholder="tiktok.com/@yourhandle"
+                                    class="flex-1 bg-transparent text-sm text-base-content placeholder:text-base-content/30 outline-none min-w-0" />
+                            </div>
+                        </div>
+                        @foreach(['social_facebook', 'social_instagram', 'social_tiktok'] as $field)
+                            @error($field) <p class="text-xs text-error mt-2">{{ $message }}</p> @enderror
+                        @endforeach
+                        <div class="flex justify-end pt-4">
+                            <x-ui.button type="submit" variant="secondary" size="sm" wire:loading.attr="disabled">
+                                <span wire:loading.remove wire:target="saveSocialLinks">{{ __('Save Links') }}</span>
+                                <span wire:loading wire:target="saveSocialLinks">{{ __('Saving...') }}</span>
+                            </x-ui.button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    @endif
+
+    {{-- ── App Settings Tab ─────────────────────────────────────────────────── --}}
+    @if($tab === 'app')
+        <div class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+
+            {{-- Payment Gateway --}}
+            <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
+                <div class="px-6 py-5 border-b border-base-content/5">
+                    <h3 class="text-sm font-bold text-base-content">{{ __('Payment Gateway') }}</h3>
+                    <p class="text-xs text-base-content/40 mt-0.5">{{ __('Select which gateway processes customer payments. Changes take effect immediately.') }}</p>
+                </div>
+                <div class="px-6 py-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                        {{-- Transflow option --}}
+                        <button type="button" wire:click="$set('active_payment_gateway', 'transflow')"
+                            @class([
+                                'relative text-left rounded-xl border-2 p-5 transition-all duration-150',
+                                'border-primary bg-primary/5 shadow-sm' => $active_payment_gateway === 'transflow',
+                                'border-base-content/10 hover:border-base-content/20 bg-base-100' => $active_payment_gateway !== 'transflow',
+                            ])>
+                            @if($active_payment_gateway === 'transflow')
+                                <span class="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold text-primary uppercase tracking-wide bg-primary/10 px-2 py-0.5 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span> Active
+                                </span>
+                            @endif
+                            <div class="flex items-center gap-3 mb-3">
+                                <div @class([
+                                    'w-9 h-9 rounded-lg flex items-center justify-center shrink-0',
+                                    'bg-primary/15' => $active_payment_gateway === 'transflow',
+                                    'bg-base-200' => $active_payment_gateway !== 'transflow',
+                                ])>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 {{ $active_payment_gateway === 'transflow' ? 'text-primary' : 'text-base-content/40' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
                                     </svg>
                                 </div>
-                                <p class="text-[14px] font-semibold text-base-content/60">No delivery zones added yet</p>
-                                <p class="text-[12px] text-base-content/40 mt-1">Customers will not be asked to pick a location until you add one.</p>
-                                <x-ui.button type="button" variant="outline" size="sm" class="mt-5" wire:click="openAddLocationModal">
-                                    Add your first location
-                                </x-ui.button>
+                                <div>
+                                    <p class="text-sm font-bold text-base-content">Transflow</p>
+                                    <p class="text-[10px] text-base-content/40 font-medium">by ITConsortium</p>
+                                </div>
                             </div>
-                        @else
-                            <div class="divide-y divide-base-content/5">
-                                @foreach($delivery_locations as $i => $location)
-                                    <div class="flex items-center gap-3 py-3 group">
-                                        {{-- Reorder --}}
-                                        <div class="flex flex-col gap-0.5 shrink-0">
-                                            <button type="button" wire:click="moveLocationUp({{ $i }})"
-                                                @class(['p-1 rounded text-base-content/30 hover:text-base-content transition-colors', 'opacity-20 pointer-events-none' => $i === 0])>
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/>
-                                                </svg>
-                                            </button>
-                                            <button type="button" wire:click="moveLocationDown({{ $i }})"
-                                                @class(['p-1 rounded text-base-content/30 hover:text-base-content transition-colors', 'opacity-20 pointer-events-none' => $i === count($delivery_locations) - 1])>
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
-                                                </svg>
-                                            </button>
-                                        </div>
+                            <p class="text-xs text-base-content/60 leading-relaxed">Hosted checkout page. Supports MoMo (all networks) and card payments. Customer is redirected to Transflow's secure page to pay.</p>
+                        </button>
 
-                                        {{-- Location name --}}
-                                        <div class="flex-1 min-w-0">
-                                            <span class="text-[14px] font-medium text-base-content">{{ $location }}</span>
-                                        </div>
-
-                                        {{-- Position badge --}}
-                                        <span class="text-[10px] font-bold text-base-content/30 tabular-nums shrink-0">#{{ $i + 1 }}</span>
-
-                                        {{-- Actions --}}
-                                        <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button type="button" wire:click="openEditLocationModal({{ $i }})"
-                                                class="p-2 rounded-lg text-base-content/40 hover:text-primary hover:bg-primary/5 transition-colors">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                                </svg>
-                                            </button>
-                                            <button type="button" wire:click="removeDeliveryLocation({{ $i }})"
-                                                wire:confirm="Remove '{{ $location }}'?"
-                                                class="p-2 rounded-lg text-base-content/40 hover:text-error hover:bg-error/5 transition-colors">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                @endforeach
+                        {{-- Moolre option --}}
+                        <button type="button" wire:click="$set('active_payment_gateway', 'moolre')"
+                            @class([
+                                'relative text-left rounded-xl border-2 p-5 transition-all duration-150',
+                                'border-primary bg-primary/5 shadow-sm' => $active_payment_gateway === 'moolre',
+                                'border-base-content/10 hover:border-base-content/20 bg-base-100' => $active_payment_gateway !== 'moolre',
+                            ])>
+                            @if($active_payment_gateway === 'moolre')
+                                <span class="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold text-primary uppercase tracking-wide bg-primary/10 px-2 py-0.5 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span> Active
+                                </span>
+                            @endif
+                            <div class="flex items-center gap-3 mb-3">
+                                <div @class([
+                                    'w-9 h-9 rounded-lg flex items-center justify-center shrink-0',
+                                    'bg-primary/15' => $active_payment_gateway === 'moolre',
+                                    'bg-base-200' => $active_payment_gateway !== 'moolre',
+                                ])>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 {{ $active_payment_gateway === 'moolre' ? 'text-primary' : 'text-base-content/40' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-base-content">Moolre</p>
+                                    <p class="text-[10px] text-base-content/40 font-medium">Direct MoMo push</p>
+                                </div>
                             </div>
-                        @endif
+                            <p class="text-xs text-base-content/60 leading-relaxed">Customer enters their MoMo number directly on our checkout. A payment prompt is pushed to their phone. MoMo only — no card support.</p>
+                        </button>
+
                     </div>
-                </x-ui.card>
 
-                {{-- Event Booking Settings --}}
-                <x-ui.card class="shadow-sm overflow-hidden lg:col-span-2" accent="primary">
-                    <div class="p-6 border-b border-base-content/5">
-                        <h3 class="text-[16px] font-bold text-base-content uppercase tracking-[0.05em]">{{ __('Event Booking Rules') }}</h3>
-                        <p class="text-[11px] text-base-content/40 font-medium mt-1">{{ __('Set how far in advance customers must book events.') }}</p>
-                    </div>
-                    <form wire:submit.prevent="saveEventSettings" class="p-6 space-y-6">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
-                            <div class="space-y-2">
-                                <label class="text-[12px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Minimum Lead Time') }}</label>
-                                <select wire:model="event_lead_days"
-                                    class="w-full px-4 py-3 bg-base-200 border border-base-content/10 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-xl transition-all text-[14px] font-medium">
-                                    <option value="0">No minimum (any future date)</option>
-                                    <optgroup label="Days">
-                                        <option value="1">1 day ahead</option>
-                                        <option value="2">2 days ahead</option>
-                                        <option value="3">3 days ahead</option>
-                                        <option value="5">5 days ahead</option>
-                                    </optgroup>
-                                    <optgroup label="Weeks">
-                                        <option value="7">1 week ahead</option>
-                                        <option value="14">2 weeks ahead</option>
-                                        <option value="21">3 weeks ahead</option>
-                                        <option value="28">4 weeks ahead</option>
-                                    </optgroup>
-                                </select>
-                                @error('event_lead_days') <span class="text-xs font-bold text-error mt-1 block">{{ $message }}</span> @enderror
-                            </div>
-
-                            <div class="bg-base-200/60 rounded-xl p-4 border border-base-content/5 space-y-1.5">
-                                <p class="text-[11px] font-bold uppercase tracking-widest text-base-content/50">{{ __('How it works') }}</p>
-                                <p class="text-[12px] text-base-content/60 leading-relaxed">
-                                    When a customer opens the event booking form, the earliest selectable date will be automatically set to
-                                    <strong class="text-base-content">today + {{ $event_lead_days }} {{ $event_lead_days === 1 ? 'day' : 'days' }}</strong>.
-                                    Dates before this minimum will be blocked.
-                                </p>
-                                @if($event_lead_days > 0)
-                                    <p class="text-[11px] font-semibold text-primary mt-2">
-                                        Currently: earliest bookable date is {{ now()->addDays($event_lead_days)->format('M j, Y') }}
-                                    </p>
-                                @else
-                                    <p class="text-[11px] font-semibold text-base-content/40 mt-2">
-                                        Currently: any future date is accepted
-                                    </p>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="pt-2 flex justify-end">
-                            <x-ui.button type="submit" variant="secondary" size="md" wire:loading.attr="disabled" wire:target="saveEventSettings">
-                                <span wire:loading.remove wire:target="saveEventSettings">{{ __('Save Event Rules') }}</span>
-                                <span wire:loading wire:target="saveEventSettings">{{ __('Saving...') }}</span>
-                            </x-ui.button>
-                        </div>
-                    </form>
-                </x-ui.card>
-                {{-- Payment Gateway --}}
-                <x-ui.card class="shadow-sm overflow-hidden" accent="warning">
-                    <div class="p-6 border-b border-base-content/5">
-                        <h3 class="text-[16px] font-bold text-base-content uppercase tracking-[0.05em]">{{ __('Financial Gateways') }}</h3>
-                        <p class="text-[11px] text-base-content/40 font-medium mt-1">{{ __('Manage your Paystack integration keys.') }}</p>
-                    </div>
-                    <form wire:submit.prevent="savePaymentSettings" class="p-6 space-y-6">
-                        @if (session()->has('payment_settings_success'))
-                            <x-ui.alert type="success" class="mb-4">
-                                {{ session('payment_settings_success') }}
-                            </x-ui.alert>
-                        @endif
-
-                        <div class="bg-base-200-mid/30 p-4 rounded-lg flex items-start gap-4 mb-2 border border-base-content/5">
-                            <div class="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center flex-shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                            </div>
-                            <div>
-                                <p class="text-[12px] font-bold text-base-content">{{ __('Paystack Active Integration') }}</p>
-                                <p class="text-[10px] text-base-content/60 leading-relaxed">{{ __('Ensure keys matching your current environment (Test vs Live) are used.') }}</p>
-                            </div>
-                        </div>
-
-                        <x-ui.input label="Public Key" wire:model="paystack_public_key" placeholder="pk_test_..." required :error="$errors->first('paystack_public_key')" />
-                        <x-ui.input label="Secret Key" wire:model="paystack_secret_key" type="password" placeholder="sk_test_..." required :error="$errors->first('paystack_secret_key')" />
-
-                        <div class="pt-2 flex justify-end">
-                            <x-ui.button type="submit" variant="secondary" size="md" wire:loading.attr="disabled">
-                                {{ __('Update API Configuration') }}
-                            </x-ui.button>
-                        </div>
-                    </form>
-                </x-ui.card>
-
-                {{-- Notifications --}}
-                <x-ui.card class="shadow-sm">
-                    <div class="p-6 border-b border-base-content/5">
-                        <h3 class="text-[16px] font-bold text-base-content uppercase tracking-[0.05em]">{{ __('Notification Channels') }}</h3>
-                        <p class="text-[11px] text-base-content/40 font-medium mt-1">{{ __('Control how the system communicates with clients.') }}</p>
-                    </div>
-                    <div class="p-6 space-y-6">
-                        <div class="flex items-center justify-between p-4 bg-base-200-mid/20 rounded-lg border border-base-content/5">
-                            <div class="space-y-0.5">
-                                <label class="text-[13px] font-semibold text-base-content">{{ __('Email Dispatch') }}</label>
-                                <p class="text-[11px] text-base-content/60">Automated booking confirmations and invoices.</p>
-                            </div>
-                            <input type="checkbox" wire:model.live="email_notifications" class="toggle toggle-success" />
-                        </div>
-
-                        <div class="flex items-center justify-between p-4 bg-base-200-mid/20 rounded-lg border border-base-content/5">
-                            <div class="space-y-0.5">
-                                <label class="text-[13px] font-semibold text-base-content">{{ __('SMS Alerts') }}</label>
-                                <p class="text-[11px] text-base-content/60">Short-form urgency notifications for payments.</p>
-                            </div>
-                            <input type="checkbox" wire:model.live="sms_notifications" class="toggle toggle-success" />
-                        </div>
-                        
-                        <div class="p-4 bg-dp-rose/5 rounded-lg border border-dp-rose/10 flex gap-3 mt-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-dp-rose flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            <p class="text-[10px] text-dp-rose leading-relaxed font-semibold uppercase tracking-wide">
-                                {{ __('Critical security alerts cannot be disabled.') }}
-                            </p>
-                        </div>
-                    </div>
-                </x-ui.card>
-            </div>
-        @endif
-
-        {{-- System Tab --}}
-        @if($tab === 'system')
-            <div class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                {{-- KPI Stats Row --}}
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-white border border-base-content/5 rounded-lg p-4 flex items-center gap-4 shadow-sm">
-                        <div class="w-10 h-10 rounded-lg bg-[#9ABC05]/10 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#9ABC05]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-[18px] font-bold text-base-content">{{ $this->systemStats['server']['php'] }}</p>
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('PHP Version') }}</p>
-                        </div>
-                    </div>
-                    <div class="bg-white border border-base-content/5 rounded-lg p-4 flex items-center gap-4 shadow-sm">
-                        <div class="w-10 h-10 rounded-lg bg-[#F96015]/10 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#F96015]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-[18px] font-bold text-base-content uppercase">{{ $this->systemStats['database']['driver'] }}</p>
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Database Engine') }}</p>
-                        </div>
-                    </div>
-                    <div class="bg-white border border-base-content/5 rounded-lg p-4 flex items-center gap-4 shadow-sm">
-                        <div class="w-10 h-10 rounded-lg bg-[#A31C4E]/10 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#A31C4E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-[18px] font-bold text-base-content uppercase">{{ $this->systemStats['queue']['driver'] }}</p>
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Queue System') }}</p>
-                        </div>
-                    </div>
-                    <div class="bg-white border border-base-content/5 rounded-lg p-4 flex items-center gap-4 shadow-sm">
-                        <div class="w-10 h-10 rounded-lg bg-[#FFC926]/10 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#FFC926]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-[18px] font-bold text-base-content uppercase">{{ $this->systemStats['server']['uptime'] }}</p>
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Server Uptime') }}</p>
-                        </div>
+                    <div class="flex justify-end mt-4">
+                        <x-ui.button type="button" variant="primary" size="sm" wire:click="savePaymentGateway" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="savePaymentGateway">{{ __('Apply Gateway') }}</span>
+                            <span wire:loading wire:target="savePaymentGateway">{{ __('Saving...') }}</span>
+                        </x-ui.button>
                     </div>
                 </div>
+            </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {{-- Environment & Specs --}}
-                    <x-ui.card padding="none" class="shadow-sm overflow-hidden">
-                        <div class="p-6 border-b border-base-content/5 flex items-center justify-between">
-                            <h3 class="text-[15px] font-bold text-base-content uppercase tracking-widest">{{ __('Environment Metrics') }}</h3>
-                            <span class="badge badge-success badge-sm font-bold opacity-80 uppercase tracking-tighter">Live Monitor</span>
+            {{-- Notifications --}}
+            <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
+                <div class="px-6 py-5 border-b border-base-content/5">
+                    <h3 class="text-sm font-bold text-base-content">{{ __('Notification Channels') }}</h3>
+                    <p class="text-xs text-base-content/40 mt-0.5">{{ __('Control how the system communicates with customers after a booking or payment.') }}</p>
+                </div>
+                <div class="px-6 py-5 space-y-3">
+                    <label class="flex items-center justify-between p-4 bg-base-100 border border-base-content/8 rounded-xl cursor-pointer hover:border-base-content/15 transition-colors">
+                        <div>
+                            <p class="text-sm font-semibold text-base-content">{{ __('Email') }}</p>
+                            <p class="text-xs text-base-content/50 mt-0.5">Booking confirmations and invoices sent to customer email.</p>
                         </div>
+                        <input type="checkbox" wire:model.live="email_notifications" class="toggle toggle-primary toggle-sm" />
+                    </label>
+                    <label class="flex items-center justify-between p-4 bg-base-100 border border-base-content/8 rounded-xl cursor-pointer hover:border-base-content/15 transition-colors">
+                        <div>
+                            <p class="text-sm font-semibold text-base-content">{{ __('SMS') }}</p>
+                            <p class="text-xs text-base-content/50 mt-0.5">Short payment and booking alerts sent via GaintSMS.</p>
+                        </div>
+                        <input type="checkbox" wire:model.live="sms_notifications" class="toggle toggle-primary toggle-sm" />
+                    </label>
+                </div>
+            </div>
+
+            {{-- Delivery Locations --}}
+            <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
+                <div class="px-6 py-5 border-b border-base-content/5 flex items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-sm font-bold text-base-content">{{ __('Delivery Locations') }}</h3>
+                        <p class="text-xs text-base-content/40 mt-0.5">{{ __('Zones customers choose from when placing a meal order.') }}</p>
+                    </div>
+                    <x-ui.button type="button" variant="outline" size="sm" wire:click="openAddLocationModal">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        {{ __('Add') }}
+                    </x-ui.button>
+                </div>
+                <div class="px-6 py-5">
+                    @if(empty($delivery_locations))
+                        <div class="flex flex-col items-center justify-center py-8 text-center">
+                            <div class="w-12 h-12 bg-base-200 rounded-full flex items-center justify-center mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                            </div>
+                            <p class="text-sm font-semibold text-base-content/50">No delivery zones yet</p>
+                            <p class="text-xs text-base-content/35 mt-1 max-w-xs">Customers won't be asked to pick a delivery location until you add one.</p>
+                            <x-ui.button type="button" variant="outline" size="sm" class="mt-4" wire:click="openAddLocationModal">
+                                Add first location
+                            </x-ui.button>
+                        </div>
+                    @else
                         <div class="divide-y divide-base-content/5">
-                            @foreach([
-                                ['label' => 'Laravel Version', 'value' => $this->systemStats['app']['version']],
-                                ['label' => 'Environment', 'value' => $this->systemStats['app']['env'], 'pill' => true, 'color' => $this->systemStats['app']['env'] === 'production' ? 'badge-rose' : 'badge-info'],
-                                ['label' => 'Debug Mode', 'value' => $this->systemStats['app']['debug'] ? 'ACTIVE' : 'DISABLED', 'pill' => true, 'color' => $this->systemStats['app']['debug'] ? 'badge-warning' : 'badge-ghost'],
-                                ['label' => 'App Host', 'value' => $this->systemStats['app']['url']],
-                                ['label' => 'OS Family', 'value' => $this->systemStats['server']['os']],
-                            ] as $spec)
-                                <div class="px-6 py-4 flex items-center justify-between hover:bg-base-200-mid/20 transition-colors">
-                                    <span class="text-[12px] font-bold text-base-content/40 uppercase tracking-wide">{{ __($spec['label']) }}</span>
-                                    @isset($spec['pill'])
-                                        <span class="badge {{ $spec['color'] }} badge-sm font-bold">{{ $spec['value'] }}</span>
-                                    @else
-                                        <span class="text-[13px] font-semibold text-base-content">{{ $spec['value'] }}</span>
-                                    @endisset
+                            @foreach($delivery_locations as $i => $location)
+                                <div class="flex items-center gap-3 py-3 group" wire:key="loc-{{ $i }}">
+                                    <div class="flex flex-col gap-0.5 shrink-0">
+                                        <button type="button" wire:click="moveLocationUp({{ $i }})"
+                                            @class(['p-1 rounded text-base-content/25 hover:text-base-content transition-colors', 'opacity-20 pointer-events-none' => $i === 0])>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+                                        </button>
+                                        <button type="button" wire:click="moveLocationDown({{ $i }})"
+                                            @class(['p-1 rounded text-base-content/25 hover:text-base-content transition-colors', 'opacity-20 pointer-events-none' => $i === count($delivery_locations) - 1])>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                                        </button>
+                                    </div>
+                                    <span class="flex-1 text-sm text-base-content font-medium">{{ $location }}</span>
+                                    <span class="text-[10px] font-bold text-base-content/25 tabular-nums">#{{ $i + 1 }}</span>
+                                    <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button type="button" wire:click="openEditLocationModal({{ $i }})"
+                                            class="p-1.5 rounded-lg text-base-content/40 hover:text-primary hover:bg-primary/5 transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        </button>
+                                        <button type="button" wire:click="removeDeliveryLocation({{ $i }})"
+                                            wire:confirm="Remove '{{ $location }}'?"
+                                            class="p-1.5 rounded-lg text-base-content/40 hover:text-error hover:bg-error/5 transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
-                    </x-ui.card>
-
-                    {{-- Operations & Infrastructure --}}
-                    <x-ui.card padding="none" class="shadow-sm overflow-hidden">
-                        <div class="p-6 border-b border-base-content/5 flex items-center justify-between">
-                            <h3 class="text-[15px] font-bold text-base-content uppercase tracking-widest">{{ __('Infrastructure Health') }}</h3>
-                            <span class="text-[10px] font-bold text-base-content/20 uppercase tracking-tighter">Real-time Stats</span>
-                        </div>
-                        <div class="divide-y divide-base-content/5">
-                            <div class="px-6 py-5">
-                                <p class="text-[10px] font-bold text-base-content/25 uppercase tracking-widest mb-3">{{ __('Background Operations') }}</p>
-                                <div class="flex items-center gap-6">
-                                    <div class="flex-1 p-3 bg-base-200 rounded-lg text-center border border-base-content/5">
-                                        <div class="text-[18px] font-bold text-base-content">{{ $this->systemStats['queue']['pending'] }}</div>
-                                        <div class="text-[9px] font-bold text-base-content/40 uppercase">{{ __('Pending Jobs') }}</div>
-                                    </div>
-                                    <div class="flex-1 p-3 bg-dp-rose/5 rounded-lg text-center border border-dp-rose/10">
-                                        <div class="text-[18px] font-bold text-dp-rose">{{ $this->systemStats['queue']['failed'] }}</div>
-                                        <div class="text-[9px] font-bold text-dp-rose/40 uppercase">{{ __('Failed Executions') }}</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="px-6 py-5">
-                                <p class="text-[10px] font-bold text-base-content/25 uppercase tracking-widest mb-3">{{ __('Database Topology') }}</p>
-                                <div class="space-y-4">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></div>
-                                            <span class="text-[12px] font-bold text-base-content/60">{{ __('Connection Pulse') }}</span>
-                                        </div>
-                                        <span class="text-[13px] font-bold text-success uppercase">{{ $this->systemStats['database']['status'] }}</span>
-                                    </div>
-                                    <div class="text-[11px] text-base-content/50 bg-base-200-mid/30 p-3 rounded border border-base-content/5 font-mono truncate">
-                                        {{ $this->systemStats['database']['version'] }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </x-ui.card>
+                    @endif
                 </div>
             </div>
-        @endif
-    </div>
 
-    {{-- Delivery Location Modal (Add / Edit) --}}
+            {{-- Event Booking Rules --}}
+            <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
+                <div class="px-6 py-5 border-b border-base-content/5">
+                    <h3 class="text-sm font-bold text-base-content">{{ __('Event Booking Rules') }}</h3>
+                    <p class="text-xs text-base-content/40 mt-0.5">{{ __('Minimum notice required before an event can be booked.') }}</p>
+                </div>
+                <form wire:submit.prevent="saveEventSettings" class="px-6 py-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold text-base-content/60 uppercase tracking-wide">{{ __('Minimum Lead Time') }}</label>
+                            <select wire:model="event_lead_days"
+                                class="w-full px-4 py-2.5 bg-base-100 border border-base-content/10 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl text-sm font-medium transition-all">
+                                <option value="0">No minimum (any future date)</option>
+                                <optgroup label="Days">
+                                    <option value="1">1 day ahead</option>
+                                    <option value="2">2 days ahead</option>
+                                    <option value="3">3 days ahead</option>
+                                    <option value="5">5 days ahead</option>
+                                </optgroup>
+                                <optgroup label="Weeks">
+                                    <option value="7">1 week ahead</option>
+                                    <option value="14">2 weeks ahead</option>
+                                    <option value="21">3 weeks ahead</option>
+                                    <option value="28">4 weeks ahead</option>
+                                </optgroup>
+                            </select>
+                            @error('event_lead_days') <p class="text-xs text-error">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="bg-base-200/60 rounded-xl p-4 border border-base-content/5">
+                            <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mb-1">{{ __('Current effect') }}</p>
+                            @if($event_lead_days > 0)
+                                <p class="text-xs text-base-content/70 leading-relaxed">
+                                    Earliest bookable date is <strong class="text-primary">{{ now()->addDays($event_lead_days)->format('M j, Y') }}</strong>
+                                    (today + {{ $event_lead_days }} {{ $event_lead_days === 1 ? 'day' : 'days' }}).
+                                </p>
+                            @else
+                                <p class="text-xs text-base-content/50">Any future date is accepted — no minimum enforced.</p>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="flex justify-end mt-4">
+                        <x-ui.button type="submit" variant="secondary" size="sm" wire:loading.attr="disabled" wire:target="saveEventSettings">
+                            <span wire:loading.remove wire:target="saveEventSettings">{{ __('Save Rules') }}</span>
+                            <span wire:loading wire:target="saveEventSettings">{{ __('Saving...') }}</span>
+                        </x-ui.button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    @endif
+
+    {{-- ── System Tab ───────────────────────────────────────────────────────── --}}
+    @if($tab === 'system')
+        <div class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+
+            {{-- KPI row --}}
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                @foreach([
+                    ['label' => 'PHP Version',    'value' => $this->systemStats['server']['php'],         'color' => 'text-[#9ABC05]', 'bg' => 'bg-[#9ABC05]/10',  'icon' => 'M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01'],
+                    ['label' => 'Database',       'value' => strtoupper($this->systemStats['database']['driver']), 'color' => 'text-[#F96015]', 'bg' => 'bg-[#F96015]/10', 'icon' => 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4'],
+                    ['label' => 'Queue Driver',   'value' => strtoupper($this->systemStats['queue']['driver']),   'color' => 'text-primary',   'bg' => 'bg-primary/10',   'icon' => 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10'],
+                    ['label' => 'Server Uptime',  'value' => $this->systemStats['server']['uptime'],      'color' => 'text-[#FFC926]', 'bg' => 'bg-[#FFC926]/10', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'],
+                ] as $stat)
+                    <div class="bg-white border border-base-content/5 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+                        <div class="w-10 h-10 rounded-xl {{ $stat['bg'] }} flex items-center justify-center shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 {{ $stat['color'] }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $stat['icon'] }}"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-base font-bold text-base-content">{{ $stat['value'] }}</p>
+                            <p class="text-[10px] font-semibold uppercase tracking-wide text-base-content/40">{{ $stat['label'] }}</p>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                {{-- Environment --}}
+                <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-base-content/5 flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-base-content">{{ __('Environment') }}</h3>
+                        <span class="badge badge-success badge-sm font-semibold">Live</span>
+                    </div>
+                    <div class="divide-y divide-base-content/5">
+                        @foreach([
+                            ['label' => 'Laravel',    'value' => $this->systemStats['app']['version']],
+                            ['label' => 'Environment','value' => $this->systemStats['app']['env'],   'pill' => true, 'color' => $this->systemStats['app']['env'] === 'production' ? 'badge-error' : 'badge-info'],
+                            ['label' => 'Debug Mode', 'value' => $this->systemStats['app']['debug'] ? 'On' : 'Off', 'pill' => true, 'color' => $this->systemStats['app']['debug'] ? 'badge-warning' : 'badge-ghost'],
+                            ['label' => 'App URL',    'value' => $this->systemStats['app']['url']],
+                            ['label' => 'OS',         'value' => $this->systemStats['server']['os']],
+                        ] as $row)
+                            <div class="px-6 py-3.5 flex items-center justify-between">
+                                <span class="text-xs font-semibold text-base-content/40 uppercase tracking-wide">{{ $row['label'] }}</span>
+                                @isset($row['pill'])
+                                    <span class="badge {{ $row['color'] }} badge-sm font-bold">{{ $row['value'] }}</span>
+                                @else
+                                    <span class="text-sm font-medium text-base-content">{{ $row['value'] }}</span>
+                                @endisset
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Infrastructure --}}
+                <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-base-content/5">
+                        <h3 class="text-sm font-bold text-base-content">{{ __('Infrastructure Health') }}</h3>
+                    </div>
+                    <div class="divide-y divide-base-content/5">
+                        <div class="px-6 py-5">
+                            <p class="text-xs font-semibold text-base-content/40 uppercase tracking-wide mb-3">{{ __('Queue Jobs') }}</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="p-3 bg-base-200/60 rounded-xl text-center">
+                                    <p class="text-xl font-bold text-base-content">{{ $this->systemStats['queue']['pending'] }}</p>
+                                    <p class="text-[10px] font-semibold text-base-content/40 uppercase mt-0.5">Pending</p>
+                                </div>
+                                <div @class(['p-3 rounded-xl text-center', $this->systemStats['queue']['failed'] > 0 ? 'bg-error/5' : 'bg-base-200/60'])>
+                                    <p @class(['text-xl font-bold', $this->systemStats['queue']['failed'] > 0 ? 'text-error' : 'text-base-content'])>{{ $this->systemStats['queue']['failed'] }}</p>
+                                    <p class="text-[10px] font-semibold text-base-content/40 uppercase mt-0.5">Failed</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-6 py-5">
+                            <p class="text-xs font-semibold text-base-content/40 uppercase tracking-wide mb-3">{{ __('Database') }}</p>
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+                                    <span class="text-xs font-medium text-base-content/60">Connection</span>
+                                </div>
+                                <span class="text-xs font-bold text-success">{{ $this->systemStats['database']['status'] }}</span>
+                            </div>
+                            <p class="text-xs text-base-content/40 font-mono bg-base-200/60 px-3 py-2 rounded-lg truncate">
+                                {{ $this->systemStats['database']['version'] }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    @endif
+
+    {{-- Delivery Location Modal --}}
     <x-ui.modal wire:model="locationModalOpen" maxWidth="sm">
         <div class="p-6">
-            <h3 class="text-[16px] font-bold text-base-content mb-1">
-                {{ $editingLocationIndex !== null ? __('Edit Location') : __('Add Delivery Location') }}
+            <h3 class="text-base font-bold text-base-content mb-0.5">
+                {{ $editingLocationIndex !== null ? __('Edit Location') : __('Add Location') }}
             </h3>
-            <p class="text-[12px] text-base-content/50 mb-6">
-                {{ $editingLocationIndex !== null ? __('Update the name for this delivery zone.') : __('Enter the name of a zone customers can select.') }}
+            <p class="text-xs text-base-content/50 mb-5">
+                {{ $editingLocationIndex !== null ? __('Update the name for this delivery zone.') : __('Enter the name of a delivery zone customers can select.') }}
             </p>
-
-            <form wire:submit.prevent="saveLocationModal" class="space-y-5">
-                <x-app.input
-                    name="locationName"
-                    type="text"
-                    label="Location Name"
-                    wire:model="locationName"
-                    placeholder="e.g. Accra Mall, East Legon"
-                    autofocus
-                />
-
-                <div class="flex justify-end gap-3 pt-2">
+            <form wire:submit.prevent="saveLocationModal" class="space-y-4">
+                <x-app.input name="locationName" type="text" label="Location Name"
+                    wire:model="locationName" placeholder="e.g. East Legon, Accra Mall" autofocus />
+                <div class="flex justify-end gap-3 pt-1">
                     <x-ui.button type="button" variant="ghost" size="md" wire:click="$set('locationModalOpen', false)">
                         {{ __('Cancel') }}
                     </x-ui.button>
@@ -583,4 +562,5 @@
             </form>
         </div>
     </x-ui.modal>
+
 </div>

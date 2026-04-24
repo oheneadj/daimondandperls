@@ -35,17 +35,16 @@ test('it can save business information', function () {
     ]);
 });
 
-test('it can save payment gateway settings', function () {
+test('it can switch the active payment gateway', function () {
     Livewire::actingAs($this->user)
         ->test(AdminSettings::class)
-        ->set('paystack_public_key', 'pk_test_123')
-        ->set('paystack_secret_key', 'sk_test_456')
-        ->call('savePaymentSettings')
+        ->set('active_payment_gateway', 'moolre')
+        ->call('savePaymentGateway')
         ->assertHasNoErrors();
 
     $this->assertDatabaseHas('settings', [
-        'key' => 'paystack_public_key',
-        'value' => 'pk_test_123',
+        'key' => 'active_payment_gateway',
+        'value' => 'moolre',
     ]);
 });
 

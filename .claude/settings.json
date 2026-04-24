@@ -73,13 +73,16 @@
       "Bash(head -50 /home/oheneadj/server/dpc/resources/views/booking/*.blade.php)",
       "Bash(vendor/bin/pint --dirty --format agent app/Livewire/Admin/Settings/AdminSettings.php)",
       "Bash(grep -n 'currentStep\\\\|steps\\\\|$step\\\\|Step::' /home/oheneadj/server/dpc/app/Livewire/Booking/BookingWizard.php)",
-      "Bash(vendor/bin/pint --dirty --format agent database/seeders/)"
+      "Bash(vendor/bin/pint --dirty --format agent database/seeders/)",
+      "Bash(npm run *)",
+      "Bash(python3 -c ' *)"
     ],
     "additionalDirectories": [
       "/home/oheneadj/server/dpc/resources/views/components",
       "/home/oheneadj/.claude/plans",
       "/home/oheneadj/server/dpc/resources/views/components/customer/⚡payment-methods",
-      "/home/oheneadj/server/dpc"
+      "/home/oheneadj/server/dpc",
+      "/tmp"
     ]
   }
 }

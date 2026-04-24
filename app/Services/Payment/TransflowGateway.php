@@ -84,6 +84,17 @@ class TransflowGateway implements PaymentGatewayContract
             'pageTitle' => config('app.name'),
         ];
 
+        // Optional pre-population fields from component context
+        if (! empty($context['payment_method'])) {
+            $payload['paymentMethod'] = $context['payment_method'];
+        }
+        if (! empty($context['msisdn'])) {
+            $payload['msisdn'] = $context['msisdn'];
+        }
+        if (! empty($context['network'])) {
+            $payload['network'] = $context['network'];
+        }
+
         Log::info('Transflow: Initiating payment', [
             'booking' => $booking->reference,
             'amount' => $payload['amount'],

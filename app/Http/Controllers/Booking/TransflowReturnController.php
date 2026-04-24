@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Booking;
 
+use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\CustomerPaymentMethod;
 use App\Models\Payment;
 use App\Notifications\BookingConfirmedNotification;
 use App\Services\InvoiceService;
@@ -109,6 +111,9 @@ class TransflowReturnController extends Controller
                     $invoiceService->getDownloadUrl($booking)
                 ));
 
+                // Save entered MoMo number as a verified payment method for logged-in customers
+                $this->maybeSavePaymentMethod($booking);
+
                 Log::info('Transflow Return: Payment confirmed via verify()', ['booking' => $booking->reference]);
 
                 return redirect()->route('booking.confirmation', ['booking' => $booking->reference]);
@@ -124,6 +129,49 @@ class TransflowReturnController extends Controller
         return redirect()
             ->route('booking.payment', ['booking' => $booking->reference])
             ->with('payment_awaiting', true);
+    }
+
+    /**
+     * If the customer entered a new MoMo number and is logged in, save it as a verified payment method.
+     */
+    private function maybeSavePaymentMethod(Booking $booking): void
+    {
+        if (empty($booking->payer_number) || empty($booking->payment_channel)) {
+            return;
+        }
+
+        $user = $booking->customer->user ?? null;
+
+        if (! $user) {
+            return;
+        }
+
+        $customer = $booking->customer;
+
+        $networkName = match ($booking->payment_channel) {
+            '13' => 'MTN MoMo',
+            '6' => 'Telecel Cash',
+            '7' => 'AirtelTigo Money',
+            default => 'Mobile Money',
+        };
+
+        $isFirst = $customer->paymentMethods()->count() === 0;
+
+        CustomerPaymentMethod::updateOrCreate(
+            ['customer_id' => $customer->id, 'account_number' => $booking->payer_number],
+            [
+                'type' => PaymentMethod::MobileMoney->value,
+                'label' => $networkName.' - '.$booking->payer_number,
+                'provider' => $booking->payment_channel,
+                'is_default' => $isFirst,
+                'verified_at' => now(),
+            ]
+        );
+
+        Log::info('Transflow Return: New payment method saved for customer', [
+            'customer' => $customer->id,
+            'number' => $booking->payer_number,
+        ]);
     }
 
     /**

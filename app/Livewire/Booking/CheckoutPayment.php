@@ -5,17 +5,9 @@ declare(strict_types=1);
 namespace App\Livewire\Booking;
 
 use App\Contracts\PaymentGatewayContract;
-use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
-use App\Models\CustomerPaymentMethod;
 use App\Models\ErrorLog;
-use App\Models\Payment;
-use App\Notifications\BookingConfirmedNotification;
-use App\Services\CartService;
-use App\Services\InvoiceService;
-use App\Services\Payment\MoolreGateway;
-use App\Services\Payment\PaymentManager;
 use App\Traits\HandlesMomoValidation;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -32,17 +24,8 @@ class CheckoutPayment extends Component
 
     public Booking $booking;
 
-    // Mobile Money fields
-    public string $momoNetwork = '';
-
-    public string $momoNumber = '';
-
-    /** 'form' | 'otp' | 'awaiting' */
+    /** 'form' | 'awaiting' */
     public string $paymentStep = 'form';
-
-    public string $otpCode = '';
-
-    public ?string $otpMessage = null;
 
     public ?string $errorMessage = null;
 
@@ -51,14 +34,21 @@ class CheckoutPayment extends Component
 
     public ?string $loading = null;
 
-    public bool $autoInitiate = false;
-
-    /** @var Collection<int, CustomerPaymentMethod> */
-    public Collection $savedMethods;
+    // Payment method selection
+    /** 'saved' | 'new_momo' | 'card' | '' */
+    public string $paymentChoice = '';
 
     public ?int $selectedMethodId = null;
 
-    public bool $useNewNumber = false;
+    /** @var Collection<int, \App\Models\CustomerPaymentMethod> */
+    public Collection $savedMethods;
+
+    // New number entry
+    public string $momoNetwork = '';
+
+    public string $momoNumber = '';
+
+    public bool $saveNewMethod = true;
 
     public function updatedMomoNumber(string $value): void
     {
@@ -70,21 +60,6 @@ class CheckoutPayment extends Component
         return $this->isValidMomoNumber($this->momoNetwork, $this->momoNumber);
     }
 
-    public function getMomoPlaceholderProperty(): string
-    {
-        return $this->getMomoPlaceholder($this->momoNetwork);
-    }
-
-    /**
-     * True when the active gateway uses a hosted redirect page (e.g. Transflow).
-     * False for direct MoMo gateways that we prompt via our own UI (e.g. Moolre).
-     * Used by the blade view to show the right payment form.
-     */
-    public function getIsRedirectGatewayProperty(): bool
-    {
-        return in_array(app(PaymentManager::class)->getDefaultDriver(), ['transflow']);
-    }
-
     public function mount(Booking $booking): void
     {
         $this->booking = $booking->load(['items.package', 'customer']);
@@ -94,8 +69,6 @@ class CheckoutPayment extends Component
             $this->errorMessage = session('error');
         }
 
-        // TransflowReturnController sends the customer back here with this flag
-        // when verify() hasn't confirmed the payment yet — show the awaiting screen
         if (session()->pull('payment_awaiting')) {
             $this->paymentStep = 'awaiting';
 
@@ -108,44 +81,19 @@ class CheckoutPayment extends Component
             return;
         }
 
-        // Three-state resume detection on page refresh
         if ($this->booking->payment_status === PaymentStatus::Pending && ! empty($this->booking->payment_reference)) {
-            // Payment prompt was sent — resume polling
             $this->paymentStep = 'awaiting';
-            $this->momoNetwork = $this->booking->payment_channel ?? '';
-            $this->momoNumber = $this->booking->payer_number ?? '';
-        } elseif ($this->booking->payment_status === PaymentStatus::Unpaid
-            && ! empty($this->booking->payment_channel)
-            && empty($this->booking->payment_reference)) {
-            // OTP was sent but not yet verified — restore OTP entry UI
-            $this->paymentStep = 'otp';
-            $this->momoNetwork = $this->booking->payment_channel;
-            $this->momoNumber = $this->booking->payer_number ?? '';
-            $this->otpMessage = 'Enter the verification code sent to your phone to continue.';
+
+            return;
         }
 
-        // Pre-populate from checkout session if available (normal flow from /checkout)
-        if ($this->paymentStep === 'form') {
-            $preSelected = session()->pull('checkout_payment_method');
-
-            if ($preSelected) {
-                $this->momoNetwork = $preSelected['network'];
-                $this->momoNumber = $preSelected['number'];
-                $this->autoInitiate = true;
-            } else {
-                $this->loadSavedMethods();
-            }
-        }
-    }
-
-    private function loadSavedMethods(): void
-    {
+        // Load saved verified MoMo methods for logged-in users
         if (Auth::check()) {
             $customer = Auth::user()->customer;
 
             if ($customer) {
                 $this->savedMethods = $customer->paymentMethods()
-                    ->where('type', PaymentMethod::MobileMoney->value)
+                    ->where('type', \App\Enums\PaymentMethod::MobileMoney->value)
                     ->whereNotNull('verified_at')
                     ->orderByDesc('is_default')
                     ->orderBy('created_at')
@@ -156,14 +104,9 @@ class CheckoutPayment extends Component
                 $default = $this->savedMethods->firstWhere('is_default', true)
                     ?? $this->savedMethods->first();
 
+                $this->paymentChoice = 'saved';
                 $this->selectedMethodId = $default->id;
-                $this->momoNetwork = $default->provider;
-                $this->momoNumber = $default->account_number;
-            } else {
-                $this->useNewNumber = true;
             }
-        } else {
-            $this->useNewNumber = true;
         }
     }
 
@@ -173,46 +116,38 @@ class CheckoutPayment extends Component
 
         if ($method) {
             $this->selectedMethodId = $id;
-            $this->useNewNumber = false;
-            $this->momoNetwork = $method->provider;
-            $this->momoNumber = $method->account_number;
+            $this->paymentChoice = 'saved';
         }
     }
 
-    public function useNewPaymentMethod(): void
-    {
-        $this->selectedMethodId = null;
-        $this->useNewNumber = true;
-        $this->momoNetwork = '';
-        $this->momoNumber = '';
-    }
-
-    public function retry(): void
-    {
-        $this->errorMessage = null;
-        $this->fatalError = null;
-        $this->otpCode = '';
-        $this->paymentStep = 'form';
-        session()->forget('error');
-    }
-
     /**
-     * Start payment for redirect-based gateways (e.g. Transflow).
-     *
-     * Calls initiate() on the active gateway, stores the transactionReference,
-     * then redirects the customer's browser to the hosted checkout page.
-     * The customer returns to TransflowReturnController after paying.
+     * Start payment — builds context from the current payment choice and calls Transflow.
      */
     public function initiateCheckout(PaymentGatewayContract $gateway): void
     {
         $this->loading = 'initiateCheckout';
         $this->errorMessage = null;
 
-        $result = $gateway->initiate($this->booking);
+        $context = $this->buildPaymentContext();
+
+        if ($context === false) {
+            // Validation failed (invalid MoMo number)
+            $this->loading = null;
+
+            return;
+        }
+
+        // Store network/number on booking so the return controller can save the method
+        if ($this->paymentChoice === 'new_momo') {
+            $this->booking->update([
+                'payment_channel' => $this->momoNetwork,
+                'payer_number' => $this->momoNumber,
+            ]);
+        }
+
+        $result = $gateway->initiate($this->booking, $context);
 
         if ($result->isRedirect()) {
-            // Save the gateway's transactionReference so the webhook and return
-            // controller can look up this booking later
             $this->booking->update([
                 'payment_reference' => $result->reference,
                 'payment_status' => PaymentStatus::Pending,
@@ -223,45 +158,25 @@ class CheckoutPayment extends Component
             return;
         }
 
-        // Gateway returned an error instead of a redirect URL
-        $this->handlePaymentError($result->raw ?? [], 'initiate-redirect');
-        $this->loading = null;
-    }
+        // Gateway returned an error
+        $message = $result->raw['responseMessage'] ?? ($result->message ?? 'Payment initiation failed. Please try again.');
 
-    /**
-     * Classify a Moolre error response, log it, and set the appropriate error property.
-     * Fatal errors (merchant/gateway config) go to $fatalError; retryable ones to $errorMessage.
-     *
-     * @param  array<string, mixed>  $response
-     */
-    private function handlePaymentError(array $response, string $context): void
-    {
-        $message = $response['message'] ?? 'An unexpected error occurred. Please try again.';
-        $code = $response['code'] ?? null;
-
-        Log::error('Moolre payment error', [
-            'context' => $context,
+        Log::error('Payment initiation error', [
+            'context' => 'initiate-checkout',
             'booking' => $this->booking->reference,
-            'code' => $code,
             'message' => $message,
-            'response' => $response,
-            'network' => $this->momoNetwork,
-            'payer' => $this->momoNumber,
+            'response' => $result->raw ?? [],
         ]);
 
         ErrorLog::create([
             'source' => 'payment',
-            'context' => $context,
+            'context' => 'initiate-checkout',
             'level' => 'error',
             'booking_reference' => $this->booking->reference,
-            'error_code' => $code,
             'message' => $message,
-            'network' => $this->momoNetwork,
-            'payer_number' => $this->momoNumber,
-            'payload' => $response,
+            'payload' => $result->raw ?? [],
         ]);
 
-        // Non-retryable: merchant/gateway configuration issues
         $fatalPhrases = ['merchant account setup', 'account setup incomplete', 'invalid merchant', 'merchant not found'];
         $isFatal = collect($fatalPhrases)->contains(fn (string $phrase) => str_contains(strtolower($message), $phrase));
 
@@ -270,102 +185,83 @@ class CheckoutPayment extends Component
         } else {
             $this->errorMessage = $message;
         }
-    }
-
-    public function processMobileMoney(PaymentGatewayContract $gateway): void
-    {
-        $this->loading = 'processMobileMoney';
-        $this->errorMessage = null;
-
-        $networkPrefixPattern = $this->getNetworkPrefixPattern($this->momoNetwork);
-
-        $this->validate([
-            'momoNetwork' => 'required|in:13,6,7',
-            'momoNumber' => ['required', 'regex:'.$networkPrefixPattern],
-        ], [
-            'momoNetwork.required' => 'Please select your mobile network.',
-            'momoNetwork.in' => 'Invalid network selected.',
-            'momoNumber.required' => 'Please provide your mobile money number.',
-            'momoNumber.regex' => 'This number doesn\'t match the selected network. Please check the prefix.',
-        ]);
-
-        $result = $gateway->initiate($this->booking, [
-            'channel' => $this->momoNetwork,
-            'payer' => $this->momoNumber,
-        ]);
-
-        if ($result->requiresOtp()) {
-            // OTP required — persist channel/number so refresh can restore this step
-            $this->booking->update([
-                'payment_channel' => $this->momoNetwork,
-                'payer_number' => $this->momoNumber,
-            ]);
-
-            $this->otpMessage = $result->message;
-            $this->paymentStep = 'otp';
-        } elseif ($result->isPromptSent()) {
-            // Payment prompt sent directly (no OTP required)
-            $this->booking->update([
-                'payment_channel' => $this->momoNetwork,
-                'payer_number' => $this->momoNumber,
-                'payment_status' => PaymentStatus::Pending,
-                'payment_reference' => $result->reference,
-            ]);
-
-            $this->paymentStep = 'awaiting';
-        } else {
-            $this->handlePaymentError($result->raw ?? [], 'initiate');
-        }
 
         $this->loading = null;
     }
 
-    public function submitOtp(MoolreGateway $gateway): void
+    /**
+     * Build the payment context array for Transflow based on the current payment choice.
+     * Returns false if validation fails.
+     *
+     * @return array<string, mixed>|false
+     */
+    private function buildPaymentContext(): array|false
     {
-        $this->loading = 'submitOtp';
-        $this->errorMessage = null;
+        if ($this->paymentChoice === 'saved') {
+            $method = $this->savedMethods->firstWhere('id', $this->selectedMethodId);
 
-        $this->validate([
-            'otpCode' => ['required', 'string', 'size:6'],
-        ], [
-            'otpCode.required' => 'Please enter the 6-digit verification code.',
-            'otpCode.size' => 'The verification code must be exactly 6 digits.',
-        ]);
+            if (! $method) {
+                $this->errorMessage = 'Please select a payment method.';
 
-        // submitOtp internally re-initiates after OTP verification (TP17 → prompt)
-        $result = $gateway->submitOtp($this->booking, $this->momoNetwork, $this->momoNumber, $this->otpCode);
+                return false;
+            }
 
-        if ($result->isPromptSent()) {
-            $this->booking->update([
-                'payment_status' => PaymentStatus::Pending,
-                'payment_reference' => $result->reference,
-            ]);
-
-            $this->otpCode = '';
-            $this->paymentStep = 'awaiting';
-        } elseif ($result->failed()) {
-            $message = $result->message ?? 'An unexpected error occurred. Please try again.';
-            $this->errorMessage = $message;
+            return [
+                'payment_method' => 'mobile_money',
+                'msisdn' => $method->account_number,
+                'network' => $this->mapToTransflowNetwork($method->provider),
+            ];
         }
 
-        $this->loading = null;
+        if ($this->paymentChoice === 'new_momo') {
+            $networkPrefixPattern = $this->getNetworkPrefixPattern($this->momoNetwork);
+
+            $validationResult = validator(
+                ['momoNetwork' => $this->momoNetwork, 'momoNumber' => $this->momoNumber],
+                [
+                    'momoNetwork' => 'required|in:13,6,7',
+                    'momoNumber' => ['required', 'regex:'.$networkPrefixPattern],
+                ],
+                [
+                    'momoNetwork.required' => 'Please select your mobile network.',
+                    'momoNetwork.in' => 'Invalid network selected.',
+                    'momoNumber.required' => 'Please provide your mobile money number.',
+                    'momoNumber.regex' => "This number doesn't match the selected network.",
+                ]
+            );
+
+            if ($validationResult->fails()) {
+                $this->errorMessage = $validationResult->errors()->first();
+
+                return false;
+            }
+
+            return [
+                'payment_method' => 'mobile_money',
+                'msisdn' => $this->momoNumber,
+                'network' => $this->mapToTransflowNetwork($this->momoNetwork),
+            ];
+        }
+
+        if ($this->paymentChoice === 'card') {
+            return ['payment_method' => 'card'];
+        }
+
+        // Guest / no pre-selection — let Transflow show all options
+        return [];
     }
 
-    public function resendOtp(PaymentGatewayContract $gateway): void
+    /**
+     * Map the stored provider code to Transflow's network name.
+     */
+    private function mapToTransflowNetwork(string $provider): string
     {
-        $this->errorMessage = null;
-        $this->otpCode = '';
-
-        $result = $gateway->initiate($this->booking, [
-            'channel' => $this->momoNetwork,
-            'payer' => $this->momoNumber,
-        ]);
-
-        if ($result->requiresOtp()) {
-            $this->otpMessage = 'A new verification code has been sent to your phone.';
-        } else {
-            $this->handlePaymentError($result->raw ?? [], 'resend-otp');
-        }
+        return match ($provider) {
+            '13' => 'MTN',
+            '6' => 'VODAFONE',
+            '7' => 'AIRTELTIGO',
+            default => '',
+        };
     }
 
     public function checkPaymentStatus(): void
@@ -373,54 +269,7 @@ class CheckoutPayment extends Component
         $this->booking->refresh();
 
         if ($this->booking->payment_status === PaymentStatus::Paid) {
-
-            Payment::updateOrCreate(
-                ['booking_id' => $this->booking->id],
-                [
-                    'gateway' => 'moolre',
-                    'method' => 'mobile_money',
-                    'amount' => $this->booking->total_amount,
-                    'currency' => 'GHS',
-                    'status' => 'successful',
-                    'paid_at' => now(),
-                    'gateway_reference' => $this->booking->payment_reference,
-                    'gateway_response' => json_encode($this->booking->payment_details ?? []),
-                ]
-            );
-
-            $this->booking->customer->notify(new BookingConfirmedNotification(
-                $this->booking,
-                app(InvoiceService::class)->getDownloadUrl($this->booking)
-            ));
-
-            app(CartService::class)->clear();
-
-            // Save the number as a verified payment method for logged-in users who entered a new number
-            if (Auth::check() && $this->useNewNumber) {
-                $customer = Auth::user()->customer;
-
-                if ($customer) {
-                    $networkName = match ($this->momoNetwork) {
-                        '13' => 'MTN MoMo',
-                        '6' => 'Telecel Cash',
-                        '7' => 'AirtelTigo Money',
-                        default => 'Mobile Money',
-                    };
-
-                    $isFirst = $customer->paymentMethods()->count() === 0;
-
-                    CustomerPaymentMethod::updateOrCreate(
-                        ['customer_id' => $customer->id, 'account_number' => $this->momoNumber],
-                        [
-                            'type' => PaymentMethod::MobileMoney->value,
-                            'label' => $networkName.' - '.$this->momoNumber,
-                            'provider' => $this->momoNetwork,
-                            'is_default' => $isFirst,
-                            'verified_at' => now(),
-                        ]
-                    );
-                }
-            }
+            app(\App\Services\CartService::class)->clear();
 
             $this->redirect(route('booking.confirmation', ['booking' => $this->booking->reference]));
 
@@ -428,10 +277,8 @@ class CheckoutPayment extends Component
         }
 
         if ($this->booking->payment_status === PaymentStatus::Failed) {
-            Log::warning('Moolre payment failed via webhook/poll', [
+            Log::warning('Payment failed via webhook/poll', [
                 'booking' => $this->booking->reference,
-                'network' => $this->momoNetwork,
-                'payer' => $this->momoNumber,
                 'payment_details' => $this->booking->payment_details,
             ]);
 
@@ -440,9 +287,7 @@ class CheckoutPayment extends Component
                 'context' => 'webhook-failed',
                 'level' => 'warning',
                 'booking_reference' => $this->booking->reference,
-                'message' => 'Payment was declined or failed (reported by Moolre webhook/poll).',
-                'network' => $this->momoNetwork,
-                'payer_number' => $this->momoNumber,
+                'message' => 'Payment was declined or failed.',
                 'payload' => $this->booking->payment_details ?? [],
             ]);
 
@@ -452,10 +297,17 @@ class CheckoutPayment extends Component
         }
     }
 
+    public function retry(): void
+    {
+        $this->errorMessage = null;
+        $this->fatalError = null;
+        $this->paymentStep = 'form';
+        session()->forget('error');
+    }
+
     public function cancelPayment(): void
     {
         $this->paymentStep = 'form';
-        $this->otpCode = '';
 
         $this->booking->update([
             'payment_status' => PaymentStatus::Unpaid,

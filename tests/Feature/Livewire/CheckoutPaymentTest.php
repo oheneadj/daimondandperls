@@ -2,28 +2,28 @@
 
 declare(strict_types=1);
 
+use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Livewire\Booking\CheckoutPayment;
 use App\Models\Booking;
 use App\Models\Category;
 use App\Models\Customer;
+use App\Models\CustomerPaymentMethod;
 use App\Models\Package;
-use App\Notifications\BookingConfirmedNotification;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    // Force Moolre as the active gateway for all checkout UI tests
     config([
-        'payments.default' => 'moolre',
-        'payments.gateways.moolre.base_url' => 'https://api.moolre.test/open/transact',
-        'payments.gateways.moolre.api_user' => 'test-user',
-        'payments.gateways.moolre.pub_key' => 'test-pubkey',
-        'payments.gateways.moolre.merchant_id' => 'test-merchant',
+        'payments.default' => 'transflow',
+        'payments.gateways.transflow.base_url' => 'https://transflow.test/checkout',
+        'payments.gateways.transflow.api_key' => 'test-api-key',
+        'payments.gateways.transflow.transflow_id' => 'test-tf-id',
+        'payments.gateways.transflow.merchant_product_id' => 'test-product-id',
     ]);
 
     $this->customer = Customer::factory()->create();
@@ -38,199 +38,222 @@ beforeEach(function () {
     ]);
 });
 
-// ── Happy path: no OTP required ──────────────────────────────────────────────
+// ── Mount ─────────────────────────────────────────────────────────────────────
 
-it('skips OTP and enters awaiting state when Moolre returns TR099', function () {
+it('mounts in form step with empty paymentChoice for guest', function () {
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
+        ->assertSet('paymentStep', 'form')
+        ->assertSet('paymentChoice', '')
+        ->assertSet('savedMethods', collect());
+});
+
+it('redirects to confirmation if booking is already paid', function () {
+    $this->booking->update(['payment_status' => 'paid']);
+
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking->fresh()])
+        ->assertRedirect(route('booking.confirmation', ['booking' => $this->booking->reference]));
+});
+
+it('shows awaiting step when payment_awaiting session flag is set', function () {
+    session()->put('payment_awaiting', true);
+
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
+        ->assertSet('paymentStep', 'awaiting');
+});
+
+it('resumes awaiting state on refresh when booking is pending with a reference', function () {
+    $this->booking->update([
+        'payment_status' => 'pending',
+        'payment_reference' => 'TXN-TRANSFLOW-123',
+    ]);
+
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking->fresh()])
+        ->assertSet('paymentStep', 'awaiting');
+});
+
+it('defaults to saved method when logged-in user has saved methods', function () {
+    $user = User::factory()->create();
+    $this->customer->update(['user_id' => $user->id]);
+
+    $method = CustomerPaymentMethod::factory()->create([
+        'customer_id' => $this->customer->id,
+        'type' => PaymentMethod::MobileMoney->value,
+        'provider' => '13',
+        'account_number' => '0541234567',
+        'label' => 'MTN MoMo - 0541234567',
+        'is_default' => true,
+        'verified_at' => now(),
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
+        ->assertSet('paymentChoice', 'saved')
+        ->assertSet('selectedMethodId', $method->id);
+});
+
+// ── selectPaymentMethod ───────────────────────────────────────────────────────
+
+it('selecting a saved method sets paymentChoice to saved', function () {
+    $user = User::factory()->create();
+    $this->customer->update(['user_id' => $user->id]);
+
+    $method = CustomerPaymentMethod::factory()->create([
+        'customer_id' => $this->customer->id,
+        'type' => PaymentMethod::MobileMoney->value,
+        'provider' => '13',
+        'account_number' => '0541234567',
+        'label' => 'MTN MoMo - 0541234567',
+        'verified_at' => now(),
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
+        ->call('selectPaymentMethod', $method->id)
+        ->assertSet('paymentChoice', 'saved')
+        ->assertSet('selectedMethodId', $method->id);
+});
+
+// ── initiateCheckout ──────────────────────────────────────────────────────────
+
+it('initiates checkout and redirects to Transflow URL', function () {
     Http::fake([
-        '*/payment' => Http::response(['status' => 1, 'code' => 'TR099', 'data' => 'MOOLRE-TEST-123', 'message' => 'Success'], 200),
+        '*/request-payments' => Http::response([
+            'responseCode' => 200,
+            'data' => [
+                'transactionReference' => 'TXN-123',
+                'checkoutUrl' => 'https://checkout.transflow.test/pay/TXN-123',
+            ],
+        ], 200),
     ]);
 
     Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
-        ->set('momoNetwork', '13')
-        ->set('momoNumber', '0541234567')
-        ->call('processMobileMoney')
-        ->assertHasNoErrors()
-        ->assertSet('paymentStep', 'awaiting');
+        ->set('paymentChoice', '')
+        ->call('initiateCheckout')
+        ->assertRedirect('https://checkout.transflow.test/pay/TXN-123');
 
-    $booking = $this->booking->fresh();
-
-    expect($booking->payment_status)->toBe(PaymentStatus::Pending)
-        ->and($booking->payment_reference)->toBe('MOOLRE-TEST-123');
+    expect($this->booking->fresh()->payment_reference)->toBe('TXN-123')
+        ->and($this->booking->fresh()->payment_status)->toBe(PaymentStatus::Pending);
 });
 
-// ── OTP flow ─────────────────────────────────────────────────────────────────
+it('initiates checkout with saved method pre-population', function () {
+    $user = User::factory()->create();
+    $this->customer->update(['user_id' => $user->id]);
 
-it('enters OTP state when Moolre returns TP14', function () {
+    $method = CustomerPaymentMethod::factory()->create([
+        'customer_id' => $this->customer->id,
+        'type' => PaymentMethod::MobileMoney->value,
+        'provider' => '13',
+        'account_number' => '0541234567',
+        'label' => 'MTN MoMo - 0541234567',
+        'verified_at' => now(),
+        'is_default' => true,
+    ]);
+
+    $this->actingAs($user);
+
     Http::fake([
-        '*/payment' => Http::response(['status' => 0, 'code' => 'TP14', 'message' => 'Please complete the verification sent via SMS.'], 200),
+        '*/request-payments' => Http::response([
+            'responseCode' => 200,
+            'data' => ['transactionReference' => 'TXN-456', 'checkoutUrl' => 'https://checkout.transflow.test/pay/TXN-456'],
+        ], 200),
     ]);
 
     Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
+        ->set('paymentChoice', 'saved')
+        ->set('selectedMethodId', $method->id)
+        ->call('initiateCheckout')
+        ->assertRedirect('https://checkout.transflow.test/pay/TXN-456');
+
+    Http::assertSent(fn ($request) => $request['paymentMethod'] === 'mobile_money' &&
+        $request['msisdn'] === '0541234567' &&
+        $request['network'] === 'MTN'
+    );
+});
+
+it('validates new momo number before initiating', function () {
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
+        ->set('paymentChoice', 'new_momo')
         ->set('momoNetwork', '13')
-        ->set('momoNumber', '0541234567')
-        ->call('processMobileMoney')
-        ->assertHasNoErrors()
-        ->assertSet('paymentStep', 'otp');
-
-    // Channel + number saved to DB, but payment_status still Unpaid and no reference
-    $booking = $this->booking->fresh();
-
-    expect($booking->payment_status)->toBe(PaymentStatus::Unpaid)
-        ->and($booking->payment_reference)->toBeNull()
-        ->and($booking->payment_channel)->toBe('13')
-        ->and($booking->payer_number)->toBe('0541234567');
+        ->set('momoNumber', '0201234567') // Telecel prefix on MTN network
+        ->call('initiateCheckout')
+        ->assertSet('errorMessage', fn ($v) => $v !== null);
 });
 
-it('restores OTP state on page refresh when channel is set but reference is null', function () {
+it('shows error message when Transflow returns a retryable error', function () {
+    Http::fake([
+        '*/request-payments' => Http::response([
+            'responseCode' => 400,
+            'responseMessage' => 'Transaction limit exceeded. Please try again.',
+        ], 200),
+    ]);
+
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
+        ->set('paymentChoice', '')
+        ->call('initiateCheckout')
+        ->assertSet('errorMessage', 'Transaction limit exceeded. Please try again.');
+});
+
+it('shows fatal error for merchant configuration errors', function () {
+    Http::fake([
+        '*/request-payments' => Http::response([
+            'responseCode' => 400,
+            'responseMessage' => 'Invalid merchant account setup.',
+        ], 200),
+    ]);
+
+    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
+        ->set('paymentChoice', '')
+        ->call('initiateCheckout')
+        ->assertSet('fatalError', fn ($v) => $v !== null)
+        ->assertSet('errorMessage', null);
+});
+
+// ── cancelPayment ─────────────────────────────────────────────────────────────
+
+it('cancel payment resets booking and returns to form step', function () {
     $this->booking->update([
+        'payment_status' => 'pending',
+        'payment_reference' => 'TXN-123',
         'payment_channel' => '13',
         'payer_number' => '0541234567',
-        'payment_status' => 'unpaid',
-        'payment_reference' => null,
     ]);
 
     Livewire::test(CheckoutPayment::class, ['booking' => $this->booking->fresh()])
-        ->assertSet('paymentStep', 'otp')
-        ->assertSet('momoNetwork', '13')
-        ->assertSet('momoNumber', '0541234567');
-});
-
-it('submits OTP and enters awaiting state on TP17 then TR099', function () {
-    $this->booking->update([
-        'payment_channel' => '13',
-        'payer_number' => '0541234567',
-    ]);
-
-    Http::fake([
-        '*/payment' => Http::sequence()
-            ->push(['code' => 'TP17', 'message' => 'OTP verified.'], 200)
-            ->push(['status' => 1, 'code' => 'TR099', 'data' => 'MOOLRE-REF-999', 'message' => 'Prompt sent.'], 200),
-    ]);
-
-    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking->fresh()])
-        ->assertSet('paymentStep', 'otp')
-        ->set('otpCode', '123456')
-        ->call('submitOtp')
-        ->assertHasNoErrors()
-        ->assertSet('paymentStep', 'awaiting');
-
-    $booking = $this->booking->fresh();
-
-    expect($booking->payment_status)->toBe(PaymentStatus::Pending)
-        ->and($booking->payment_reference)->toBe('MOOLRE-REF-999');
-});
-
-it('shows error and stays on OTP step for invalid OTP (TP15)', function () {
-    $this->booking->update(['payment_channel' => '13', 'payer_number' => '0541234567']);
-
-    Http::fake([
-        '*/payment' => Http::response(['status' => 0, 'code' => 'TP15', 'message' => 'Invalid OTP.'], 200),
-    ]);
-
-    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking->fresh()])
-        ->set('otpCode', '000000')
-        ->call('submitOtp')
-        ->assertSet('paymentStep', 'otp')
-        ->assertSet('errorMessage', 'Invalid verification code. Please check and try again.');
-});
-
-it('clears OTP DB state and shows form on cancelPayment', function () {
-    $this->booking->update(['payment_channel' => '13', 'payer_number' => '0541234567']);
-
-    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking->fresh()])
-        ->assertSet('paymentStep', 'otp')
         ->call('cancelPayment')
         ->assertSet('paymentStep', 'form');
 
     $booking = $this->booking->fresh();
 
-    expect($booking->payment_channel)->toBeNull()
-        ->and($booking->payer_number)->toBeNull()
+    expect($booking->payment_status)->toBe(PaymentStatus::Unpaid)
         ->and($booking->payment_reference)->toBeNull()
-        ->and($booking->payment_status)->toBe(PaymentStatus::Unpaid);
+        ->and($booking->payment_channel)->toBeNull()
+        ->and($booking->payer_number)->toBeNull();
 });
 
-// ── Polling resume ────────────────────────────────────────────────────────────
+// ── checkPaymentStatus ────────────────────────────────────────────────────────
 
-it('resumes awaiting state on refresh when payment_reference is set', function () {
-    $this->booking->update([
-        'payment_status' => 'pending',
-        'payment_reference' => 'MOOLRE-TEST-123',
-        'payment_channel' => '13',
-        'payer_number' => '0541234567',
-    ]);
-
-    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking->fresh()])
-        ->assertSet('paymentStep', 'awaiting')
-        ->assertSet('momoNetwork', '13')
-        ->assertSet('momoNumber', '0541234567');
-});
-
-it('redirects to confirmation and notifies customer when polling detects successful payment', function () {
-    Notification::fake();
-
+it('redirects to confirmation when polling detects paid status', function () {
     $component = Livewire::test(CheckoutPayment::class, ['booking' => $this->booking]);
 
-    $this->booking->update([
-        'payment_status' => 'paid',
-        'payment_reference' => 'MOOLRE-TEST-123',
-        'payment_channel' => '13',
-        'payer_number' => '0541234567',
-    ]);
+    $this->booking->update(['payment_status' => 'paid', 'payment_reference' => 'TXN-123']);
 
     $component
         ->call('checkPaymentStatus')
         ->assertRedirect(route('booking.confirmation', ['booking' => $this->booking->reference]));
-
-    Notification::assertSentTo(
-        [$this->customer],
-        BookingConfirmedNotification::class,
-        fn ($notification) => $notification->booking->id === $this->booking->id
-    );
 });
 
-// ── Auto-initiate ─────────────────────────────────────────────────────────────
+it('shows error and returns to form when polling detects failed status', function () {
+    session()->put('payment_awaiting', true);
 
-it('sets autoInitiate and pre-populates network and number from session', function () {
-    session()->put('checkout_payment_method', [
-        'network' => '13',
-        'number' => '0541234567',
-    ]);
+    $component = Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
+        ->assertSet('paymentStep', 'awaiting');
 
-    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
-        ->assertSet('autoInitiate', true)
-        ->assertSet('momoNetwork', '13')
-        ->assertSet('momoNumber', '0541234567');
+    $this->booking->update(['payment_status' => 'failed']);
 
-    expect(session()->has('checkout_payment_method'))->toBeFalse();
-});
-
-// ── Validation ────────────────────────────────────────────────────────────────
-
-it('validates mobile money network and number are required', function () {
-    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
-        ->set('momoNetwork', '')
-        ->set('momoNumber', '')
-        ->call('processMobileMoney')
-        ->assertHasErrors(['momoNetwork', 'momoNumber']);
-});
-
-it('validates mobile money number matches selected network prefix', function () {
-    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking])
-        ->set('momoNetwork', '13') // MTN
-        ->set('momoNumber', '0201234567') // Telecel prefix
-        ->call('processMobileMoney')
-        ->assertHasErrors(['momoNumber']);
-});
-
-it('validates OTP code is required and must be 6 digits', function () {
-    $this->booking->update(['payment_channel' => '13', 'payer_number' => '0541234567']);
-
-    Livewire::test(CheckoutPayment::class, ['booking' => $this->booking->fresh()])
-        ->set('otpCode', '')
-        ->call('submitOtp')
-        ->assertHasErrors(['otpCode'])
-        ->set('otpCode', '123')
-        ->call('submitOtp')
-        ->assertHasErrors(['otpCode']);
+    $component
+        ->call('checkPaymentStatus')
+        ->assertSet('paymentStep', 'form')
+        ->assertSet('errorMessage', fn ($v) => str_contains($v, 'declined'));
 });

@@ -27,7 +27,8 @@ class AdminSettings extends Component
     #[Url]
     public string $tab = 'company';
 
-    // Business Info
+    // ── Business Info ─────────────────────────────────────────────────────────
+
     public ?string $business_name = '';
 
     public ?string $business_address = '';
@@ -42,29 +43,7 @@ class AdminSettings extends Component
 
     public ?string $current_logo_path = null;
 
-    // Payment Gateway
-    public ?string $paystack_public_key = '';
-
-    public ?string $paystack_secret_key = '';
-
-    // Notification Preferences
-    public bool $email_notifications = false;
-
-    public bool $sms_notifications = false;
-
-    // Delivery Locations
-    /** @var array<int, string> */
-    public array $delivery_locations = [];
-
-    public bool $locationModalOpen = false;
-
-    public ?int $editingLocationIndex = null;
-
-    public string $locationName = '';
-
-    // Bank Details
-    // Event Booking Settings
-    public int $event_lead_days = 0;
+    // ── Bank Details ──────────────────────────────────────────────────────────
 
     public ?string $bank_name = '';
 
@@ -74,18 +53,42 @@ class AdminSettings extends Component
 
     public ?string $branch_code = '';
 
-    // Social Media Links
+    // ── Social Media ──────────────────────────────────────────────────────────
+
     public ?string $social_facebook = '';
 
     public ?string $social_instagram = '';
 
-    public ?string $social_twitter = '';
-
     public ?string $social_tiktok = '';
+
+    // ── Payment ───────────────────────────────────────────────────────────────
+
+    /** Which payment gateway is active: 'transflow' or 'moolre' */
+    public string $active_payment_gateway = 'transflow';
+
+    // ── Notifications ─────────────────────────────────────────────────────────
+
+    public bool $email_notifications = false;
+
+    public bool $sms_notifications = false;
+
+    // ── Booking / Delivery ────────────────────────────────────────────────────
+
+    /** @var array<int, string> */
+    public array $delivery_locations = [];
+
+    public bool $locationModalOpen = false;
+
+    public ?int $editingLocationIndex = null;
+
+    public string $locationName = '';
+
+    public int $event_lead_days = 0;
 
     public function mount(): void
     {
         $this->authorizePermission('manage_settings');
+
         $settings = Setting::all()->keyBy('key');
 
         $this->business_name = $settings->get('business_name')?->value ?? '';
@@ -95,16 +98,6 @@ class AdminSettings extends Component
         $this->business_email = $settings->get('business_email')?->value ?? '';
         $this->current_logo_path = $settings->get('business_logo')?->value;
 
-        $this->paystack_public_key = $settings->get('paystack_public_key')?->value ?? '';
-        $this->paystack_secret_key = $settings->get('paystack_secret_key')?->value ?? '';
-
-        $this->email_notifications = (bool) ($settings->get('email_enabled')?->value ?? false);
-        $this->sms_notifications = (bool) ($settings->get('sms_enabled')?->value ?? false);
-
-        $this->event_lead_days = (int) ($settings->get('event_lead_days')?->value ?? 0);
-
-        $this->delivery_locations = $settings->get('delivery_locations')?->value ?? [];
-
         $this->bank_name = $settings->get('bank_name')?->value ?? '';
         $this->account_name = $settings->get('account_name')?->value ?? '';
         $this->account_number = $settings->get('account_number')?->value ?? '';
@@ -112,14 +105,23 @@ class AdminSettings extends Component
 
         $this->social_facebook = $settings->get('social_facebook')?->value ?? '';
         $this->social_instagram = $settings->get('social_instagram')?->value ?? '';
-        $this->social_twitter = $settings->get('social_twitter')?->value ?? '';
         $this->social_tiktok = $settings->get('social_tiktok')?->value ?? '';
+
+        $this->active_payment_gateway = $settings->get('active_payment_gateway')?->value ?? 'transflow';
+
+        $this->email_notifications = (bool) ($settings->get('email_enabled')?->value ?? false);
+        $this->sms_notifications = (bool) ($settings->get('sms_enabled')?->value ?? false);
+
+        $this->delivery_locations = $settings->get('delivery_locations')?->value ?? [];
+        $this->event_lead_days = (int) ($settings->get('event_lead_days')?->value ?? 0);
     }
 
     public function setTab(string $tab): void
     {
         $this->tab = $tab;
     }
+
+    // ── Savers ────────────────────────────────────────────────────────────────
 
     public function saveBusinessInfo(): void
     {
@@ -129,12 +131,11 @@ class AdminSettings extends Component
             'business_phone' => 'required|string|max:20',
             'business_whatsapp' => 'nullable|string|max:20',
             'business_email' => 'required|email|max:255',
-            'business_logo' => 'nullable|image|max:2048', // 2MB Max
+            'business_logo' => 'nullable|image|max:2048',
         ]);
 
-        $logo = $this->business_logo;
-        if ($logo instanceof \Illuminate\Http\UploadedFile) {
-            $path = $logo->store('logos', 'public');
+        if ($this->business_logo instanceof \Illuminate\Http\UploadedFile) {
+            $path = $this->business_logo->store('logos', 'public');
             $this->updateSetting('business_logo', $path, \App\Enums\SettingType::String, 'business');
             $this->current_logo_path = $path;
             $this->business_logo = null;
@@ -149,18 +150,50 @@ class AdminSettings extends Component
         $this->dispatch('banner', style: 'success', message: 'Business information updated successfully.');
     }
 
-    public function savePaymentSettings(): void
+    public function saveBankDetails(): void
     {
         $this->validate([
-            'paystack_public_key' => 'required|string',
-            'paystack_secret_key' => 'required|string',
+            'bank_name' => 'required|string|max:255',
+            'account_name' => 'required|string|max:255',
+            'account_number' => 'required|string|max:50',
+            'branch_code' => 'nullable|string|max:20',
         ]);
 
-        $this->updateSetting('paystack_public_key', $this->paystack_public_key, \App\Enums\SettingType::String, 'payment');
-        $this->updateSetting('paystack_secret_key', $this->paystack_secret_key, \App\Enums\SettingType::String, 'payment');
+        $this->updateSetting('bank_name', $this->bank_name, \App\Enums\SettingType::String, 'bank');
+        $this->updateSetting('account_name', $this->account_name, \App\Enums\SettingType::String, 'bank');
+        $this->updateSetting('account_number', $this->account_number, \App\Enums\SettingType::String, 'bank');
+        $this->updateSetting('branch_code', $this->branch_code, \App\Enums\SettingType::String, 'bank');
 
-        $this->dispatch('banner', style: 'success', message: 'Payment gateway credentials updated.');
+        $this->dispatch('banner', style: 'success', message: 'Bank details updated successfully.');
     }
+
+    public function saveSocialLinks(): void
+    {
+        $this->validate([
+            'social_facebook' => 'nullable|url|max:255',
+            'social_instagram' => 'nullable|url|max:255',
+            'social_tiktok' => 'nullable|url|max:255',
+        ]);
+
+        $this->updateSetting('social_facebook', $this->social_facebook, \App\Enums\SettingType::String, 'social');
+        $this->updateSetting('social_instagram', $this->social_instagram, \App\Enums\SettingType::String, 'social');
+        $this->updateSetting('social_tiktok', $this->social_tiktok, \App\Enums\SettingType::String, 'social');
+
+        $this->dispatch('banner', style: 'success', message: 'Social media links updated.');
+    }
+
+    public function savePaymentGateway(): void
+    {
+        $this->validate([
+            'active_payment_gateway' => 'required|in:transflow,moolre',
+        ]);
+
+        $this->updateSetting('active_payment_gateway', $this->active_payment_gateway, \App\Enums\SettingType::String, 'payment');
+
+        $this->dispatch('banner', style: 'success', message: 'Active payment gateway updated.');
+    }
+
+    // ── Delivery Locations ────────────────────────────────────────────────────
 
     public function openAddLocationModal(): void
     {
@@ -221,7 +254,7 @@ class AdminSettings extends Component
 
     public function moveLocationDown(int $index): void
     {
-        if ($index >= count($this->delivery_locations) - 1) {
+        if ($index >= \count($this->delivery_locations) - 1) {
             return;
         }
 
@@ -236,6 +269,8 @@ class AdminSettings extends Component
         $this->updateSetting('delivery_locations', json_encode(array_values($this->delivery_locations)), \App\Enums\SettingType::Json, 'booking');
     }
 
+    // ── Event Settings ────────────────────────────────────────────────────────
+
     public function saveEventSettings(): void
     {
         $this->validate([
@@ -249,64 +284,21 @@ class AdminSettings extends Component
         $this->dispatch('banner', style: 'success', message: 'Event booking settings updated.');
     }
 
-    public function saveSocialLinks(): void
-    {
-        $this->validate([
-            'social_facebook' => 'nullable|url|max:255',
-            'social_instagram' => 'nullable|url|max:255',
-            'social_twitter' => 'nullable|url|max:255',
-            'social_tiktok' => 'nullable|url|max:255',
-        ]);
-
-        $this->updateSetting('social_facebook', $this->social_facebook, \App\Enums\SettingType::String, 'social');
-        $this->updateSetting('social_instagram', $this->social_instagram, \App\Enums\SettingType::String, 'social');
-        $this->updateSetting('social_twitter', $this->social_twitter, \App\Enums\SettingType::String, 'social');
-        $this->updateSetting('social_tiktok', $this->social_tiktok, \App\Enums\SettingType::String, 'social');
-
-        $this->dispatch('banner', style: 'success', message: 'Social media links updated.');
-    }
-
-    public function saveBankDetails(): void
-    {
-        $this->validate([
-            'bank_name' => 'required|string|max:255',
-            'account_name' => 'required|string|max:255',
-            'account_number' => 'required|string|max:50',
-            'branch_code' => 'nullable|string|max:20',
-        ]);
-
-        $this->updateSetting('bank_name', $this->bank_name, \App\Enums\SettingType::String, 'bank');
-        $this->updateSetting('account_name', $this->account_name, \App\Enums\SettingType::String, 'bank');
-        $this->updateSetting('account_number', $this->account_number, \App\Enums\SettingType::String, 'bank');
-        $this->updateSetting('branch_code', $this->branch_code, \App\Enums\SettingType::String, 'bank');
-
-        $this->dispatch('banner', style: 'success', message: 'Company bank details updated successfully.');
-    }
+    // ── Notification Toggles ──────────────────────────────────────────────────
 
     public function updatedEmailNotifications($value): void
     {
         $this->updateSetting('email_enabled', $value, \App\Enums\SettingType::Boolean, 'notifications');
-        $this->dispatch('banner', style: 'success', message: 'Notification preferences updated successfully.');
+        $this->dispatch('banner', style: 'success', message: 'Notification preferences updated.');
     }
 
     public function updatedSmsNotifications($value): void
     {
         $this->updateSetting('sms_enabled', $value, \App\Enums\SettingType::Boolean, 'notifications');
-        $this->dispatch('banner', style: 'success', message: 'Notification preferences updated successfully.');
+        $this->dispatch('banner', style: 'success', message: 'Notification preferences updated.');
     }
 
-    private function updateSetting(string $key, mixed $value, \App\Enums\SettingType $type = \App\Enums\SettingType::String, ?string $group = null): void
-    {
-        Setting::updateOrCreate(
-            ['key' => $key],
-            [
-                'value' => $value,
-                'type' => $type,
-                'group' => $group,
-                'label' => str($key)->replace('_', ' ')->title()->value(),
-            ]
-        );
-    }
+    // ── System Stats ──────────────────────────────────────────────────────────
 
     #[Computed]
     public function systemStats(): array
@@ -351,11 +343,26 @@ class AdminSettings extends Component
                 $days = (int) floor($uptimeSeconds / 86400);
                 $hours = (int) floor(($uptimeSeconds / 3600) % 24);
 
-                return (string) $days.'d '.(string) $hours.'h';
+                return "{$days}d {$hours}h";
             }
         }
 
         return 'N/A';
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private function updateSetting(string $key, mixed $value, \App\Enums\SettingType $type = \App\Enums\SettingType::String, ?string $group = null): void
+    {
+        Setting::updateOrCreate(
+            ['key' => $key],
+            [
+                'value' => $value,
+                'type' => $type,
+                'group' => $group,
+                'label' => str($key)->replace('_', ' ')->title()->value(),
+            ]
+        );
     }
 
     public function render(): View
