@@ -83,6 +83,7 @@ class UserForm extends Component
                 'must_change_password' => true,
                 'invitation_token' => $token,
                 'invitation_sent_at' => now(),
+                'email_verified_at' => now(),
             ]);
 
             $user->roles()->sync([$this->selectedRole]);

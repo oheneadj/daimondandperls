@@ -51,6 +51,12 @@ class FortifyServiceProvider extends ServiceProvider
             \Laravel\Fortify\Http\Responses\LoginResponse::class,
             \App\Http\Responses\LoginResponse::class
         );
+
+        // Add custom redirect logic after registration
+        $this->app->singleton(
+            \Laravel\Fortify\Contracts\RegisterResponse::class,
+            \App\Http\Responses\RegisterResponse::class
+        );
     }
 
     /**

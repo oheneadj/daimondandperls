@@ -75,7 +75,9 @@
       "Bash(grep -n 'currentStep\\\\|steps\\\\|$step\\\\|Step::' /home/oheneadj/server/dpc/app/Livewire/Booking/BookingWizard.php)",
       "Bash(vendor/bin/pint --dirty --format agent database/seeders/)",
       "Bash(npm run *)",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "mcp__laravel-boost__get-config",
+      "Bash(vendor/bin/pint app/Http/Responses/RegisterResponse.php app/Providers/FortifyServiceProvider.php --format agent)"
     ],
     "additionalDirectories": [
       "/home/oheneadj/server/dpc/resources/views/components",

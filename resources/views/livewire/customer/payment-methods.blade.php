@@ -296,12 +296,55 @@
                         </div>
 
                         <div class="flex items-center justify-between pt-2">
-                            <button type="button" wire:click="resendOtp({{ $verifyingId }})" class="text-[13px] font-medium text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
-                                </svg>
-                                Resend Code
-                            </button>
+                            <div
+                                x-data="{
+                                    countdown: 60,
+                                    timer: null,
+                                    start() {
+                                        this.countdown = 60;
+                                        clearInterval(this.timer);
+                                        this.timer = setInterval(() => {
+                                            if (this.countdown > 0) { this.countdown--; }
+                                            else { clearInterval(this.timer); }
+                                        }, 1000);
+                                    }
+                                }"
+                                x-init="start()"
+                            >
+                                {{-- Loading state while wire call is in-flight --}}
+                                <span wire:loading wire:target="resendOtp" class="text-[13px] text-base-content/50 inline-flex items-center gap-1.5">
+                                    <span class="loading loading-spinner loading-xs"></span>
+                                    Sending...
+                                </span>
+
+                                {{-- Countdown / resend button --}}
+                                <button
+                                    type="button"
+                                    wire:loading.remove wire:target="resendOtp"
+                                    wire:click="resendOtp({{ $verifyingId }})"
+                                    x-on:click="start()"
+                                    :disabled="countdown > 0"
+                                    x-bind:class="countdown > 0 ? 'text-base-content/30 cursor-not-allowed' : 'text-primary hover:text-primary/80 cursor-pointer'"
+                                    class="text-[13px] font-medium transition-colors inline-flex items-center gap-1.5"
+                                >
+                                    <template x-if="countdown > 0">
+                                        <span class="inline-flex items-center gap-1.5">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+                                            </svg>
+                                            <span x-text="`Resend in ${countdown}s`"></span>
+                                        </span>
+                                    </template>
+                                    <template x-if="countdown === 0">
+                                        <span class="inline-flex items-center gap-1.5">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+                                            </svg>
+                                            Resend Code
+                                        </span>
+                                    </template>
+                                </button>
+                            </div>
                             <x-ui.button type="submit" variant="primary" size="md" :loading="false" wire:loading.attr="disabled" wire:target="verifyOtp">
                                 <span wire:loading.remove wire:target="verifyOtp">Verify Account</span>
                                 <span wire:loading wire:target="verifyOtp" class="flex items-center gap-2">
