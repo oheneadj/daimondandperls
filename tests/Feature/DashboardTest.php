@@ -62,6 +62,5 @@ test('dashboard displays correct operational metrics', function () {
     ]);
 
     Livewire::test(Dashboard::class)
-        ->assertSet('totalBookingsToday', 3)
         ->assertSet('needsAttentionCount', 3);
 });

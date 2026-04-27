@@ -10,6 +10,7 @@ use App\Models\Booking;
 use App\Models\Payment;
 use App\Notifications\BookingConfirmedNotification;
 use App\Services\InvoiceService;
+use App\Services\Payment\PaymentLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -48,6 +49,17 @@ class TransflowWebhookController extends Controller
 
         // Step 1 — Find the booking using the transactionReference we stored at initiate time
         $reference = (string) ($payload['refNo'] ?? '');
+
+        PaymentLogger::log(
+            event: 'webhook',
+            gateway: 'transflow',
+            direction: 'inbound',
+            bookingReference: $reference ?: null,
+            level: 'info',
+            status: 'received',
+            gatewayRef: $reference ?: null,
+            rawResponse: $payload,
+        );
 
         if (empty($reference)) {
             Log::warning('Transflow Webhook: Missing refNo in payload');
@@ -98,6 +110,17 @@ class TransflowWebhookController extends Controller
 
         Log::info('Transflow Webhook: Payment marked PAID', ['booking' => $booking->reference]);
 
+        PaymentLogger::log(
+            event: 'webhook-paid',
+            gateway: 'transflow',
+            direction: 'inbound',
+            bookingReference: $booking->reference,
+            level: 'info',
+            status: 'paid',
+            gatewayRef: (string) ($payload['refNo'] ?? ''),
+            rawResponse: $payload,
+        );
+
         if ($alreadyPaid) {
             // Duplicate webhook — payment record and notification already handled
             return;
@@ -138,6 +161,19 @@ class TransflowWebhookController extends Controller
             'responseCode' => $payload['responseCode'] ?? 'unknown',
             'responseMessage' => $payload['responseMessage'] ?? '',
         ]);
+
+        PaymentLogger::log(
+            event: 'webhook-failed',
+            gateway: 'transflow',
+            direction: 'inbound',
+            bookingReference: $booking->reference,
+            level: 'warning',
+            status: 'failed',
+            gatewayRef: (string) ($payload['refNo'] ?? ''),
+            errorCode: (string) ($payload['responseCode'] ?? ''),
+            errorMessage: (string) ($payload['responseMessage'] ?? ''),
+            rawResponse: $payload,
+        );
     }
 
     /**

@@ -48,4 +48,8 @@ return [
         'webhook_secret' => env('MOOLRE_WEBHOOK_SECRET'),
     ],
 
+    'google' => [
+        'analytics_id' => env('GOOGLE_ANALYTICS_ID'),
+    ],
+
 ];

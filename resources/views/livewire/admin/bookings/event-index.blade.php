@@ -47,21 +47,50 @@
                 <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Unpaid') }}</p>
             </div>
         </div>
-        <div class="bg-white border border-[#A31C4E]/10 rounded-xl p-4 flex items-center gap-4">
-            <div class="w-10 h-10 rounded-xl bg-[#A31C4E]/10 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#A31C4E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <button wire:click="filterUpcoming"
+            @class([
+                'text-left rounded-xl p-4 flex items-center gap-4 border transition-colors',
+                'bg-[#A31C4E] border-[#A31C4E]' => $startDate === today()->toDateString() && $endDate === today()->addDays(30)->toDateString(),
+                'bg-white border-base-content/5 hover:border-[#A31C4E]/30' => !($startDate === today()->toDateString() && $endDate === today()->addDays(30)->toDateString()),
+            ])>
+            <div @class([
+                'w-10 h-10 rounded-xl flex items-center justify-center',
+                'bg-white/20' => $startDate === today()->toDateString() && $endDate === today()->addDays(30)->toDateString(),
+                'bg-[#A31C4E]/10' => !($startDate === today()->toDateString() && $endDate === today()->addDays(30)->toDateString()),
+            ])>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 {{ $startDate === today()->toDateString() && $endDate === today()->addDays(30)->toDateString() ? 'text-white' : 'text-[#A31C4E]' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
             </div>
             <div>
-                <p class="text-[20px] font-bold text-[#A31C4E]">{{ number_format($counts['upcoming']) }}</p>
-                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Upcoming 30d') }}</p>
+                <p class="text-[20px] font-bold {{ $startDate === today()->toDateString() && $endDate === today()->addDays(30)->toDateString() ? 'text-white' : 'text-base-content' }}">{{ number_format($counts['upcoming']) }}</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest {{ $startDate === today()->toDateString() && $endDate === today()->addDays(30)->toDateString() ? 'text-white/70' : 'text-base-content/40' }}">{{ __('Upcoming 30d') }}</p>
             </div>
-        </div>
+        </button>
     </div>
 
     {{-- Table --}}
     <x-ui.table search="search">
         <x-slot name="filters">
             <div class="flex flex-wrap items-center gap-3">
+                {{-- Quick-filter pills --}}
+                <div class="flex items-center gap-2">
+                    <button wire:click="filterToday" @class([
+                        'px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide transition-colors',
+                        'bg-[#F96015] text-white' => $startDate === today()->toDateString() && $endDate === today()->toDateString(),
+                        'bg-base-200 text-base-content/60 hover:bg-base-300' => !($startDate === today()->toDateString() && $endDate === today()->toDateString()),
+                    ])>Today</button>
+                    <button wire:click="filterThisWeek" @class([
+                        'px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide transition-colors',
+                        'bg-[#F96015] text-white' => $startDate === today()->startOfWeek()->toDateString() && $endDate === today()->endOfWeek()->toDateString(),
+                        'bg-base-200 text-base-content/60 hover:bg-base-300' => !($startDate === today()->startOfWeek()->toDateString() && $endDate === today()->endOfWeek()->toDateString()),
+                    ])>This Week</button>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input type="date" wire:model.live="startDate" class="bg-base-200 border-none text-[13px] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#F96015]/30 outline-none transition-all font-medium">
+                    <span class="text-base-content/30 text-[11px] font-bold">&rarr;</span>
+                    <input type="date" wire:model.live="endDate" class="bg-base-200 border-none text-[13px] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#F96015]/30 outline-none transition-all font-medium">
+                </div>
+
                 <select wire:model.live="status" class="bg-base-200 border-none text-[13px] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#F96015]/30 outline-none transition-all font-medium">
                     <option value="">All Statuses</option>
                     @foreach($statuses as $s)
@@ -83,11 +112,6 @@
                     @endforeach
                 </select>
 
-                <div class="flex items-center gap-2">
-                    <input type="date" wire:model.live="startDate" class="bg-base-200 border-none text-[13px] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#F96015]/30 outline-none transition-all font-medium">
-                    <span class="text-base-content/30 text-[11px] font-bold">&rarr;</span>
-                    <input type="date" wire:model.live="endDate" class="bg-base-200 border-none text-[13px] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#F96015]/30 outline-none transition-all font-medium">
-                </div>
             </div>
         </x-slot>
 

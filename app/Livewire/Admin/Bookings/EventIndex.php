@@ -79,6 +79,27 @@ class EventIndex extends Component
         }
     }
 
+    public function filterUpcoming(): void
+    {
+        $this->startDate = today()->toDateString();
+        $this->endDate = today()->addDays(30)->toDateString();
+        $this->resetPage();
+    }
+
+    public function filterToday(): void
+    {
+        $this->startDate = today()->toDateString();
+        $this->endDate = today()->toDateString();
+        $this->resetPage();
+    }
+
+    public function filterThisWeek(): void
+    {
+        $this->startDate = today()->startOfWeek()->toDateString();
+        $this->endDate = today()->endOfWeek()->toDateString();
+        $this->resetPage();
+    }
+
     public function cancelBooking(int $id): void
     {
         $booking = Booking::findOrFail($id);

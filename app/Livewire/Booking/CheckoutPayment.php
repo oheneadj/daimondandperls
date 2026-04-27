@@ -7,7 +7,7 @@ namespace App\Livewire\Booking;
 use App\Contracts\PaymentGatewayContract;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
-use App\Models\ErrorLog;
+use App\Services\Payment\PaymentLogger;
 use App\Traits\HandlesMomoValidation;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -191,14 +191,16 @@ class CheckoutPayment extends Component
             'response' => $result->raw ?? [],
         ]);
 
-        ErrorLog::create([
-            'source' => 'payment',
-            'context' => 'initiate-checkout',
-            'level' => 'error',
-            'booking_reference' => $this->booking->reference,
-            'message' => $message,
-            'payload' => $result->raw ?? [],
-        ]);
+        PaymentLogger::log(
+            event: 'initiate-checkout',
+            gateway: (string) config('payments.default', 'transflow'),
+            direction: 'outbound',
+            bookingReference: $this->booking->reference,
+            level: 'error',
+            status: 'failed',
+            errorMessage: $message,
+            rawResponse: $result->raw ?? [],
+        );
 
         $fatalPhrases = ['merchant account setup', 'account setup incomplete', 'invalid merchant', 'merchant not found'];
         $isFatal = collect($fatalPhrases)->contains(fn (string $phrase) => str_contains(strtolower($message), $phrase));
@@ -305,14 +307,16 @@ class CheckoutPayment extends Component
                 'payment_details' => $this->booking->payment_details,
             ]);
 
-            ErrorLog::create([
-                'source' => 'payment',
-                'context' => 'webhook-failed',
-                'level' => 'warning',
-                'booking_reference' => $this->booking->reference,
-                'message' => 'Payment was declined or failed.',
-                'payload' => $this->booking->payment_details ?? [],
-            ]);
+            PaymentLogger::log(
+                event: 'webhook-failed',
+                gateway: (string) config('payments.default', 'transflow'),
+                direction: 'inbound',
+                bookingReference: $this->booking->reference,
+                level: 'warning',
+                status: 'failed',
+                errorMessage: 'Payment was declined or failed.',
+                rawResponse: $this->booking->payment_details ?? [],
+            );
 
             $this->paymentStep = 'form';
             $this->errorMessage = 'Payment was declined or failed. Please try again.';

@@ -6,7 +6,7 @@
 ])
 
 @php
-    $whatsappNumber = $number ?? (\App\Models\Setting::where('key', 'business_whatsapp')->value('value') ?: '233244203181');
+    $whatsappNumber = $number ?? dpc_setting('business_whatsapp', '233244203181');
 
     $sizeClasses = match($size) {
         'sm'  => 'px-4 py-2.5 text-[12px] gap-2',

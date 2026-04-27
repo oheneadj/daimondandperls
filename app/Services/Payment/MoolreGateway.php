@@ -60,11 +60,6 @@ class MoolreGateway implements PaymentGatewayContract
      * Optional context keys:
      *   'otp' → OTP code when re-initiating after a TP14 OTP challenge
      *
-     * Returns:
-     *   InitiateResult::promptSent()   → push notification sent, wait for webhook
-     *   InitiateResult::otpRequired()  → Moolre needs OTP first (TP14)
-     *   InitiateResult::error()        → something went wrong
-     *
      * @param  array<string, mixed>  $context
      */
     public function initiate(Booking $booking, array $context = []): InitiateResult
@@ -94,18 +89,49 @@ class MoolreGateway implements PaymentGatewayContract
             'has_otp' => ! empty($otp),
         ]);
 
-        $response = $this->post('/payment', $payload);
+        $loggablePayload = array_diff_key($payload, array_flip(['accountnumber']));
+
+        [$response, $httpStatus, $durationMs] = $this->post('/payment', $payload);
 
         if ($response === null) {
+            PaymentLogger::log(
+                event: 'initiate',
+                gateway: 'moolre',
+                direction: 'outbound',
+                bookingReference: $booking->reference,
+                level: 'error',
+                status: 'failed',
+                errorMessage: 'Could not reach the payment gateway.',
+                network: $channel,
+                payerNumber: $payer,
+                rawRequest: $loggablePayload,
+                durationMs: $durationMs,
+            );
+
             return InitiateResult::error('Could not reach the payment gateway. Please try again.');
         }
 
         $code = $response['code'] ?? null;
         $status = (int) ($response['status'] ?? 0);
 
-        // TP14 → Moolre requires OTP from the customer before charging
         if ($code === 'TP14') {
             Log::info('Moolre: OTP required', ['booking' => $booking->reference]);
+
+            PaymentLogger::log(
+                event: 'initiate',
+                gateway: 'moolre',
+                direction: 'outbound',
+                bookingReference: $booking->reference,
+                level: 'info',
+                status: 'otp_required',
+                errorCode: 'TP14',
+                network: $channel,
+                payerNumber: $payer,
+                rawRequest: $loggablePayload,
+                rawResponse: $response,
+                httpStatus: $httpStatus,
+                durationMs: $durationMs,
+            );
 
             return InitiateResult::otpRequired(
                 message: $response['message'] ?? 'A verification code has been sent to your phone.',
@@ -113,37 +139,61 @@ class MoolreGateway implements PaymentGatewayContract
             );
         }
 
-        // status=1 → push notification sent successfully
         if ($status === 1) {
             $reference = (string) ($response['data'] ?? '');
 
             Log::info('Moolre: Payment prompt sent', ['booking' => $booking->reference, 'ref' => $reference]);
 
+            PaymentLogger::log(
+                event: 'initiate',
+                gateway: 'moolre',
+                direction: 'outbound',
+                bookingReference: $booking->reference,
+                level: 'info',
+                status: 'pending',
+                gatewayRef: $reference,
+                network: $channel,
+                payerNumber: $payer,
+                rawRequest: $loggablePayload,
+                rawResponse: $response,
+                httpStatus: $httpStatus,
+                durationMs: $durationMs,
+            );
+
             return InitiateResult::promptSent(reference: $reference, raw: $response);
         }
 
-        // Anything else is an error
         $message = $response['message'] ?? 'Payment initiation failed. Please try again.';
+
         Log::error('Moolre: Initiate failed', ['booking' => $booking->reference, 'response' => $response]);
+
+        PaymentLogger::log(
+            event: 'initiate',
+            gateway: 'moolre',
+            direction: 'outbound',
+            bookingReference: $booking->reference,
+            level: 'error',
+            status: 'failed',
+            errorCode: (string) ($response['code'] ?? ''),
+            errorMessage: $message,
+            network: $channel,
+            payerNumber: $payer,
+            rawRequest: $loggablePayload,
+            rawResponse: $response,
+            httpStatus: $httpStatus,
+            durationMs: $durationMs,
+        );
 
         return InitiateResult::error(message: $message, raw: $response);
     }
 
     /**
      * Submit the OTP the customer received and re-trigger the payment.
-     *
-     * This is Moolre-specific — other gateways don't need this step.
-     * Called by CheckoutPayment when $result->requiresOtp() is true.
-     *
-     * Returns the same InitiateResult types as initiate() so the UI
-     * can handle the response the same way.
      */
     public function submitOtp(Booking $booking, string $channel, string $payer, string $otp): InitiateResult
     {
         Log::info('Moolre: Submitting OTP', ['booking' => $booking->reference]);
 
-        // Moolre's OTP flow: re-send the payment request with the OTP attached.
-        // Their API code TP17 means OTP verified — we must then re-initiate to trigger the push.
         $payload = [
             'type' => 1,
             'channel' => $channel,
@@ -157,83 +207,185 @@ class MoolreGateway implements PaymentGatewayContract
             'accountnumber' => $this->merchantId,
         ];
 
-        $response = $this->post('/payment', $payload);
+        $loggablePayload = array_diff_key($payload, array_flip(['accountnumber']));
+
+        [$response, $httpStatus, $durationMs] = $this->post('/payment', $payload);
 
         if ($response === null) {
+            PaymentLogger::log(
+                event: 'submit-otp',
+                gateway: 'moolre',
+                direction: 'outbound',
+                bookingReference: $booking->reference,
+                level: 'error',
+                status: 'failed',
+                errorMessage: 'Could not reach the payment gateway.',
+                network: $channel,
+                payerNumber: $payer,
+                rawRequest: $loggablePayload,
+                durationMs: $durationMs,
+            );
+
             return InitiateResult::error('Could not reach the payment gateway. Please try again.');
         }
 
         $code = $response['code'] ?? null;
 
-        // TP17 → OTP accepted, now re-initiate without OTP to fire the actual prompt
         if ($code === 'TP17') {
             Log::info('Moolre: OTP accepted, re-initiating', ['booking' => $booking->reference]);
+
+            PaymentLogger::log(
+                event: 'submit-otp',
+                gateway: 'moolre',
+                direction: 'outbound',
+                bookingReference: $booking->reference,
+                level: 'info',
+                status: 'pending',
+                errorCode: 'TP17',
+                network: $channel,
+                payerNumber: $payer,
+                rawRequest: $loggablePayload,
+                rawResponse: $response,
+                httpStatus: $httpStatus,
+                durationMs: $durationMs,
+            );
 
             return $this->initiate($booking, ['channel' => $channel, 'payer' => $payer]);
         }
 
-        // TP15 → wrong OTP entered
         if ($code === 'TP15') {
+            PaymentLogger::log(
+                event: 'submit-otp',
+                gateway: 'moolre',
+                direction: 'outbound',
+                bookingReference: $booking->reference,
+                level: 'warning',
+                status: 'failed',
+                errorCode: 'TP15',
+                errorMessage: 'Invalid verification code.',
+                network: $channel,
+                payerNumber: $payer,
+                rawRequest: $loggablePayload,
+                rawResponse: $response,
+                httpStatus: $httpStatus,
+                durationMs: $durationMs,
+            );
+
             return InitiateResult::error('Invalid verification code. Please check and try again.', $response);
         }
 
         $message = $response['message'] ?? 'OTP verification failed. Please try again.';
+
         Log::error('Moolre: OTP submit failed', ['booking' => $booking->reference, 'code' => $code]);
+
+        PaymentLogger::log(
+            event: 'submit-otp',
+            gateway: 'moolre',
+            direction: 'outbound',
+            bookingReference: $booking->reference,
+            level: 'error',
+            status: 'failed',
+            errorCode: (string) ($code ?? ''),
+            errorMessage: $message,
+            network: $channel,
+            payerNumber: $payer,
+            rawRequest: $loggablePayload,
+            rawResponse: $response,
+            httpStatus: $httpStatus,
+            durationMs: $durationMs,
+        );
 
         return InitiateResult::error($message, $response);
     }
 
     /**
      * Check whether a Moolre transaction was paid.
-     *
-     * Called by the webhook controller after receiving a callback,
-     * and optionally by the polling fallback in CheckoutPayment.
      */
     public function verify(string $reference): VerifyResult
     {
         $payload = [
             'type' => 1,
-            'idtype' => '1', // query by our own externalref
+            'idtype' => '1',
             'id' => $reference,
             'accountnumber' => $this->merchantId,
         ];
 
         Log::info('Moolre: Verifying payment', ['reference' => $reference]);
 
-        $response = $this->post('/status', $payload);
+        $loggablePayload = array_diff_key($payload, array_flip(['accountnumber']));
+
+        [$response, $httpStatus, $durationMs] = $this->post('/status', $payload);
 
         if ($response === null) {
+            PaymentLogger::log(
+                event: 'verify',
+                gateway: 'moolre',
+                direction: 'outbound',
+                bookingReference: $reference,
+                level: 'error',
+                status: 'failed',
+                gatewayRef: $reference,
+                errorMessage: 'Could not reach Moolre to verify payment.',
+                rawRequest: $loggablePayload,
+                durationMs: $durationMs,
+            );
+
             return VerifyResult::failed('Could not reach Moolre to verify payment.');
         }
 
-        // txstatus=1 means confirmed paid
         $txstatus = (int) ($response['data']['txstatus'] ?? $response['txstatus'] ?? 0);
         $amount = (float) ($response['data']['amount'] ?? 0);
 
         if ($txstatus === 1) {
             Log::info('Moolre: Payment verified as PAID', ['reference' => $reference]);
 
-            return VerifyResult::confirmed(
-                reference: $reference,
-                amount: $amount,
-                raw: $response,
+            PaymentLogger::log(
+                event: 'verify',
+                gateway: 'moolre',
+                direction: 'outbound',
+                bookingReference: $reference,
+                level: 'info',
+                status: 'paid',
+                gatewayRef: $reference,
+                rawRequest: $loggablePayload,
+                rawResponse: $response,
+                httpStatus: $httpStatus,
+                durationMs: $durationMs,
             );
+
+            return VerifyResult::confirmed(reference: $reference, amount: $amount, raw: $response);
         }
 
         Log::info('Moolre: Payment not yet paid', ['reference' => $reference, 'txstatus' => $txstatus]);
+
+        PaymentLogger::log(
+            event: 'verify',
+            gateway: 'moolre',
+            direction: 'outbound',
+            bookingReference: $reference,
+            level: 'info',
+            status: 'pending',
+            gatewayRef: $reference,
+            rawRequest: $loggablePayload,
+            rawResponse: $response,
+            httpStatus: $httpStatus,
+            durationMs: $durationMs,
+        );
 
         return VerifyResult::failed(raw: $response);
     }
 
     /**
-     * Build and send a POST request to the Moolre API.
-     * Returns the decoded JSON body, or null on network failure.
+     * Send a POST request to the Moolre API.
+     * Returns [body, http_status, duration_ms] or [null, null, duration_ms] on failure.
      *
      * @param  array<string, mixed>  $payload
-     * @return array<string, mixed>|null
+     * @return array{0: array<string, mixed>|null, 1: int|null, 2: int}
      */
-    private function post(string $endpoint, array $payload): ?array
+    private function post(string $endpoint, array $payload): array
     {
+        $start = microtime(true);
+
         try {
             $response = Http::withHeaders([
                 'X-API-USER' => $this->apiUser,
@@ -242,14 +394,28 @@ class MoolreGateway implements PaymentGatewayContract
                 'Accept' => 'application/json',
             ])->post($this->baseUrl.$endpoint, $payload);
 
-            return $response->json() ?? [];
+            $durationMs = (int) round((microtime(true) - $start) * 1000);
+
+            return [$response->json() ?? [], $response->status(), $durationMs];
         } catch (\Exception $e) {
+            $durationMs = (int) round((microtime(true) - $start) * 1000);
+
             Log::error('Moolre: HTTP request failed', [
                 'endpoint' => $endpoint,
                 'error' => $e->getMessage(),
             ]);
 
-            return null;
+            PaymentLogger::log(
+                event: 'http-error',
+                gateway: 'moolre',
+                direction: 'outbound',
+                level: 'error',
+                status: 'failed',
+                errorMessage: $e->getMessage(),
+                durationMs: $durationMs,
+            );
+
+            return [null, null, $durationMs];
         }
     }
 }

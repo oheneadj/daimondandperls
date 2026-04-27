@@ -1,6 +1,6 @@
 <x-guest-layout title="About Us">
     @php
-        $whatsappNumber = \App\Models\Setting::where('key', 'business_whatsapp')->value('value') ?: '233244203181';
+        $whatsappNumber = dpc_setting('business_whatsapp', '233244203181');
     @endphp
 
     {{-- 1. Hero --}}
@@ -11,7 +11,7 @@
     />
 
     {{-- 2. Our Story --}}
-    <section class="py-24 bg-base-100 relative overflow-hidden">
+    <section class="pt-24 pb-0 bg-base-100 relative overflow-hidden">
         <div class="absolute top-0 right-0 size-[600px] bg-primary/4 blur-[120px] rounded-full translate-x-1/3 -translate-y-1/4" aria-hidden="true"></div>
 
         <div class="container mx-auto px-4 lg:px-8 relative z-10">
@@ -23,76 +23,73 @@
                 <div class="h-px flex-1 bg-base-content/8"></div>
             </div>
 
-            <div class="grid lg:grid-cols-12 gap-16 lg:gap-20 items-start">
+            {{-- Text content --}}
+            <div class="max-w-4xl mx-auto mb-16">
+                <h2 class="text-4xl lg:text-5xl font-semibold text-base-content tracking-tight mb-12 leading-tight text-center">
+                    From a Kitchen in Accra to<br class="hidden sm:block"> <span class="text-primary">Ghana's Trusted Caterer</span>
+                </h2>
 
-                {{-- Image column --}}
-                <div class="lg:col-span-5 relative">
-                    {{-- Main image --}}
-                    <div class="aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl">
-                        <img src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=800" alt="Chef Grace Ayesu preparing food" class="w-full h-full object-cover" loading="lazy">
+                <div class="grid md:grid-cols-3 gap-0">
+                    {{-- Timeline items --}}
+                    <div class="flex gap-5 pb-8 md:flex-col md:pb-0 md:pr-8 md:border-r md:border-base-content/8">
+                        <div class="size-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-[12px] shadow-md shrink-0">2018</div>
+                        <div>
+                            <h3 class="text-[15px] font-bold text-base-content mb-2">The Beginning</h3>
+                            <p class="text-[14px] text-base-content/60 font-medium leading-relaxed">
+                                Executive Chef Grace Ayesu founded Diamonds & Pearls Catering with a bold vision — to bring the rich, authentic flavours of Ghanaian cuisine to every celebration.
+                            </p>
+                        </div>
                     </div>
 
-                    {{-- Floating stat card --}}
-                    <div class="absolute -bottom-6 -right-4 lg:-right-8 bg-primary text-white px-7 py-5 rounded-2xl shadow-2xl">
-                        <div class="text-4xl font-bold leading-none mb-1">500+</div>
-                        <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70">Events Catered</div>
+                    <div class="flex gap-5 pb-8 md:flex-col md:pb-0 md:px-8 md:border-r md:border-base-content/8">
+                        <div class="size-10 rounded-full bg-[#18542A] text-white flex items-center justify-center font-bold text-[11px] shadow-md shrink-0 text-center leading-tight px-1">Growth</div>
+                        <div>
+                            <h3 class="text-[15px] font-bold text-base-content mb-2">From Family Tables to Grand Galas</h3>
+                            <p class="text-[14px] text-base-content/60 font-medium leading-relaxed">
+                                What started as intimate family events in Accra grew into one of Ghana's most trusted catering services — over 500 events and counting.
+                            </p>
+                        </div>
                     </div>
 
-                    {{-- Floating year badge --}}
-                    <div class="absolute -top-5 -left-4 lg:-left-6 bg-[#18542A] text-white px-5 py-3 rounded-xl shadow-xl">
-                        <div class="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-0.5">Est.</div>
-                        <div class="text-2xl font-bold leading-none">2018</div>
+                    <div class="flex gap-5 md:flex-col md:pl-8">
+                        <div class="size-10 rounded-full bg-accent text-neutral flex items-center justify-center shadow-md shrink-0">
+                            <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-[15px] font-bold text-base-content mb-2">Our Philosophy Today</h3>
+                            <p class="text-[14px] text-base-content/60 font-medium leading-relaxed">
+                                Source the freshest local ingredients, prepare each dish with care, and deliver with the precision and warmth that turns a good event into an unforgettable one.
+                            </p>
+                        </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                {{-- Text column --}}
-                <div class="lg:col-span-7 lg:pt-6">
-                    <h2 class="text-4xl lg:text-5xl font-semibold text-base-content tracking-tight mb-10 leading-tight">
-                        From a Kitchen<br class="hidden sm:block"> in Accra to<br class="hidden sm:block"> <span class="text-primary">Ghana's Trusted Caterer</span>
-                    </h2>
+        {{-- Full-width team photo --}}
+        <div class="relative w-full">
+            <img src="{{ asset('images/dpc/diamonds-and-pearls-catering-staff-team-in-uniform.jpg.webp') }}"
+                 alt="The full Diamonds &amp; Pearls Catering staff team in uniform, ready to serve at events across Accra, Ghana"
+                 class="w-full object-contain object-center block"
+                 loading="eager"
+                 fetchpriority="high"
+                 width="800" height="1067">
 
-                    <div class="space-y-0">
-                        {{-- Timeline items --}}
-                        <div class="flex gap-6 pb-10">
-                            <div class="flex flex-col items-center shrink-0">
-                                <div class="size-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-[12px] shadow-md">2018</div>
-                                <div class="w-px flex-1 bg-base-content/10 mt-2"></div>
-                            </div>
-                            <div class="pb-2">
-                                <h3 class="text-[15px] font-bold text-base-content mb-2">The Beginning</h3>
-                                <p class="text-[14px] text-base-content/60 font-medium leading-relaxed">
-                                    Executive Chef Grace Ayesu founded Diamonds & Pearls Catering with a bold vision — to bring the rich, authentic flavours of Ghanaian cuisine to every celebration, paired with service that matched the weight of each occasion.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="flex gap-6 pb-10">
-                            <div class="flex flex-col items-center shrink-0">
-                                <div class="size-10 rounded-full bg-[#18542A] text-white flex items-center justify-center font-bold text-[12px] shadow-md">Growth</div>
-                                <div class="w-px flex-1 bg-base-content/10 mt-2"></div>
-                            </div>
-                            <div class="pb-2">
-                                <h3 class="text-[15px] font-bold text-base-content mb-2">From Family Tables to Grand Galas</h3>
-                                <p class="text-[14px] text-base-content/60 font-medium leading-relaxed">
-                                    What started as intimate family events in Accra grew into one of Ghana's most trusted catering services. We have proudly served over 500 events — from grand weddings at Labadi Beach to corporate conferences and funeral celebrations.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="flex gap-6">
-                            <div class="flex flex-col items-center shrink-0">
-                                <div class="size-10 rounded-full bg-accent text-neutral flex items-center justify-center shadow-md">
-                                    <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                                </div>
-                            </div>
-                            <div>
-                                <h3 class="text-[15px] font-bold text-base-content mb-2">Our Philosophy Today</h3>
-                                <p class="text-[14px] text-base-content/60 font-medium leading-relaxed">
-                                    Source the freshest local ingredients, prepare each dish with care and expertise, and deliver with the precision and warmth that turns a good event into an unforgettable one.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+            {{-- Stat overlays at bottom --}}
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent pt-16 pb-8 px-6 flex items-end justify-center gap-6 sm:gap-10">
+                <div class="text-center text-white">
+                    <div class="text-3xl sm:text-4xl font-bold leading-none mb-1">500+</div>
+                    <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70">Events Catered</div>
+                </div>
+                <div class="w-px h-10 bg-white/20"></div>
+                <div class="text-center text-white">
+                    <div class="text-3xl sm:text-4xl font-bold leading-none mb-1">Est.</div>
+                    <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70">2018, Accra</div>
+                </div>
+                <div class="w-px h-10 bg-white/20"></div>
+                <div class="text-center text-white">
+                    <div class="text-3xl sm:text-4xl font-bold leading-none mb-1">98%</div>
+                    <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70">Satisfaction</div>
                 </div>
             </div>
         </div>
@@ -249,10 +246,10 @@
 
     {{-- 7. CTA --}}
     @php
-        $socialFacebook = \App\Models\Setting::where('key', 'social_facebook')->value('value');
-        $socialInstagram = \App\Models\Setting::where('key', 'social_instagram')->value('value');
-        $socialTwitter = \App\Models\Setting::where('key', 'social_twitter')->value('value');
-        $socialTiktok = \App\Models\Setting::where('key', 'social_tiktok')->value('value');
+        $socialFacebook  = dpc_setting('social_facebook');
+        $socialInstagram = dpc_setting('social_instagram');
+        $socialTwitter   = dpc_setting('social_twitter');
+        $socialTiktok    = dpc_setting('social_tiktok');
     @endphp
     <section class="py-24 lg:py-32 bg-[#18542A] relative overflow-hidden">
         {{-- Blobs --}}

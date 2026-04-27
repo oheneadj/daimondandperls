@@ -8,7 +8,6 @@ use App\Enums\BookingStatus;
 use App\Enums\BookingType;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
-use App\Models\Setting;
 use App\Services\CartService;
 use App\Traits\HandlesBookingCheckout;
 use Illuminate\Support\Facades\DB;
@@ -54,7 +53,7 @@ class BookingWizard extends Component
             return false;
         }
 
-        $locations = Setting::where('key', 'delivery_locations')->first()?->value ?? [];
+        $locations = dpc_setting('delivery_locations', []);
 
         if (! empty($locations) && ! \in_array($this->deliveryLocation, $locations)) {
             return false;
@@ -133,7 +132,7 @@ class BookingWizard extends Component
             $this->redirect(route('home'));
         }
 
-        $deliveryLocations = Setting::where('key', 'delivery_locations')->first()?->value ?? [];
+        $deliveryLocations = dpc_setting('delivery_locations', []);
 
         return view('livewire.booking.booking-wizard', [
             'cartItems' => $cart->getCart(),
@@ -144,7 +143,7 @@ class BookingWizard extends Component
 
     private function validateDeliveryLocation(): void
     {
-        $locations = Setting::where('key', 'delivery_locations')->first()?->value ?? [];
+        $locations = dpc_setting('delivery_locations', []);
 
         if (empty($locations)) {
             return;

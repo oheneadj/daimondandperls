@@ -178,7 +178,11 @@ class CustomerIndex extends Component
         $stats = [
             'total' => Customer::count('*'),
             'new_this_month' => Customer::whereYear('created_at', now()->year)->whereMonth('created_at', now()->month)->count(),
-            'most_active' => Customer::withCount('bookings')->orderByDesc('bookings_count')->first()?->name ?? 'N/A',
+            // Raw subquery: avoids loading all customers just to find the top one.
+            'most_active' => Customer::query()
+                ->selectRaw('name, (SELECT COUNT(*) FROM bookings WHERE bookings.customer_id = customers.id) as booking_count')
+                ->orderByDesc('booking_count')
+                ->value('name') ?? 'N/A',
         ];
 
         $query = Customer::query()

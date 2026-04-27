@@ -1,6 +1,6 @@
 <x-guest-layout title="Contact Us">
     @php
-        $whatsappNumber = \App\Models\Setting::where('key', 'business_whatsapp')->value('value') ?: '233244203181';
+        $whatsappNumber = dpc_setting('business_whatsapp', '233244203181');
     @endphp
 
     {{-- Hero --}}

@@ -11,6 +11,8 @@
 |
 */
 
+ini_set('memory_limit', '512M');
+
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature');

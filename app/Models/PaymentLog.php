@@ -13,10 +13,22 @@ class PaymentLog extends Model
 
     protected $fillable = [
         'payment_id',
+        'gateway',
+        'direction',
         'event',
+        'booking_reference',
+        'level',
         'status',
         'gateway_ref',
+        'error_code',
+        'error_message',
+        'network',
+        'payer_number',
+        'raw_request',
+        'raw_response',
         'payload',
+        'http_status',
+        'duration_ms',
         'ip_address',
         'created_at',
     ];
@@ -24,7 +36,9 @@ class PaymentLog extends Model
     protected function casts(): array
     {
         return [
-            'payload' => 'json',
+            'raw_request' => 'array',
+            'raw_response' => 'array',
+            'payload' => 'array',
             'created_at' => 'datetime',
         ];
     }

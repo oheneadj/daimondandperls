@@ -9,7 +9,7 @@
     </div>
 
     {{-- Stats Bar --}}
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div class="bg-white border border-base-content/5 rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:border-[#D52518]/30 transition-colors"
             wire:click="$set('activeTab', 'errors')">
             <div class="w-10 h-10 rounded-xl bg-[#D52518]/10 flex items-center justify-center">
@@ -50,12 +50,23 @@
                 <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Notif. Failures') }}</p>
             </div>
         </div>
+        <div class="bg-white border border-base-content/5 rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:border-[#7C3AED]/30 transition-colors"
+            wire:click="$set('activeTab', 'payments')">
+            <div class="w-10 h-10 rounded-xl bg-[#7C3AED]/10 flex items-center justify-center">
+                @include('layouts.partials.icons.credit-card', ['class' => 'w-5 h-5 text-[#7C3AED]'])
+            </div>
+            <div>
+                <p class="text-[20px] font-bold text-base-content">{{ number_format($stats['payments_failed']) }}</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Payment Failures') }}</p>
+            </div>
+        </div>
     </div>
 
     {{-- Tabs --}}
     <div class="flex gap-1 bg-base-200 p-1 rounded-xl w-full sm:w-auto sm:inline-flex">
         @foreach([
-            ['key' => 'errors', 'label' => 'Payment Errors'],
+            ['key' => 'errors', 'label' => 'App Errors'],
+            ['key' => 'payments', 'label' => 'Payments'],
             ['key' => 'sms', 'label' => 'SMS Logs'],
             ['key' => 'activity', 'label' => 'Activity'],
             ['key' => 'notifications', 'label' => 'Notifications'],
@@ -356,6 +367,236 @@
                 {{ $notificationLogs->links() }}
             </x-slot>
         </x-ui.table>
+    @endif
+
+    {{-- Payments Tab --}}
+    @if($activeTab === 'payments')
+        <x-ui.table search="search">
+            <x-slot name="filters">
+                <div class="flex flex-wrap items-center gap-3">
+                    <select wire:model.live="filterSource"
+                        class="bg-base-200 border-none text-[13px] rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary/30 outline-none transition-all font-medium">
+                        <option value="">All Gateways</option>
+                        <option value="transflow">Transflow</option>
+                        <option value="moolre">Moolre</option>
+                    </select>
+                    <select wire:model.live="filterLevel"
+                        class="bg-base-200 border-none text-[13px] rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary/30 outline-none transition-all font-medium">
+                        <option value="">All Levels</option>
+                        <option value="error">Error</option>
+                        <option value="warning">Warning</option>
+                        <option value="info">Info</option>
+                    </select>
+                </div>
+            </x-slot>
+
+            <x-slot name="header">
+                <x-ui.table.th sortable="created_at" :direction="$sortField === 'created_at' ? $sortDirection : null">Time</x-ui.table.th>
+                <x-ui.table.th sortable="gateway" :direction="$sortField === 'gateway' ? $sortDirection : null">Gateway</x-ui.table.th>
+                <x-ui.table.th sortable="event" :direction="$sortField === 'event' ? $sortDirection : null">Event</x-ui.table.th>
+                <x-ui.table.th>Direction</x-ui.table.th>
+                <x-ui.table.th sortable="booking_reference" :direction="$sortField === 'booking_reference' ? $sortDirection : null">Booking</x-ui.table.th>
+                <x-ui.table.th sortable="status" :direction="$sortField === 'status' ? $sortDirection : null">Status</x-ui.table.th>
+                <x-ui.table.th>Error</x-ui.table.th>
+                <x-ui.table.th></x-ui.table.th>
+            </x-slot>
+
+            @forelse($paymentLogs as $plog)
+                <x-ui.table.row wire:key="plog-{{ $plog->id }}">
+                    <x-ui.table.td>
+                        <span class="text-[13px] text-base-content font-medium whitespace-nowrap">{{ $plog->created_at->format('d M Y') }}</span>
+                        <span class="block text-[11px] text-base-content/40">{{ $plog->created_at->format('H:i:s') }}</span>
+                    </x-ui.table.td>
+                    <x-ui.table.td>
+                        <span class="text-[12px] font-mono font-semibold text-base-content bg-base-200 px-2 py-0.5 rounded uppercase">
+                            {{ $plog->gateway ?? '—' }}
+                        </span>
+                    </x-ui.table.td>
+                    <x-ui.table.td>
+                        <span class="text-[12px] font-mono text-base-content/70">{{ $plog->event }}</span>
+                    </x-ui.table.td>
+                    <x-ui.table.td>
+                        @php $dirClass = $plog->direction === 'inbound' ? 'bg-blue-100 text-blue-700' : 'bg-base-200 text-base-content/60'; @endphp
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider {{ $dirClass }}">
+                            {{ $plog->direction ?? '—' }}
+                        </span>
+                    </x-ui.table.td>
+                    <x-ui.table.td>
+                        @if($plog->booking_reference)
+                            <a href="{{ route('admin.bookings.show', $plog->booking_reference) }}" wire:navigate
+                                class="text-[13px] font-mono font-semibold text-primary hover:underline">
+                                {{ $plog->booking_reference }}
+                            </a>
+                        @else
+                            <span class="text-base-content/30 text-[13px]">—</span>
+                        @endif
+                    </x-ui.table.td>
+                    <x-ui.table.td>
+                        @php $sc = match($plog->status) { 'paid' => 'bg-[#9ABC05]/10 text-[#5A7A00]', 'failed' => 'bg-[#D52518]/10 text-[#D52518]', 'pending' => 'bg-[#FFC926]/10 text-[#B08A00]', 'received' => 'bg-blue-100 text-blue-700', 'otp_required' => 'bg-[#7C3AED]/10 text-[#7C3AED]', default => 'bg-base-200 text-base-content/60' }; @endphp
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider {{ $sc }}">
+                            {{ $plog->status ?? '—' }}
+                        </span>
+                    </x-ui.table.td>
+                    <x-ui.table.td>
+                        @if($plog->error_message)
+                            <p class="text-[12px] text-[#D52518] line-clamp-1 max-w-[200px]">{{ $plog->error_message }}</p>
+                        @else
+                            <span class="text-base-content/30 text-[13px]">—</span>
+                        @endif
+                    </x-ui.table.td>
+                    <x-ui.table.td align="right">
+                        <button wire:click="viewPaymentLog({{ $plog->id }})"
+                            class="text-[11px] font-semibold text-primary hover:text-primary/70 transition-colors">
+                            Details
+                        </button>
+                    </x-ui.table.td>
+                </x-ui.table.row>
+            @empty
+                <x-ui.table.row>
+                    <x-ui.table.td colspan="7">
+                        <div class="py-12 text-center">
+                            <p class="text-[14px] font-semibold text-base-content/40">No payment logs found</p>
+                        </div>
+                    </x-ui.table.td>
+                </x-ui.table.row>
+            @endforelse
+
+            <x-slot name="pagination">
+                {{ $paymentLogs->links() }}
+            </x-slot>
+        </x-ui.table>
+    @endif
+
+    {{-- Payment Log Detail Modal --}}
+    @if($viewingPayment)
+        <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+            x-data x-init="$nextTick(() => $el.scrollIntoView({ behavior: 'smooth' }))">
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="closePaymentLog"></div>
+            <div class="relative bg-base-100 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto z-10">
+
+                <div class="flex items-center justify-between p-6 border-b border-base-content/10">
+                    <div>
+                        <h2 class="text-[17px] font-semibold text-base-content">Payment Log Detail</h2>
+                        <p class="text-[12px] text-base-content/40 mt-0.5">
+                            ID #{{ $viewingPayment->id }} · {{ $viewingPayment->created_at->diffForHumans() }}
+                        </p>
+                    </div>
+                    <button wire:click="closePaymentLog" class="size-8 rounded-full bg-base-200 hover:bg-base-300 flex items-center justify-center transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="p-6 space-y-5">
+
+                    {{-- Meta grid --}}
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">Gateway</p>
+                            <span class="text-[12px] font-mono font-semibold text-base-content bg-base-200 px-2 py-0.5 rounded uppercase">
+                                {{ $viewingPayment->gateway ?? '—' }}
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">Event</p>
+                            <span class="text-[12px] font-mono text-base-content">{{ $viewingPayment->event }}</span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">Direction</p>
+                            @php $dirClass = $viewingPayment->direction === 'inbound' ? 'bg-blue-100 text-blue-700' : 'bg-base-200 text-base-content/60'; @endphp
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider {{ $dirClass }}">
+                                {{ $viewingPayment->direction ?? '—' }}
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">Status</p>
+                            @php $sc = match($viewingPayment->status) { 'paid' => 'bg-[#9ABC05]/10 text-[#5A7A00]', 'failed' => 'bg-[#D52518]/10 text-[#D52518]', 'pending' => 'bg-[#FFC926]/10 text-[#B08A00]', 'received' => 'bg-blue-100 text-blue-700', default => 'bg-base-200 text-base-content/60' }; @endphp
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider {{ $sc }}">
+                                {{ $viewingPayment->status ?? '—' }}
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">Level</p>
+                            @php $lc = match($viewingPayment->level) { 'error' => 'bg-[#D52518]/10 text-[#D52518]', 'warning' => 'bg-[#FFC926]/10 text-[#B08A00]', default => 'bg-base-200 text-base-content/60' }; @endphp
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider {{ $lc }}">
+                                {{ $viewingPayment->level ?? '—' }}
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">Booking</p>
+                            @if($viewingPayment->booking_reference)
+                                <a href="{{ route('admin.bookings.show', $viewingPayment->booking_reference) }}" wire:navigate
+                                    class="text-[13px] font-mono font-semibold text-primary hover:underline">
+                                    {{ $viewingPayment->booking_reference }}
+                                </a>
+                            @else
+                                <span class="text-base-content/30 text-[13px]">—</span>
+                            @endif
+                        </div>
+                        @if($viewingPayment->gateway_ref)
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">Gateway Ref</p>
+                                <span class="text-[12px] font-mono text-base-content break-all">{{ $viewingPayment->gateway_ref }}</span>
+                            </div>
+                        @endif
+                        @if($viewingPayment->payer_number)
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">Payer</p>
+                                <span class="text-[13px] font-mono text-base-content">{{ $viewingPayment->payer_number }}</span>
+                            </div>
+                        @endif
+                        @if($viewingPayment->network)
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">Network</p>
+                                <span class="text-[13px] text-base-content">{{ $viewingPayment->network }}</span>
+                            </div>
+                        @endif
+                        @if($viewingPayment->http_status)
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">HTTP Status</p>
+                                <span class="text-[13px] font-mono text-base-content">{{ $viewingPayment->http_status }}</span>
+                            </div>
+                        @endif
+                        @if($viewingPayment->duration_ms)
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">Duration</p>
+                                <span class="text-[13px] font-mono text-base-content">{{ $viewingPayment->duration_ms }}ms</span>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- Error --}}
+                    @if($viewingPayment->error_message || $viewingPayment->error_code)
+                        <div class="bg-[#D52518]/5 border border-[#D52518]/20 rounded-lg p-4 space-y-1">
+                            @if($viewingPayment->error_code)
+                                <p class="text-[11px] font-bold uppercase tracking-widest text-[#D52518]/60">Code: {{ $viewingPayment->error_code }}</p>
+                            @endif
+                            @if($viewingPayment->error_message)
+                                <p class="text-[14px] text-[#D52518]">{{ $viewingPayment->error_message }}</p>
+                            @endif
+                        </div>
+                    @endif
+
+                    {{-- Raw request --}}
+                    @if($viewingPayment->raw_request)
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-2">Request Body</p>
+                            <pre class="text-[11px] font-mono text-base-content/70 bg-base-200/50 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-all">{{ json_encode($viewingPayment->raw_request, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                        </div>
+                    @endif
+
+                    {{-- Raw response --}}
+                    @if($viewingPayment->raw_response)
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-2">Response Body</p>
+                            <pre class="text-[11px] font-mono text-base-content/70 bg-base-200/50 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-all">{{ json_encode($viewingPayment->raw_response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                        </div>
+                    @endif
+
+                </div>
+            </div>
+        </div>
     @endif
 
     {{-- Error Detail Modal --}}

@@ -10,7 +10,7 @@
         <!-- Brand / Image Side -->
         <div class="relative hidden h-full flex-col bg-neutral-900 p-10 text-white lg:flex border-r border-white/5">
             <div
-                class="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1555244162-803834f70033?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center grayscale">
+                style="background-image: url('{{ asset('images/dpc/customers-enjoying-diamonds-and-pearls-catering-food.jpg.webp') }}')" class="absolute inset-0 opacity-20 bg-cover bg-center grayscale">
             </div>
             <div class="absolute inset-0 bg-gradient-to-br from-primary/40 to-black/80"></div>
 

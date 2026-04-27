@@ -9,7 +9,6 @@ use App\Enums\BookingType;
 use App\Enums\EventType;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
-use App\Models\Setting;
 use App\Traits\HandlesBookingCheckout;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Enum;
@@ -55,7 +54,7 @@ class EventInquiryWizard extends Component
 
         // Pre-set the date to the minimum allowed date if not already set
         if (empty($this->event_date)) {
-            $leadDays = (int) (Setting::where('key', 'event_lead_days')->value('value') ?? 0);
+            $leadDays = (int) (dpc_setting('event_lead_days', 0));
             if ($leadDays > 0) {
                 $this->event_date = now()->addDays($leadDays)->format('Y-m-d');
             }
@@ -80,7 +79,7 @@ class EventInquiryWizard extends Component
         $this->event_type_other = $this->event_type_other ?: null;
         $this->event_location = $this->event_location ?: null;
 
-        $leadDays = (int) (Setting::where('key', 'event_lead_days')->value('value') ?? 0);
+        $leadDays = (int) (dpc_setting('event_lead_days', 0));
         $minDate = $leadDays > 0 ? now()->addDays($leadDays)->format('Y-m-d') : 'today';
 
         $this->validate([
@@ -189,7 +188,7 @@ class EventInquiryWizard extends Component
     #[Title('Plan an Event')]
     public function render(): mixed
     {
-        $leadDays = (int) (Setting::where('key', 'event_lead_days')->value('value') ?? 0);
+        $leadDays = (int) (dpc_setting('event_lead_days', 0));
         $minEventDate = $leadDays > 0 ? now()->addDays($leadDays)->format('Y-m-d') : now()->format('Y-m-d');
 
         return view('livewire.booking.event-inquiry-wizard', [

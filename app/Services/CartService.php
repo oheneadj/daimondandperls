@@ -14,21 +14,38 @@ class CartService
     private const SESSION_KEY = 'booking_cart';
 
     /**
-     * Get the cart items linked to their Eloquent Package models.
-     * Each item: ['package' => Package, 'quantity' => int, 'subtotal' => float, 'scheduled_date' => Carbon|null]
+     * Holds the resolved cart for the current request so we don't re-query
+     * the database every time getCart() is called within the same lifecycle.
+     * Set to null by any method that mutates the cart so the next read is fresh.
+     */
+    private ?Collection $memoizedCart = null;
+
+    /**
+     * Return cart items with their full Package models attached.
+     *
+     * Each item shape: ['package' => Package, 'quantity' => int, 'subtotal' => float, 'scheduled_date' => Carbon|null]
+     *
+     * The result is memoized for the duration of the request. Multiple
+     * Livewire components calling getCart() in one render cycle share this
+     * single DB query instead of each firing their own.
      */
     public function getCart(): Collection
     {
+        // Return the cached result if we already built it this request.
+        if ($this->memoizedCart !== null) {
+            return $this->memoizedCart;
+        }
+
         $cart = Session::get(self::SESSION_KEY, []);
 
         if (empty($cart)) {
-            return collect();
+            return $this->memoizedCart = collect();
         }
 
         $packageIds = array_keys($cart);
         $packages = Package::whereIn('id', $packageIds)->get()->keyBy('id');
 
-        return collect($cart)->map(function ($entry, $id) use ($packages) {
+        return $this->memoizedCart = collect($cart)->map(function ($entry, $id) use ($packages) {
             $package = $packages->get($id);
             if (! $package) {
                 return null;
@@ -47,6 +64,15 @@ class CartService
                 'scheduled_date' => $scheduledDate,
             ];
         })->filter();
+    }
+
+    /**
+     * Reset the in-memory cart so the next getCart() call re-reads the session.
+     * Called after every write operation (add, update, remove, clear).
+     */
+    private function invalidateMemoizedCart(): void
+    {
+        $this->memoizedCart = null;
     }
 
     public function add(int $packageId, int $quantity = 1, ?Carbon $scheduledDate = null): void
@@ -73,6 +99,7 @@ class CartService
         }
 
         Session::put(self::SESSION_KEY, $cart);
+        $this->invalidateMemoizedCart();
     }
 
     public function updateQuantity(int $packageId, int $quantity): void
@@ -93,6 +120,7 @@ class CartService
                 'scheduled_date' => $scheduledDate,
             ];
             Session::put(self::SESSION_KEY, $cart);
+            $this->invalidateMemoizedCart();
         }
     }
 
@@ -103,11 +131,13 @@ class CartService
         unset($cart[$packageId]);
 
         Session::put(self::SESSION_KEY, $cart);
+        $this->invalidateMemoizedCart();
     }
 
     public function clear(): void
     {
         Session::forget(self::SESSION_KEY);
+        $this->invalidateMemoizedCart();
     }
 
     public function getTotal(): float

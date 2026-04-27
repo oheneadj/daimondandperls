@@ -18,28 +18,28 @@ class InvoiceService
     {
         $booking->loadMissing(['customer', 'items.package', 'payment']);
 
-        $settings = \App\Models\Setting::whereIn('group', ['business', 'bank'])
-            ->get()
-            ->keyBy('key');
-
         $data = [
             'booking' => $booking,
             'company' => [
-                'name' => $settings->get('business_name')?->value ?? config('app.name'),
-                'address' => $settings->get('business_address')?->value ?? '',
-                'phone' => $settings->get('business_phone')?->value ?? '',
-                'email' => $settings->get('business_email')?->value ?? '',
-                'logo' => $settings->get('business_logo')?->value ?? '',
+                'name' => dpc_setting('business_name') ?? config('app.name'),
+                'address' => dpc_setting('business_address', ''),
+                'phone' => dpc_setting('business_phone', ''),
+                'email' => dpc_setting('business_email', ''),
+                'logo' => dpc_setting('business_logo', ''),
             ],
             'bank' => [
-                'name' => $settings->get('bank_name')?->value ?? '',
-                'account_name' => $settings->get('account_name')?->value ?? '',
-                'account_number' => $settings->get('account_number')?->value ?? '',
-                'branch_code' => $settings->get('branch_code')?->value ?? '',
+                'name' => dpc_setting('bank_name', ''),
+                'account_name' => dpc_setting('account_name', ''),
+                'account_number' => dpc_setting('account_number', ''),
+                'branch_code' => dpc_setting('branch_code', ''),
             ],
         ];
 
-        $pdf = Pdf::loadView('pdf.invoice', $data);
+        $view = $booking->booking_type === \App\Enums\BookingType::Event
+            ? 'pdf.invoice-event'
+            : 'pdf.invoice-meal';
+
+        $pdf = Pdf::loadView($view, $data);
         $pdf->setPaper('a4');
 
         $path = 'invoices/'.$booking->reference.'.pdf';

@@ -13,7 +13,7 @@ test('otp login component renders on login page', function () {
 });
 
 test('otp sends verification code for existing user', function () {
-    $user = User::factory()->create(['phone' => '0244111222']);
+    $user = User::factory()->customer()->create(['phone' => '0244111222']);
 
     Livewire::test(OtpLogin::class)
         ->set('phone', '0244111222')
@@ -59,7 +59,7 @@ test('otp verifies valid code and logs in user', function () {
 });
 
 test('otp rejects invalid code', function () {
-    User::factory()->create([
+    User::factory()->customer()->create([
         'phone' => '0244111222',
         'otp_code' => '123456',
         'otp_expires_at' => now()->addMinutes(10),
@@ -76,7 +76,7 @@ test('otp rejects invalid code', function () {
 });
 
 test('otp rejects expired code', function () {
-    User::factory()->create([
+    User::factory()->customer()->create([
         'phone' => '0244111222',
         'otp_code' => '123456',
         'otp_expires_at' => now()->subMinutes(1),

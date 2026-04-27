@@ -143,4 +143,10 @@ class User extends Authenticatable
     {
         return \App\Models\Payment::where('status', \App\Enums\PaymentGatewayStatus::Pending)->count();
     }
+
+    public function newContactMessagesCount(): int
+    {
+        // Cached for 60s so the dashboard and sidebar share one query per minute.
+        return \Illuminate\Support\Facades\Cache::remember('contact_messages.new_count', 60, fn () => \App\Models\ContactMessage::where('status', 'new')->count());
+    }
 }

@@ -60,10 +60,7 @@ class TransflowGateway implements PaymentGatewayContract
      * Returns InitiateResult::redirect() with the checkout URL on success.
      * The caller should redirect the customer's browser to $result->redirectUrl.
      *
-     * We also pass successRedirectUrl and failureRedirectUrl so Transflow knows
-     * where to send the customer after they complete (or abandon) payment.
-     *
-     * @param  array<string, mixed>  $context  Not used for Transflow — all data comes from the booking.
+     * @param  array<string, mixed>  $context
      */
     public function initiate(Booking $booking, array $context = []): InitiateResult
     {
@@ -76,15 +73,12 @@ class TransflowGateway implements PaymentGatewayContract
             'apiKey' => $this->apiKey,
             'transflowId' => $this->transflowId,
             'merchantProductId' => $this->merchantProductId,
-            // Where Transflow redirects the customer's browser after payment
             'successRedirectUrl' => route('booking.payment.return', ['booking' => $booking->reference, 'status' => 'success']),
             'failureRedirectUrl' => route('booking.payment.return', ['booking' => $booking->reference, 'status' => 'failure']),
-            // Where Transflow sends the server-to-server callback
             'callbackUrl' => route('webhooks.transflow'),
             'pageTitle' => config('app.name'),
         ];
 
-        // Optional pre-population fields from component context
         if (! empty($context['payment_method'])) {
             $payload['paymentMethod'] = $context['payment_method'];
         }
@@ -100,16 +94,49 @@ class TransflowGateway implements PaymentGatewayContract
             'amount' => $payload['amount'],
         ]);
 
-        $response = $this->post('/request-payments', $payload);
+        // Strip credentials from the logged request
+        $loggablePayload = array_diff_key($payload, array_flip(['apiKey', 'transflowId', 'merchantProductId']));
+
+        [$response, $httpStatus, $durationMs] = $this->post('/request-payments', $payload);
 
         if ($response === null) {
+            PaymentLogger::log(
+                event: 'initiate',
+                gateway: 'transflow',
+                direction: 'outbound',
+                bookingReference: $booking->reference,
+                level: 'error',
+                status: 'failed',
+                errorMessage: 'Could not reach the payment gateway.',
+                network: $context['network'] ?? null,
+                payerNumber: $context['msisdn'] ?? null,
+                rawRequest: $loggablePayload,
+                durationMs: $durationMs,
+            );
+
             return InitiateResult::error('Could not reach the payment gateway. Please try again.');
         }
 
-        // Transflow returns responseCode 200 (integer) on success
         if (($response['responseCode'] ?? null) !== 200) {
             $message = $response['responseMessage'] ?? 'Payment initiation failed. Please try again.';
+
             Log::error('Transflow: Initiate failed', ['booking' => $booking->reference, 'response' => $response]);
+
+            PaymentLogger::log(
+                event: 'initiate',
+                gateway: 'transflow',
+                direction: 'outbound',
+                bookingReference: $booking->reference,
+                level: 'error',
+                status: 'failed',
+                errorMessage: $message,
+                network: $context['network'] ?? null,
+                payerNumber: $context['msisdn'] ?? null,
+                rawRequest: $loggablePayload,
+                rawResponse: $response,
+                httpStatus: $httpStatus,
+                durationMs: $durationMs,
+            );
 
             return InitiateResult::error(message: $message, raw: $response);
         }
@@ -119,14 +146,29 @@ class TransflowGateway implements PaymentGatewayContract
 
         Log::info('Transflow: Checkout URL received', ['booking' => $booking->reference, 'reference' => $reference]);
 
+        PaymentLogger::log(
+            event: 'initiate',
+            gateway: 'transflow',
+            direction: 'outbound',
+            bookingReference: $booking->reference,
+            level: 'info',
+            status: 'pending',
+            gatewayRef: $reference,
+            network: $context['network'] ?? null,
+            payerNumber: $context['msisdn'] ?? null,
+            rawRequest: $loggablePayload,
+            rawResponse: $response,
+            httpStatus: $httpStatus,
+            durationMs: $durationMs,
+        );
+
         return InitiateResult::redirect(reference: $reference, url: $url, raw: $response);
     }
 
     /**
      * Verify whether a Transflow transaction was paid.
      *
-     * Called by TransflowReturnController when the customer returns to our site,
-     * to handle the race condition where the webhook may not have fired yet.
+     * Called by TransflowReturnController when the customer returns to our site.
      */
     public function verify(string $reference): VerifyResult
     {
@@ -139,52 +181,103 @@ class TransflowGateway implements PaymentGatewayContract
 
         Log::info('Transflow: Verifying payment', ['reference' => $reference]);
 
-        $response = $this->post('/check-transaction-status', $payload);
+        [$response, $httpStatus, $durationMs] = $this->post('/check-transaction-status', $payload);
 
         if ($response === null) {
+            PaymentLogger::log(
+                event: 'verify',
+                gateway: 'transflow',
+                direction: 'outbound',
+                bookingReference: $reference,
+                level: 'error',
+                status: 'failed',
+                gatewayRef: $reference,
+                errorMessage: 'Could not reach Transflow to verify payment.',
+                durationMs: $durationMs,
+            );
+
             return VerifyResult::failed('Could not reach Transflow to verify payment.');
         }
 
-        // responseCode '01' (string) inside data means confirmed paid
         $responseCode = (string) ($response['data']['responseCode'] ?? '');
         $amount = (float) ($response['data']['amount'] ?? 0);
 
         if ($responseCode === '01') {
             Log::info('Transflow: Payment verified as PAID', ['reference' => $reference]);
 
+            PaymentLogger::log(
+                event: 'verify',
+                gateway: 'transflow',
+                direction: 'outbound',
+                bookingReference: $reference,
+                level: 'info',
+                status: 'paid',
+                gatewayRef: $reference,
+                rawResponse: $response,
+                httpStatus: $httpStatus,
+                durationMs: $durationMs,
+            );
+
             return VerifyResult::confirmed(reference: $reference, amount: $amount, raw: $response);
         }
 
         Log::info('Transflow: Payment not yet confirmed', ['reference' => $reference, 'responseCode' => $responseCode]);
+
+        PaymentLogger::log(
+            event: 'verify',
+            gateway: 'transflow',
+            direction: 'outbound',
+            bookingReference: $reference,
+            level: 'info',
+            status: 'pending',
+            gatewayRef: $reference,
+            rawResponse: $response,
+            httpStatus: $httpStatus,
+            durationMs: $durationMs,
+        );
 
         return VerifyResult::failed(raw: $response);
     }
 
     /**
      * Send a POST request to the Transflow API.
-     * Returns the decoded JSON body, or null on network failure.
-     *
-     * Auth is in the request body — no special headers required.
+     * Returns [body, http_status, duration_ms] or [null, null, duration_ms] on failure.
      *
      * @param  array<string, mixed>  $payload
-     * @return array<string, mixed>|null
+     * @return array{0: array<string, mixed>|null, 1: int|null, 2: int}
      */
-    private function post(string $endpoint, array $payload): ?array
+    private function post(string $endpoint, array $payload): array
     {
+        $start = microtime(true);
+
         try {
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json',
             ])->post($this->baseUrl.$endpoint, $payload);
 
-            return $response->json() ?? [];
+            $durationMs = (int) round((microtime(true) - $start) * 1000);
+
+            return [$response->json() ?? [], $response->status(), $durationMs];
         } catch (\Exception $e) {
+            $durationMs = (int) round((microtime(true) - $start) * 1000);
+
             Log::error('Transflow: HTTP request failed', [
                 'endpoint' => $endpoint,
                 'error' => $e->getMessage(),
             ]);
 
-            return null;
+            PaymentLogger::log(
+                event: 'http-error',
+                gateway: 'transflow',
+                direction: 'outbound',
+                level: 'error',
+                status: 'failed',
+                errorMessage: $e->getMessage(),
+                durationMs: $durationMs,
+            );
+
+            return [null, null, $durationMs];
         }
     }
 }

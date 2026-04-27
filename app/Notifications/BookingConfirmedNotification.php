@@ -38,7 +38,7 @@ class BookingConfirmedNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $companyName = \App\Models\Setting::where('key', 'company_name')->value('value') ?? config('app.name');
+        $companyName = dpc_setting('company_name') ?? config('app.name');
 
         $mail = (new MailMessage)
             ->subject('Booking Confirmation - '.$this->booking->reference)

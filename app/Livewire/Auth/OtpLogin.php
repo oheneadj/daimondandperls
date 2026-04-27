@@ -37,6 +37,12 @@ class OtpLogin extends Component
             return;
         }
 
+        if ($user->type === UserType::Admin) {
+            $this->error = 'No account found with this phone number. Please register first.';
+
+            return;
+        }
+
         if (! $user->is_active) {
             $this->error = 'Your account has been disabled. Please contact an administrator for assistance.';
 

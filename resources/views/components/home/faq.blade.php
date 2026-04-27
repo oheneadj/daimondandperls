@@ -1,5 +1,5 @@
 @php
-    $whatsappNumber = \App\Models\Setting::where('key', 'business_whatsapp')->value('value') ?: '233244203181';
+    $whatsappNumber = dpc_setting('business_whatsapp', '233244203181');
 @endphp
 
 <section class="py-16 sm:py-24 bg-[#18542A] relative overflow-hidden">

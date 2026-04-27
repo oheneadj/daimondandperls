@@ -1,11 +1,10 @@
 <div class="bg-base-200 min-h-screen py-10 lg:py-20" x-data>
-    <div class="container mx-auto px-4 lg:px-8 max-w-6xl">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <div class="container mx-auto px-4 lg:px-8 max-w-6xl space-y-6">
 
-            {{-- Order summary: above form on mobile, right sidebar on desktop --}}
-            <div class="order-first lg:order-none lg:col-span-5">
-                <x-booking.order-summary :cartItems="$cartItems" :cartTotal="$cartTotal" :isEvent="false" :hideOnMobile="false" />
-            </div>
+        {{-- Checkout progress: Details → Payment → Done (step 1 of 3) --}}
+        @include('livewire.booking._checkout-progress', ['currentStep' => 1])
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
 
             {{-- Main column --}}
             <div class="order-last lg:order-first lg:col-span-7 space-y-5">
@@ -137,6 +136,12 @@
                 </div>
 
             </div>
+
+            {{-- Order summary: right sidebar on desktop, above form on mobile --}}
+            <div class="order-first lg:order-none lg:col-span-5">
+                <x-booking.order-summary :cartItems="$cartItems" :cartTotal="$cartTotal" :isEvent="false" :hideOnMobile="false" />
+            </div>
+
         </div>
     </div>
 </div>

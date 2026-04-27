@@ -69,41 +69,59 @@
     </div>
 
     {{-- KPI Stats Row --}}
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div class="bg-white border border-base-content/5 rounded-lg p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-[#9ABC05]/10 flex items-center justify-center flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5 text-[#9ABC05]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        <div class="bg-white border border-base-content/5 rounded-lg p-3 sm:p-4 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-[#9ABC05]/10 flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#9ABC05]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div class="min-w-0">
-                <p class="text-[16px] sm:text-[20px] font-bold text-base-content truncate">GH₵{{ number_format($stats['total_revenue'], 2) }}</p>
-                <p class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Revenue') }}</p>
+                <p class="text-[15px] sm:text-[18px] font-bold text-base-content truncate">GH₵{{ number_format($stats['total_revenue'], 2) }}</p>
+                <p class="text-[9px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Revenue') }}</p>
             </div>
         </div>
-        <div class="bg-white border border-base-content/5 rounded-lg p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-[#F96015]/10 flex items-center justify-center flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5 text-[#F96015]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        <div class="bg-white border border-base-content/5 rounded-lg p-3 sm:p-4 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-[#F96015]/10 flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#F96015]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
             <div class="min-w-0">
-                <p class="text-[16px] sm:text-[20px] font-bold text-base-content">{{ number_format($stats['total_bookings']) }}</p>
-                <p class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Bookings') }}</p>
+                <p class="text-[15px] sm:text-[18px] font-bold text-base-content">{{ number_format($stats['total_bookings']) }}</p>
+                <p class="text-[9px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Bookings') }}</p>
             </div>
         </div>
-        <div class="bg-white border border-base-content/5 rounded-lg p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-[#A31C4E]/10 flex items-center justify-center flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5 text-[#A31C4E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+        <div class="bg-white border border-base-content/5 rounded-lg p-3 sm:p-4 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-[#A31C4E]/10 flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#A31C4E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
             </div>
             <div class="min-w-0">
-                <p class="text-[16px] sm:text-[20px] font-bold text-base-content truncate">GH₵{{ number_format($stats['avg_value'], 2) }}</p>
-                <p class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Avg Value') }}</p>
+                <p class="text-[15px] sm:text-[18px] font-bold text-base-content truncate">GH₵{{ number_format($stats['avg_value'], 2) }}</p>
+                <p class="text-[9px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Avg Value') }}</p>
             </div>
         </div>
-        <div class="bg-white border border-base-content/5 rounded-lg p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-[#FFC926]/10 flex items-center justify-center flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5 text-[#FFC926]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+        <div class="bg-white border border-base-content/5 rounded-lg p-3 sm:p-4 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-[#FFC926]/10 flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#FFC926]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div class="min-w-0">
-                <p class="text-[16px] sm:text-[20px] font-bold text-base-content truncate" title="{{ $stats['popular_package'] }}">{{ $stats['popular_package'] }}</p>
-                <p class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Top Package') }}</p>
+                <p class="text-[15px] sm:text-[18px] font-bold text-base-content">{{ number_format($stats['completion_rate'], 1) }}%</p>
+                <p class="text-[9px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Completion') }}</p>
+            </div>
+        </div>
+        <div class="bg-white border border-base-content/5 rounded-lg p-3 sm:p-4 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg {{ $cancellationRate > 15 ? 'bg-red-100' : 'bg-base-200' }} flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 {{ $cancellationRate > 15 ? 'text-error' : 'text-base-content/40' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </div>
+            <div class="min-w-0">
+                <p class="text-[15px] sm:text-[18px] font-bold {{ $cancellationRate > 15 ? 'text-error' : 'text-base-content' }}">{{ number_format($cancellationRate, 1) }}%</p>
+                <p class="text-[9px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Cancelled') }}</p>
+            </div>
+        </div>
+        <div class="bg-white border border-base-content/5 rounded-lg p-3 sm:p-4 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+            </div>
+            <div class="min-w-0">
+                <p class="text-[15px] sm:text-[18px] font-bold text-base-content">{{ number_format($newCustomers) }}</p>
+                <p class="text-[9px] font-bold uppercase tracking-widest text-base-content/40">{{ __('New Customers') }}</p>
             </div>
         </div>
     </div>
@@ -229,6 +247,85 @@
         </x-ui.card>
     </div>
 
+    {{-- Top Customers + Payment Summary --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {{-- Top Customers --}}
+        <x-ui.card padding="none" class="shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-base-content/5 flex items-center justify-between">
+                <h3 class="text-[16px] font-bold text-base-content">{{ __('Top Customers') }}</h3>
+                <span class="text-[10px] font-bold text-base-content/40 uppercase tracking-widest">{{ __('By Revenue') }}</span>
+            </div>
+            @if(empty($topCustomers))
+                <div class="py-12 text-center">
+                    <p class="text-[13px] font-semibold text-base-content/40">{{ __('No data for this period') }}</p>
+                </div>
+            @else
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-base-content/5 bg-base-200/30">
+                            <th class="px-6 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-base-content/40">{{ __('Customer') }}</th>
+                            <th class="px-4 py-2.5 text-center text-[10px] font-black uppercase tracking-widest text-base-content/40">{{ __('Orders') }}</th>
+                            <th class="px-6 py-2.5 text-right text-[10px] font-black uppercase tracking-widest text-base-content/40">{{ __('Spent') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-base-content/5">
+                        @foreach($topCustomers as $i => $customer)
+                            <tr wire:key="top-customer-{{ $customer['id'] }}" class="hover:bg-base-200/20 transition-colors">
+                                <td class="px-6 py-3">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-[11px] font-black text-base-content/25 w-4">{{ $i + 1 }}</span>
+                                        <div>
+                                            <div class="text-[13px] font-semibold text-base-content">{{ $customer['name'] }}</div>
+                                            <div class="text-[11px] text-base-content/50">{{ $customer['phone'] }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <span class="text-[13px] font-bold text-base-content">{{ $customer['booking_count'] }}</span>
+                                </td>
+                                <td class="px-6 py-3 text-right">
+                                    <span class="text-[13px] font-bold text-secondary">GH₵{{ number_format($customer['total_spent'], 2) }}</span>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+        </x-ui.card>
+
+        {{-- Payment Summary --}}
+        <x-ui.card padding="none" class="shadow-sm overflow-hidden flex flex-col">
+            <div class="px-6 py-4 border-b border-base-content/5 flex items-center justify-between">
+                <h3 class="text-[16px] font-bold text-base-content">{{ __('Payment Summary') }}</h3>
+                <span class="text-[10px] font-bold text-base-content/40 uppercase tracking-widest">{{ __('Financial Snapshot') }}</span>
+            </div>
+            <div class="p-6 space-y-5 flex-1">
+                @foreach([
+                    ['label' => 'Total Paid & Verified', 'value' => $paymentSummary['paid'], 'color' => 'bg-secondary', 'text' => 'text-secondary', 'id' => 'paid'],
+                    ['label' => 'Pending Settlement', 'value' => $paymentSummary['pending'], 'color' => 'bg-dp-warning', 'text' => 'text-dp-warning', 'id' => 'pending'],
+                    ['label' => 'Manual Verification', 'value' => $paymentSummary['needs_verification'], 'color' => 'bg-primary-border', 'text' => 'text-primary', 'id' => 'needs_verification'],
+                    ['label' => 'Failed Transactions', 'value' => $paymentSummary['failed'], 'color' => 'bg-dp-danger', 'text' => 'text-error', 'id' => 'failed'],
+                ] as $item)
+                    <div wire:key="summary-{{ $item['id'] }}" class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-1.5 h-10 rounded-full {{ $item['color'] }}"></div>
+                            <span class="text-[13px] font-semibold text-base-content">{{ __($item['label']) }}</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[16px] font-bold {{ $item['text'] }}">GH₵ {{ number_format($item['value'], 2) }}</div>
+                            <div class="text-[10px] font-bold text-base-content/40 uppercase tracking-widest mt-0.5">{{ __('Amount') }}</div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            <div class="mt-auto p-4 bg-base-200-mid/20 border-t border-base-content/5 text-center">
+                <p class="text-[11px] text-base-content/40">
+                    {{ __('Reconcile manual verifications with bank statements before final confirmation.') }}
+                </p>
+            </div>
+        </x-ui.card>
+    </div>
+
     {{-- Tables Row --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
         {{-- Upcoming Events --}}
@@ -279,37 +376,6 @@
             </x-slot>
         </x-ui.table>
 
-        {{-- Payment Summary --}}
-        <x-ui.card padding="none" class="shadow-sm overflow-hidden flex flex-col">
-            <div class="px-6 py-4 border-b border-base-content/5 flex items-center justify-between">
-                <h3 class="text-[16px] font-bold text-base-content">{{ __('Payment Summary') }}</h3>
-                <span class="text-[10px] font-bold text-base-content/40 uppercase tracking-widest">{{ __('Financial Snapshot') }}</span>
-            </div>
-            <div class="p-6 space-y-5 flex-1">
-                @foreach([
-                    ['label' => 'Total Paid & Verified', 'value' => $paymentSummary['paid'], 'color' => 'bg-secondary', 'text' => 'text-secondary', 'id' => 'paid'],
-                    ['label' => 'Pending Settlement', 'value' => $paymentSummary['pending'], 'color' => 'bg-dp-warning', 'text' => 'text-dp-warning', 'id' => 'pending'],
-                    ['label' => 'Manual Verification', 'value' => $paymentSummary['needs_verification'], 'color' => 'bg-primary-border', 'text' => 'text-primary', 'id' => 'needs_verification'],
-                    ['label' => 'Failed Transactions', 'value' => $paymentSummary['failed'], 'color' => 'bg-dp-danger', 'text' => 'text-error', 'id' => 'failed'],
-                ] as $item)
-                    <div wire:key="summary-{{ $item['id'] }}" class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-1.5 h-10 rounded-full {{ $item['color'] }}"></div>
-                            <span class="text-[13px] font-semibold text-base-content">{{ __($item['label']) }}</span>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-[16px] font-bold {{ $item['text'] }}">GH₵ {{ number_format($item['value'], 2) }}</div>
-                            <div class="text-[10px] font-bold text-base-content/40 uppercase tracking-widest mt-0.5">{{ __('Amount') }}</div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-            <div class="mt-auto p-4 bg-base-200-mid/20 border-t border-base-content/5 text-center">
-                <p class="text-[11px] text-base-content/40">
-                    {{ __('Reconcile manual verifications with bank statements before final confirmation.') }}
-                </p>
-            </div>
-        </x-ui.card>
     </div>
 
     {{-- Next Week Scheduled Deliveries --}}

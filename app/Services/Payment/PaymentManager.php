@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services\Payment;
 
 use App\Contracts\PaymentGatewayContract;
-use App\Models\Setting;
 use Illuminate\Support\Manager;
 
 /*
@@ -41,7 +40,7 @@ class PaymentManager extends Manager
     {
         // The active gateway is set in the admin settings panel at runtime.
         // We fall back to the config default when the setting doesn't exist.
-        $fromSettings = Setting::where('key', 'active_payment_gateway')->value('value');
+        $fromSettings = dpc_setting('active_payment_gateway');
 
         return $fromSettings ?: config('payments.default', 'moolre');
     }

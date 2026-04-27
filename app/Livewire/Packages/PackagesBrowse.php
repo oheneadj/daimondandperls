@@ -21,8 +21,8 @@ class PackagesBrowse extends Component
     #[Url(history: true)]
     public string $search = '';
 
-    #[Url(history: true)]
-    public ?int $categoryId = null;
+    #[Url(history: true, as: 'category')]
+    public string $categorySlug = '';
 
     public function toggleSelection(int $packageId, \App\Services\CartService $cart, BookingWindowService $windowService): void
     {
@@ -71,11 +71,16 @@ class PackagesBrowse extends Component
             $query->where('is_active', true);
         })->orderBy('name')->get();
 
+        $activeCategory = $this->categorySlug
+            ? $categories->firstWhere('slug', $this->categorySlug)
+            : null;
+
         $windowStatuses = $categories->keyBy('id')->map(fn (Category $category) => $windowService->getStatus($category));
 
         return view('livewire.packages.packages-browse', [
             'packages' => $this->getPackages(),
             'categories' => $categories,
+            'activeCategory' => $activeCategory,
             'windowStatuses' => $windowStatuses,
             'cartItems' => $cart->getCart(),
             'cartCount' => $cart->count(),
@@ -91,8 +96,8 @@ class PackagesBrowse extends Component
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
             })
-            ->when($this->categoryId, function ($query, $categoryId) {
-                $query->where('category_id', $categoryId);
+            ->when($this->categorySlug, function ($query) {
+                $query->whereHas('category', fn ($q) => $q->where('slug', $this->categorySlug));
             })
             ->orderBy('sort_order', 'asc')
             ->get();

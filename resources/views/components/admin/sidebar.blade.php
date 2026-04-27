@@ -12,6 +12,7 @@
             ['label' => 'Collections', 'route' => 'admin.categories.index', 'icon' => 'tag', 'pattern' => 'admin.categories.*', 'permission' => 'manage_categories'],
             ['label' => 'Payments', 'route' => 'admin.payments.index', 'icon' => 'credit-card', 'badge' => auth()->user()->pendingPaymentsCount() ?? 0, 'pattern' => 'admin.payments.*', 'permission' => 'manage_payments'],
             ['label' => 'Customers', 'route' => 'admin.customers.index', 'icon' => 'user-group', 'pattern' => 'admin.customers.*', 'permission' => 'manage_customers'],
+            ['label' => 'Contact Messages', 'route' => 'admin.contact-messages', 'icon' => 'bell', 'badge' => auth()->user()->newContactMessagesCount(), 'permission' => 'manage_contact_messages'],
         ],
         'STAFF' => [
             ['label' => 'Admins & Staff', 'route' => 'admin.users.index', 'icon' => 'user-group', 'pattern' => 'admin.users.*', 'permission' => 'manage_users'],

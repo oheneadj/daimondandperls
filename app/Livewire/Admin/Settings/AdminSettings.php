@@ -72,6 +72,8 @@ class AdminSettings extends Component
 
     public bool $sms_notifications = false;
 
+    public string $notification_preference = 'email';
+
     // ── Booking / Delivery ────────────────────────────────────────────────────
 
     /** @var array<int, string> */
@@ -111,6 +113,7 @@ class AdminSettings extends Component
 
         $this->email_notifications = (bool) ($settings->get('email_enabled')?->value ?? false);
         $this->sms_notifications = (bool) ($settings->get('sms_enabled')?->value ?? false);
+        $this->notification_preference = \Illuminate\Support\Facades\Auth::user()->notification_preference?->value ?? 'email';
 
         $this->delivery_locations = $settings->get('delivery_locations')?->value ?? [];
         $this->event_lead_days = (int) ($settings->get('event_lead_days')?->value ?? 0);
@@ -296,6 +299,19 @@ class AdminSettings extends Component
     {
         $this->updateSetting('sms_enabled', $value, \App\Enums\SettingType::Boolean, 'notifications');
         $this->dispatch('banner', style: 'success', message: 'Notification preferences updated.');
+    }
+
+    public function saveNotificationPreference(): void
+    {
+        $this->validate([
+            'notification_preference' => ['required', 'in:email,sms,both'],
+        ]);
+
+        \Illuminate\Support\Facades\Auth::user()->update([
+            'notification_preference' => $this->notification_preference,
+        ]);
+
+        $this->dispatch('banner', style: 'success', message: 'Your notification preference has been saved.');
     }
 
     // ── System Stats ──────────────────────────────────────────────────────────

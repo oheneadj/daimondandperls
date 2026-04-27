@@ -89,12 +89,26 @@
                         <!-- Image -->
                         <div
                             class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-base-200-mid overflow-hidden shrink-0 shadow-sm border border-base-content/10 transition-transform group-hover:scale-105">
+                            @php
+                                $fallbacks = [
+                                    asset('images/dpc/jollof-rice-and-fried-chicken-takeaway-meal-2.jpg.webp'),
+                                    asset('images/dpc/jollof-rice-and-fried-chicken-takeaway-meal-3.jpg.webp'),
+                                    asset('images/dpc/jollof-rice-and-fried-chicken-takeaway-meal-4.jpg.webp'),
+                                    asset('images/dpc/fried-yam-wedges-with-onions-and-peppers.jpg.webp'),
+                                ];
+                            @endphp
                             @if($item['package']->image_path)
-                                <img src="{{ Storage::url($item['package']->image_path) }}" alt="{{ $item['package']->name }}"
-                                    class="w-full h-full object-cover">
+                                <img src="{{ Storage::url($item['package']->image_path) }}"
+                                     alt="{{ $item['package']->name }} — Diamonds &amp; Pearls Catering"
+                                     class="w-full h-full object-cover"
+                                     loading="lazy"
+                                     decoding="async">
                             @else
-                                <img src="{{ asset('images/' . ($item['package']->id % 2 == 0 ? 'catering8.jpg' : 'port-012-copyright-890x664.jpg')) }}"
-                                    alt="{{ $item['package']->name }}" class="w-full h-full object-cover opacity-80">
+                                <img src="{{ $fallbacks[$item['package']->id % count($fallbacks)] }}"
+                                     alt="{{ $item['package']->name }} — Diamonds &amp; Pearls Catering"
+                                     class="w-full h-full object-cover"
+                                     loading="lazy"
+                                     decoding="async">
                             @endif
                         </div>
 

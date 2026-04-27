@@ -77,7 +77,12 @@
       "Bash(npm run *)",
       "Bash(python3 -c ' *)",
       "mcp__laravel-boost__get-config",
-      "Bash(vendor/bin/pint app/Http/Responses/RegisterResponse.php app/Providers/FortifyServiceProvider.php --format agent)"
+      "Bash(vendor/bin/pint app/Http/Responses/RegisterResponse.php app/Providers/FortifyServiceProvider.php --format agent)",
+      "Bash(vendor/bin/pint --dirty --format agent app/Http/Controllers/Webhooks/TransflowWebhookController.php app/Http/Controllers/Webhooks/MoolreWebhookController.php app/Http/Controllers/Booking/TransflowReturnController.php app/Livewire/Booking/CheckoutPayment.php app/Livewire/Admin/ErrorLogs/ErrorLogIndex.php)",
+      "Bash(sed -n '9,30p' /home/oheneadj/server/dpc/app/Models/ActivityLog.php)",
+      "Bash(sed -n '9,25p' /home/oheneadj/server/dpc/app/Models/SmsLog.php)",
+      "Bash(vendor/bin/pint app/Models/ContactMessage.php app/Livewire/ContactForm.php app/Livewire/Admin/ContactMessages/Index.php app/Notifications/ContactMessageReceivedNotification.php app/Models/User.php database/factories/ContactMessageFactory.php database/seeders/RolesAndPermissionsSeeder.php tests/Feature/ContactMessageTest.php --format agent)",
+      "Bash(composer dump-autoload *)"
     ],
     "additionalDirectories": [
       "/home/oheneadj/server/dpc/resources/views/components",

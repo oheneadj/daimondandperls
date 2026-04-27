@@ -132,7 +132,7 @@
                     <x-ui.table.td>
                         <div class="w-12 h-12 rounded-lg bg-base-200 overflow-hidden shadow-sm group-hover:shadow-md transition-shadow">
                             @if($package->image_path)
-                                <img src="{{ Storage::url($package->image_path) }}" alt="{{ $package->name }}" class="w-full h-full object-cover" />
+                                <img src="{{ Storage::url($package->image_path) }}" alt="{{ $package->name }} catering package — Diamonds &amp; Pearls Catering Accra" class="w-full h-full object-cover" loading="lazy" decoding="async" />
                             @else
                                 <div class="w-full h-full flex items-center justify-center text-base-content/20">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

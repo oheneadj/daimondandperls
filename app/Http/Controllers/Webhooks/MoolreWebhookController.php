@@ -11,6 +11,7 @@ use App\Models\Payment;
 use App\Notifications\BookingConfirmedNotification;
 use App\Services\InvoiceService;
 use App\Services\Payment\MoolreGateway;
+use App\Services\Payment\PaymentLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -44,18 +45,40 @@ class MoolreWebhookController extends Controller
 
         Log::info('Moolre Webhook: Received', ['payload' => $payload]);
 
+        $reference = (string) ($data['externalref'] ?? '');
+
+        PaymentLogger::log(
+            event: 'webhook',
+            gateway: 'moolre',
+            direction: 'inbound',
+            bookingReference: $reference ?: null,
+            level: 'info',
+            status: 'received',
+            rawResponse: $payload,
+        );
+
         // Step 1 — Verify the webhook secret
         if (! $this->isValidSecret($data)) {
             Log::warning('Moolre Webhook: Invalid secret', [
                 'externalref' => $data['externalref'] ?? 'N/A',
             ]);
 
+            PaymentLogger::log(
+                event: 'webhook-invalid-secret',
+                gateway: 'moolre',
+                direction: 'inbound',
+                bookingReference: $reference ?: null,
+                level: 'warning',
+                status: 'failed',
+                errorMessage: 'Invalid webhook secret.',
+                rawResponse: $payload,
+            );
+
             // Return 200 so Moolre doesn't keep retrying invalid requests
             return response()->json(['status' => 'ignored', 'message' => 'Invalid signature']);
         }
 
         // Step 2 — Find the booking
-        $reference = (string) ($data['externalref'] ?? '');
         $booking = Booking::query()->where('reference', $reference)->first();
 
         if (! $booking) {
@@ -101,6 +124,16 @@ class MoolreWebhookController extends Controller
 
         Log::info('Moolre Webhook: Payment marked PAID', ['booking' => $booking->reference]);
 
+        PaymentLogger::log(
+            event: 'webhook-paid',
+            gateway: 'moolre',
+            direction: 'inbound',
+            bookingReference: $booking->reference,
+            level: 'info',
+            status: 'paid',
+            rawResponse: $payload,
+        );
+
         if ($alreadyPaid) {
             // Webhook was a duplicate — payment record and notification already handled
             return;
@@ -139,6 +172,16 @@ class MoolreWebhookController extends Controller
         ]);
 
         Log::warning('Moolre Webhook: Payment marked FAILED', ['booking' => $booking->reference]);
+
+        PaymentLogger::log(
+            event: 'webhook-failed',
+            gateway: 'moolre',
+            direction: 'inbound',
+            bookingReference: $booking->reference,
+            level: 'warning',
+            status: 'failed',
+            rawResponse: $payload,
+        );
     }
 
     /**

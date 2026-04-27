@@ -7,6 +7,7 @@ namespace App\Livewire\Admin\ErrorLogs;
 use App\Models\ActivityLog;
 use App\Models\BookingNotificationLog;
 use App\Models\ErrorLog;
+use App\Models\PaymentLog;
 use App\Models\SmsLog;
 use App\Models\User;
 use App\Traits\HasAdminAuthorization;
@@ -42,7 +43,13 @@ class ErrorLogIndex extends Component
 
     public ?ErrorLog $viewing = null;
 
+    public ?PaymentLog $viewingPayment = null;
+
     public string $resolutionNote = '';
+
+    public string $sortField = 'created_at';
+
+    public string $sortDirection = 'desc';
 
     public function updatedActiveTab(): void
     {
@@ -99,6 +106,28 @@ class ErrorLogIndex extends Component
         $this->dispatch('toast', type: 'success', message: 'Error marked as resolved.');
     }
 
+    public function sortBy(string $field): void
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
+
+        $this->resetPage();
+    }
+
+    public function viewPaymentLog(int $id): void
+    {
+        $this->viewingPayment = PaymentLog::find($id);
+    }
+
+    public function closePaymentLog(): void
+    {
+        $this->viewingPayment = null;
+    }
+
     public function markUnresolved(int $id): void
     {
         $log = ErrorLog::findOrFail($id);
@@ -124,6 +153,7 @@ class ErrorLogIndex extends Component
         $smsLogs = null;
         $activityLogs = null;
         $notificationLogs = null;
+        $paymentLogs = null;
 
         if ($this->activeTab === 'errors') {
             $logs = ErrorLog::query()
@@ -168,6 +198,18 @@ class ErrorLogIndex extends Component
                 }))
                 ->latest()
                 ->paginate(25);
+        } elseif ($this->activeTab === 'payments') {
+            $paymentLogs = PaymentLog::query()
+                ->when($this->search, fn ($q) => $q->where(function ($q) {
+                    $q->where('booking_reference', 'like', "%{$this->search}%")
+                        ->orWhere('gateway_ref', 'like', "%{$this->search}%")
+                        ->orWhere('payer_number', 'like', "%{$this->search}%")
+                        ->orWhere('error_message', 'like', "%{$this->search}%");
+                }))
+                ->when($this->filterSource, fn ($q) => $q->where('gateway', $this->filterSource))
+                ->when($this->filterLevel, fn ($q) => $q->where('level', $this->filterLevel))
+                ->orderBy($this->sortField, $this->sortDirection)
+                ->paginate(25);
         }
 
         $stats = [
@@ -175,6 +217,7 @@ class ErrorLogIndex extends Component
             'sms_total' => SmsLog::count(),
             'activity_today' => ActivityLog::whereDate('created_at', today())->count(),
             'notifications_failed' => BookingNotificationLog::whereNotNull('error_message')->count(),
+            'payments_failed' => PaymentLog::where('status', 'failed')->count(),
         ];
 
         return view('livewire.admin.error-logs.error-log-index', [
@@ -182,6 +225,7 @@ class ErrorLogIndex extends Component
             'smsLogs' => $smsLogs,
             'activityLogs' => $activityLogs,
             'notificationLogs' => $notificationLogs,
+            'paymentLogs' => $paymentLogs,
             'stats' => $stats,
         ]);
     }

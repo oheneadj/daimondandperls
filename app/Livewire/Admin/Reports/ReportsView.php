@@ -46,6 +46,12 @@ class ReportsView extends Component
 
     public array $dailyBookings = [];
 
+    public array $topCustomers = [];
+
+    public float $cancellationRate = 0.0;
+
+    public int $newCustomers = 0;
+
     public function mount(): void
     {
         $this->authorizePermission('manage_reports');
@@ -201,6 +207,36 @@ class ReportsView extends Component
             ->get()
             ->pluck('count', 'date')
             ->toArray();
+
+        // Top 5 customers by confirmed revenue in the period
+        $this->topCustomers = \App\Models\User::query()
+            ->join('bookings', 'users.id', '=', 'bookings.customer_id')
+            ->join('payments', 'bookings.id', '=', 'payments.booking_id')
+            ->where('payments.status', PaymentGatewayStatus::Successful)
+            ->whereBetween('payments.paid_at', [$start, $end])
+            ->selectRaw('users.id, users.name, users.phone, count(distinct bookings.id) as booking_count, sum(payments.amount) as total_spent')
+            ->groupBy('users.id', 'users.name', 'users.phone')
+            ->orderByDesc('total_spent')
+            ->limit(5)
+            ->get()
+            ->map(fn ($row) => [
+                'id' => $row->id,
+                'name' => $row->name,
+                'phone' => $row->phone,
+                'booking_count' => (int) $row->booking_count,
+                'total_spent' => (float) $row->total_spent,
+            ])
+            ->toArray();
+
+        // Cancellation rate for the period
+        $cancelledCount = $bookings->where('status', BookingStatus::Cancelled)->count();
+        $this->cancellationRate = $totalBookings > 0
+            ? round(($cancelledCount / $totalBookings) * 100, 1) : 0.0;
+
+        // New customers registered in the period
+        $this->newCustomers = \App\Models\User::whereBetween('created_at', [$start, $end])
+            ->where('user_type', \App\Enums\UserType::Customer)
+            ->count();
     }
 
     public function exportCsv(): StreamedResponse

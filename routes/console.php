@@ -10,3 +10,6 @@ Schedule::command('queue:work --stop-when-empty --max-time=55')
 
 // Cancel pending bookings that haven't been paid within 24 hours
 Schedule::command('booking:cleanup-abandoned')->hourly();
+
+// Purge stale log entries older than 7 days (runs at 2am daily)
+Schedule::command('logs:purge')->dailyAt('02:00');

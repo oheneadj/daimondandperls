@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Enums\UserType;
+use App\Models\ContactMessage;
+use App\Models\User;
+use App\Notifications\ContactMessageReceivedNotification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 
 class ContactForm extends Component
@@ -58,23 +61,23 @@ class ContactForm extends Component
         $this->validate();
 
         try {
-            $to = config('mail.from.address', 'graceayesu@yahoo.com');
+            $contactMessage = ContactMessage::create([
+                'name' => $this->name,
+                'email' => $this->email,
+                'phone' => $this->phone,
+                'inquiry_type' => $this->inquiry_type,
+                'message' => $this->message,
+                'ip_address' => request()->ip(),
+            ]);
 
-            Mail::raw(
-                "New Contact Inquiry\n\n"
-                ."Name: {$this->name}\n"
-                ."Phone: {$this->phone}\n"
-                ."Email: {$this->email}\n"
-                ."Inquiry Type: {$this->inquiry_type}\n\n"
-                ."Message:\n{$this->message}",
-                function ($mail) use ($to): void {
-                    $mail->to($to)
-                        ->replyTo($this->email, $this->name)
-                        ->subject("Contact Inquiry: {$this->inquiry_type} from {$this->name}");
-                }
-            );
+            User::query()
+                ->where('type', UserType::Admin)
+                ->where('is_active', true)
+                ->get()
+                ->filter(fn (User $admin): bool => $admin->hasPermission('receive_contact_notifications'))
+                ->each(fn (User $admin) => $admin->notify(new ContactMessageReceivedNotification($contactMessage)));
         } catch (\Exception $e) {
-            Log::error('Contact form mail failed', [
+            Log::error('Contact form submission failed', [
                 'error' => $e->getMessage(),
                 'name' => $this->name,
                 'email' => $this->email,

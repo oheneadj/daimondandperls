@@ -10,9 +10,10 @@ use App\Enums\PaymentGatewayStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\BookingItem;
-use App\Models\Customer;
 use App\Models\Payment;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -22,37 +23,38 @@ use Livewire\Component;
 class Dashboard extends Component
 {
     // ── KPI row ─────────────────────────────────────────────────
-    public int $totalBookingsToday = 0;
-
-    public int $totalBookingsMonth = 0;
-
-    public float $revenueMonth = 0;
-
     public int $needsAttentionCount = 0;
+
+    public int $todayDeliveriesCount = 0;
 
     public int $nextWeekDeliveriesCount = 0;
 
-    // ── Financial ───────────────────────────────────────────────
-    public float $totalRevenue = 0;
+    public int $unreadMessagesCount = 0;
+
+    // ── Revenue chart side cards ─────────────────────────────────
+    public int $thisWeekBookings = 0;
+
+    public float $thisWeekBookingsChange = 0;
+
+    public float $cancellationRate = 0;
+
+    public float $cancellationRateChange = 0;
+
+    public int $pendingEventQuotes = 0;
+
+    // ── Revenue chart ────────────────────────────────────────────
+    public float $revenueMonth = 0;
 
     public float $projectedRevenue = 0;
 
-    public float $averageOrderValue = 0;
-
-    public float $aovChange = 0;
+    public float $totalRevenue = 0;
 
     public array $revenueTrends = ['labels' => [], 'values' => []];
 
-    // ── Operational ─────────────────────────────────────────────
-    public array $bookingTypeMix = [];
+    // ── Operations ───────────────────────────────────────────────
+    public array $todaySchedule = [];
 
     public array $recentActivity = [];
-
-    public array $topVIPs = [];
-
-    public int $newCustomersThisWeek = 0;
-
-    public float $acquisitionRate = 0;
 
     public function mount(): void
     {
@@ -65,27 +67,91 @@ class Dashboard extends Component
         $startOfMonth = $now->copy()->startOfMonth();
         $endOfMonth = $now->copy()->endOfMonth();
 
-        // ── KPIs ────────────────────────────────────────────────
-        $this->totalBookingsToday = Booking::whereDate('created_at', today())->count();
-        $this->totalBookingsMonth = Booking::whereBetween('created_at', [$startOfMonth, $endOfMonth])->count();
-
-        $this->revenueMonth = (float) Payment::where('status', PaymentGatewayStatus::Successful)
-            ->whereBetween('paid_at', [$startOfMonth, $endOfMonth])
-            ->sum('amount');
-
+        // ── KPI: Needs Attention ─────────────────────────────────
         $this->needsAttentionCount = Booking::whereIn('payment_status', [
             PaymentStatus::Unpaid,
             PaymentStatus::Pending,
         ])->where('status', '!=', BookingStatus::Cancelled)->count();
 
+        // ── KPI: Today's Deliveries ──────────────────────────────
+        $this->todayDeliveriesCount = BookingItem::whereDate('scheduled_date', today())
+            ->whereHas('booking', fn ($q) => $q->where('status', '!=', BookingStatus::Cancelled))
+            ->distinct('booking_id')
+            ->count('booking_id');
+
+        // ── KPI: Next Week Deliveries ────────────────────────────
         $nextWeekStart = $now->copy()->addWeek()->startOfWeek()->toDateString();
         $nextWeekEnd = $now->copy()->addWeek()->endOfWeek()->toDateString();
         $this->nextWeekDeliveriesCount = BookingItem::whereBetween('scheduled_date', [$nextWeekStart, $nextWeekEnd])
             ->distinct('booking_id')
             ->count('booking_id');
 
-        // ── Financial ───────────────────────────────────────────
+        // ── KPI: Unread Contact Messages ─────────────────────────
+        // Shared 60s cache with the admin sidebar so both components hit the DB once per minute.
+        $this->unreadMessagesCount = Cache::remember('contact_messages.new_count', 60, fn () => DB::table('contact_messages')->where('status', 'new')->count());
+
+        // ── Side cards: Week comparison + Month cancellation rate ─
+        // One query covers all four date-range counts via conditional aggregation.
+        $thisWeekStart = $now->copy()->startOfWeek();
+        $thisWeekEnd = $now->copy()->endOfWeek();
+        $lastWeekStart = $now->copy()->subWeek()->startOfWeek();
+        $lastWeekEnd = $now->copy()->subWeek()->endOfWeek();
+        $lastMonthStart = $now->copy()->subMonth()->startOfMonth();
+        $lastMonthEnd = $now->copy()->subMonth()->endOfMonth();
+
+        $counts = Booking::withTrashed(false)
+            ->whereBetween('created_at', [$lastMonthStart, $endOfMonth])
+            ->selectRaw('
+                SUM(CASE WHEN created_at BETWEEN ? AND ? THEN 1 ELSE 0 END) as this_week,
+                SUM(CASE WHEN created_at BETWEEN ? AND ? THEN 1 ELSE 0 END) as last_week,
+                SUM(CASE WHEN created_at BETWEEN ? AND ? THEN 1 ELSE 0 END) as month_total,
+                SUM(CASE WHEN created_at BETWEEN ? AND ? AND status = ? THEN 1 ELSE 0 END) as month_cancelled,
+                SUM(CASE WHEN created_at BETWEEN ? AND ? THEN 1 ELSE 0 END) as prev_month_total,
+                SUM(CASE WHEN created_at BETWEEN ? AND ? AND status = ? THEN 1 ELSE 0 END) as prev_month_cancelled
+            ', [
+                $thisWeekStart, $thisWeekEnd,
+                $lastWeekStart, $lastWeekEnd,
+                $startOfMonth, $endOfMonth,
+                $startOfMonth, $endOfMonth, BookingStatus::Cancelled->value,
+                $lastMonthStart, $lastMonthEnd,
+                $lastMonthStart, $lastMonthEnd, BookingStatus::Cancelled->value,
+            ])
+            ->first();
+
+        $this->thisWeekBookings = (int) ($counts->this_week ?? 0);
+        $lastWeekBookings = (int) ($counts->last_week ?? 0);
+        $this->thisWeekBookingsChange = $lastWeekBookings > 0
+            ? round((($this->thisWeekBookings - $lastWeekBookings) / $lastWeekBookings) * 100, 1)
+            : ($this->thisWeekBookings > 0 ? 100.0 : 0.0);
+
+        $monthTotal = (int) ($counts->month_total ?? 0);
+        $monthCancelled = (int) ($counts->month_cancelled ?? 0);
+        $this->cancellationRate = $monthTotal > 0
+            ? round(($monthCancelled / $monthTotal) * 100, 1)
+            : 0.0;
+
+        $lastMonthTotal = (int) ($counts->prev_month_total ?? 0);
+        $lastMonthCancelled = (int) ($counts->prev_month_cancelled ?? 0);
+        $lastMonthRate = $lastMonthTotal > 0
+            ? round(($lastMonthCancelled / $lastMonthTotal) * 100, 1)
+            : 0.0;
+
+        // Positive change = rate went up (bad). Negative = rate went down (good).
+        $this->cancellationRateChange = round($this->cancellationRate - $lastMonthRate, 1);
+
+        // ── Side card: Pending Event Quotes ──────────────────────
+        // Event bookings confirmed/pending but still unpaid — awaiting customer payment.
+        $this->pendingEventQuotes = Booking::where('booking_type', BookingType::Event)
+            ->whereIn('status', [BookingStatus::Pending, BookingStatus::Confirmed])
+            ->whereIn('payment_status', [PaymentStatus::Unpaid, PaymentStatus::Pending])
+            ->count();
+
+        // ── Revenue chart ─────────────────────────────────────────
         $this->totalRevenue = (float) Payment::where('status', PaymentGatewayStatus::Successful)->sum('amount');
+
+        $this->revenueMonth = (float) Payment::where('status', PaymentGatewayStatus::Successful)
+            ->whereBetween('paid_at', [$startOfMonth, $endOfMonth])
+            ->sum('amount');
 
         $this->projectedRevenue = (float) Booking::whereIn('status', [
             BookingStatus::Confirmed,
@@ -94,27 +160,6 @@ class Dashboard extends Component
         ])->whereIn('payment_status', [PaymentStatus::Unpaid, PaymentStatus::Pending])
             ->sum('total_amount');
 
-        // AOV this month vs last month
-        $monthlyPaidCount = Payment::where('status', PaymentGatewayStatus::Successful)
-            ->whereBetween('paid_at', [$startOfMonth, $endOfMonth])
-            ->count();
-        $monthlyAov = $monthlyPaidCount > 0 ? $this->revenueMonth / $monthlyPaidCount : 0;
-        $this->averageOrderValue = $monthlyAov;
-
-        $lastMonthStart = $now->copy()->subMonth()->startOfMonth();
-        $lastMonthEnd = $now->copy()->subMonth()->endOfMonth();
-        $lastMonthRevenue = (float) Payment::where('status', PaymentGatewayStatus::Successful)
-            ->whereBetween('paid_at', [$lastMonthStart, $lastMonthEnd])
-            ->sum('amount');
-        $lastMonthCount = Payment::where('status', PaymentGatewayStatus::Successful)
-            ->whereBetween('paid_at', [$lastMonthStart, $lastMonthEnd])
-            ->count();
-        $lastMonthAov = $lastMonthCount > 0 ? $lastMonthRevenue / $lastMonthCount : 0;
-        $this->aovChange = $lastMonthAov > 0
-            ? (($monthlyAov - $lastMonthAov) / $lastMonthAov) * 100
-            : ($monthlyAov > 0 ? 100 : 0);
-
-        // 30-day revenue trend
         $trends = Payment::where('status', PaymentGatewayStatus::Successful)
             ->where('paid_at', '>=', $now->copy()->subDays(29)->startOfDay())
             ->selectRaw('DATE(paid_at) as date, SUM(amount) as total')
@@ -133,50 +178,25 @@ class Dashboard extends Component
         }
         $this->revenueTrends = ['labels' => $labels, 'values' => $values];
 
-        // ── Booking type mix ────────────────────────────────────
-        $eventCounts = Booking::where('booking_type', BookingType::Event->value)
-            ->whereNotNull('event_type')
-            ->selectRaw('event_type, COUNT(*) as count')
-            ->groupBy('event_type')
+        // ── Today's Delivery Schedule ─────────────────────────────
+        $this->todaySchedule = BookingItem::with(['booking.customer', 'package'])
+            ->whereDate('scheduled_date', today())
+            ->whereHas('booking', fn ($q) => $q->where('status', '!=', BookingStatus::Cancelled))
+            ->orderBy('scheduled_date')
             ->get()
-            ->mapWithKeys(fn ($item) => [ucfirst($item->event_type?->value ?? 'other') => $item->count])
             ->toArray();
 
-        $mealCount = Booking::where('booking_type', BookingType::Meal->value)->count();
-        if ($mealCount > 0) {
-            $eventCounts['Meal Orders'] = $mealCount;
-        }
-
-        $this->bookingTypeMix = $eventCounts;
-
-        // ── Recent activity ─────────────────────────────────────
+        // ── Recent Bookings ───────────────────────────────────────
         $this->recentActivity = Booking::with('customer')
             ->latest()
             ->limit(8)
             ->get()
             ->toArray();
-
-        // ── Top VIPs ────────────────────────────────────────────
-        $this->topVIPs = Customer::withSum('payments', 'amount')
-            ->orderByDesc('payments_sum_amount')
-            ->limit(10)
-            ->get()
-            ->filter(fn ($c) => ($c->payments_sum_amount ?? 0) > 0)
-            ->take(5)
-            ->values()
-            ->toArray();
-
-        // ── Customer acquisition ────────────────────────────────
-        $this->newCustomersThisWeek = Customer::where('created_at', '>=', $now->copy()->startOfWeek())->count();
-        $lastWeekCount = Customer::whereBetween('created_at', [
-            $now->copy()->subWeek()->startOfWeek(),
-            $now->copy()->subWeek()->endOfWeek(),
-        ])->count();
-        $this->acquisitionRate = $lastWeekCount > 0
-            ? (($this->newCustomersThisWeek - $lastWeekCount) / $lastWeekCount) * 100
-            : ($this->newCustomersThisWeek > 0 ? 100 : 0);
     }
 
+    /**
+     * Order pipeline breakdown for the current month.
+     */
     public function getStatusBreakdownProperty(): array
     {
         $startOfMonth = now()->startOfMonth();

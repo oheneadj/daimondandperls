@@ -33,7 +33,7 @@
             {{-- Image --}}
             <div class="relative h-52 bg-base-200 flex items-center justify-center overflow-hidden shrink-0">
                 <template x-if="selectedPackage?.image_path">
-                    <img :src="'/storage/' + selectedPackage.image_path" class="absolute inset-0 w-full h-full object-cover">
+                    <img :src="'/storage/' + selectedPackage.image_path" :alt="selectedPackage.name + ' catering package — Diamonds & Pearls Catering Accra'" class="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async">
                 </template>
                 <template x-if="!selectedPackage?.image_path">
                     <span class="text-7xl">🥘</span>

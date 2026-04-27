@@ -304,27 +304,40 @@
                 </div>
             </div>
 
-            {{-- Notifications --}}
+            {{-- Notification Preference --}}
             <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
                 <div class="px-6 py-5 border-b border-base-content/5">
-                    <h3 class="text-sm font-bold text-base-content">{{ __('Notification Channels') }}</h3>
-                    <p class="text-xs text-base-content/40 mt-0.5">{{ __('Control how the system communicates with customers after a booking or payment.') }}</p>
+                    <h3 class="text-sm font-bold text-base-content">{{ __('System Notification Preference') }}</h3>
+                    <p class="text-xs text-base-content/40 mt-0.5">{{ __('Channels for admin notifications') }}</p>
                 </div>
                 <div class="px-6 py-5 space-y-3">
-                    <label class="flex items-center justify-between p-4 bg-base-100 border border-base-content/8 rounded-xl cursor-pointer hover:border-base-content/15 transition-colors">
-                        <div>
-                            <p class="text-sm font-semibold text-base-content">{{ __('Email') }}</p>
-                            <p class="text-xs text-base-content/50 mt-0.5">Booking confirmations and invoices sent to customer email.</p>
-                        </div>
-                        <input type="checkbox" wire:model.live="email_notifications" class="toggle toggle-primary toggle-sm" />
-                    </label>
-                    <label class="flex items-center justify-between p-4 bg-base-100 border border-base-content/8 rounded-xl cursor-pointer hover:border-base-content/15 transition-colors">
-                        <div>
-                            <p class="text-sm font-semibold text-base-content">{{ __('SMS') }}</p>
-                            <p class="text-xs text-base-content/50 mt-0.5">Short payment and booking alerts sent via GaintSMS.</p>
-                        </div>
-                        <input type="checkbox" wire:model.live="sms_notifications" class="toggle toggle-primary toggle-sm" />
-                    </label>
+                    @foreach([
+                        ['value' => 'email', 'label' => 'Email Only',    'desc' => 'Receive alerts via email only'],
+                        ['value' => 'sms',   'label' => 'SMS Only',      'desc' => 'Receive alerts via SMS only'],
+                        ['value' => 'both',  'label' => 'Email & SMS',   'desc' => 'Receive alerts via both channels'],
+                    ] as $option)
+                        <label class="flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all
+                            {{ $notification_preference === $option['value'] ? 'border-primary/25 bg-primary/[0.03]' : 'border-base-content/8 hover:border-base-content/15' }}">
+                            <input type="radio" wire:model.live="notification_preference" value="{{ $option['value'] }}" class="radio radio-primary radio-sm">
+                            <div>
+                                <p class="text-sm font-semibold text-base-content">{{ __($option['label']) }}</p>
+                                <p class="text-xs text-base-content/50 mt-0.5">{{ __($option['desc']) }}</p>
+                            </div>
+                        </label>
+                    @endforeach
+                    @error('notification_preference')
+                        <p class="text-xs text-error font-bold mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div class="px-6 py-4 border-t border-base-content/5 bg-base-200/30 flex justify-end">
+                    <button wire:click="saveNotificationPreference" wire:loading.attr="disabled"
+                        class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-lg font-bold text-[13px] hover:bg-primary/90 transition-colors disabled:opacity-50">
+                        <span wire:loading.remove wire:target="saveNotificationPreference">{{ __('Save Preference') }}</span>
+                        <span wire:loading wire:target="saveNotificationPreference" class="flex items-center gap-2">
+                            <span class="loading loading-spinner loading-xs"></span>
+                            {{ __('Saving...') }}
+                        </span>
+                    </button>
                 </div>
             </div>
 

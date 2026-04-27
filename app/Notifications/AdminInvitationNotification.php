@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
-use App\Models\Setting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -27,7 +26,7 @@ class AdminInvitationNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $companyName = Setting::where('key', 'company_name')->value('value') ?? config('app.name');
+        $companyName = dpc_setting('company_name') ?? config('app.name');
 
         return (new MailMessage)
             ->subject("You've been invited to {$companyName}")

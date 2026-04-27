@@ -6,7 +6,7 @@ Route::get('/', \App\Livewire\Pages\HomePage::class)->name('home');
 
 Route::get('/invitation/accept/{token}', [\App\Http\Controllers\InvitationController::class, 'accept'])
     ->name('invitation.accept');
-Route::get('/all-packages', \App\Livewire\Packages\PackagesBrowse::class)->name('packages.browse');
+Route::get('/menu', \App\Livewire\Packages\PackagesBrowse::class)->name('packages.browse');
 
 Route::get('/about', function () {
     return view('public.about');
@@ -93,6 +93,9 @@ Route::middleware(['auth', 'verified', 'admin'])
 
         // Categories
         Route::get('categories', \App\Livewire\Categories\CategoryIndex::class)->name('categories.index');
+
+        // Contact Messages
+        Route::get('contact-messages', \App\Livewire\Admin\ContactMessages\Index::class)->name('contact-messages');
 
         // Admin Settings
         Route::get('settings', \App\Livewire\Admin\Settings\AdminSettings::class)->name('settings.index');

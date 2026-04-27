@@ -12,6 +12,7 @@ use App\Models\CustomerPaymentMethod;
 use App\Models\Payment;
 use App\Notifications\BookingConfirmedNotification;
 use App\Services\InvoiceService;
+use App\Services\Payment\PaymentLogger;
 use App\Services\Payment\TransflowGateway;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,6 +56,16 @@ class TransflowReturnController extends Controller
             'status' => $status,
             'payment_status' => $booking->payment_status->value,
         ]);
+
+        PaymentLogger::log(
+            event: 'return',
+            gateway: 'transflow',
+            direction: 'inbound',
+            bookingReference: $booking->reference,
+            level: 'info',
+            status: $status === 'success' ? 'pending' : 'failed',
+            gatewayRef: (string) ($booking->payment_reference ?? ''),
+        );
 
         if ($status === 'success') {
             return $this->handleSuccessReturn($booking, $gateway, $invoiceService);
@@ -115,6 +126,16 @@ class TransflowReturnController extends Controller
                 $this->maybeSavePaymentMethod($booking);
 
                 Log::info('Transflow Return: Payment confirmed via verify()', ['booking' => $booking->reference]);
+
+                PaymentLogger::log(
+                    event: 'return-verified',
+                    gateway: 'transflow',
+                    direction: 'inbound',
+                    bookingReference: $booking->reference,
+                    level: 'info',
+                    status: 'paid',
+                    gatewayRef: $reference,
+                );
 
                 return redirect()->route('booking.confirmation', ['booking' => $booking->reference]);
             }
@@ -185,6 +206,17 @@ class TransflowReturnController extends Controller
         }
 
         Log::warning('Transflow Return: Payment failed or cancelled', ['booking' => $booking->reference]);
+
+        PaymentLogger::log(
+            event: 'return-failed',
+            gateway: 'transflow',
+            direction: 'inbound',
+            bookingReference: $booking->reference,
+            level: 'warning',
+            status: 'failed',
+            gatewayRef: (string) ($booking->payment_reference ?? ''),
+            errorMessage: 'Payment was declined or cancelled by customer.',
+        );
 
         return redirect()
             ->route('booking.payment', ['booking' => $booking->reference])

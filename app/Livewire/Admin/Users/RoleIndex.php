@@ -186,6 +186,9 @@ class RoleIndex extends Component
             'Administration' => $this->permissions->whereIn('slug', [
                 'manage_users', 'manage_roles', 'manage_settings', 'view_error_logs',
             ]),
+            'Contact' => $this->permissions->whereIn('slug', [
+                'manage_contact_messages', 'receive_contact_notifications',
+            ]),
         ];
 
         return view('livewire.admin.users.role-index', [
