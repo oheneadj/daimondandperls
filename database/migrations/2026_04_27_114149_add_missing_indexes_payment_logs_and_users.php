@@ -8,16 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // user_type is filtered in reports (new customers count) and auth redirects
+        // type is filtered in reports (new customers count) and auth redirects
         Schema::table('users', function (Blueprint $table) {
-            $table->index('user_type');
+            $table->index('type');
         });
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropIndex(['user_type']);
+            $table->dropIndex(['type']);
         });
     }
 };

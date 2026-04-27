@@ -235,7 +235,7 @@ class ReportsView extends Component
 
         // New customers registered in the period
         $this->newCustomers = \App\Models\User::whereBetween('created_at', [$start, $end])
-            ->where('user_type', \App\Enums\UserType::Customer)
+            ->where('type', \App\Enums\UserType::Customer)
             ->count();
     }
 
