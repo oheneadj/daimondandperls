@@ -1,0 +1,16 @@
+[
+    2026-04-27 13: 16: 11
+] local.INFO: Transflow: Initiating payment {
+    "booking": "CAT-2026-00003",
+    "payload": {
+        "fullName": "Ohene",
+        "email": "admin@admin.com",
+        "narration": "Payment for booking CAT-2026-00003",
+        "amount": 150.0,
+        "currency": "GHS",
+        "successRedirectUrl": "http://dpc.test/booking/payment/return/CAT-2026-00003?status=success",
+        "failureRedirectUrl": "http://dpc.test/booking/payment/return/CAT-2026-00003?status=failure",
+        "callbackUrl": "http://dpc.test/webhooks/transflow",
+        "pageTitle": "Diam"
+    }
+}

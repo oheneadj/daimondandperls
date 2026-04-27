@@ -170,6 +170,7 @@ class CheckoutPayment extends Component
 
         $result = $gateway->initiate($this->booking, $context);
 
+
         if ($result->isRedirect()) {
             $this->booking->update([
                 'payment_reference' => $result->reference,
@@ -222,6 +223,8 @@ class CheckoutPayment extends Component
      */
     private function buildPaymentContext(): array|false
     {
+        
+
         if ($this->paymentChoice === 'saved') {
             $method = $this->savedMethods->firstWhere('id', $this->selectedMethodId);
 
@@ -273,6 +276,38 @@ class CheckoutPayment extends Component
         }
 
         // Guest / no pre-selection — let Transflow show all options
+        //for guests, take the momo number they entered and the network they selected
+        if ($this->paymentChoice === '') {
+
+              $networkPrefixPattern = $this->getNetworkPrefixPattern($this->momoNetwork);
+
+             $validationResult = validator(
+                ['momoNetwork' => $this->momoNetwork, 'momoNumber' => $this->momoNumber],
+                [
+                    'momoNetwork' => 'required|in:13,6,7',
+                    'momoNumber' => ['required', 'regex:'.$networkPrefixPattern],
+                ],
+                [
+                    'momoNetwork.required' => 'Please select your mobile network.',
+                    'momoNetwork.in' => 'Invalid network selected.',
+                    'momoNumber.required' => 'Please provide your mobile money number.',
+                    'momoNumber.regex' => "This number doesn't match the selected network.",
+                ]
+            );
+
+            if ($validationResult->fails()) {
+                $this->errorMessage = $validationResult->errors()->first();
+
+                return false;
+            }
+
+            return [
+                'payment_method' => 'mobile_money',
+                'msisdn' => $this->momoNumber,
+                'network' => $this->mapToTransflowNetwork($this->momoNetwork),
+            ];
+        }
+
         return [];
     }
 

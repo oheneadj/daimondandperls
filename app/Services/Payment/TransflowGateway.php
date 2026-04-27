@@ -89,13 +89,13 @@ class TransflowGateway implements PaymentGatewayContract
             $payload['network'] = $context['network'];
         }
 
-        Log::info('Transflow: Initiating payment', [
-            'booking' => $booking->reference,
-            'amount' => $payload['amount'],
-        ]);
-
         // Strip credentials from the logged request
         $loggablePayload = array_diff_key($payload, array_flip(['apiKey', 'transflowId', 'merchantProductId']));
+
+        Log::info('Transflow: Initiating payment', [
+            'booking' => $booking->reference,
+            'payload' => $loggablePayload,
+        ]);
 
         [$response, $httpStatus, $durationMs] = $this->post('/request-payments', $payload);
 
