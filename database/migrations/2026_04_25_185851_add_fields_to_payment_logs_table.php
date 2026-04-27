@@ -9,10 +9,15 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::getDriverName() !== 'sqlite') {
+            Schema::table('payment_logs', function (Blueprint $table) {
+                $table->dropForeign('fk_pl_payment_id');
+            });
+        }
+
         Schema::table('payment_logs', function (Blueprint $table) {
             // Make payment_id nullable — many events happen before a Payment record exists.
-            // SQLite drops indexes on ->change(), so we re-declare it explicitly below.
-            $table->integer('payment_id')->nullable()->change();
+            $table->unsignedBigInteger('payment_id')->nullable()->change();
 
             $table->string('gateway', 30)->nullable()->after('payment_id');
             $table->string('direction', 10)->nullable()->after('gateway');       // outbound | inbound
@@ -32,6 +37,12 @@ return new class extends Migration
             $table->index('level');
         });
 
+        if (DB::getDriverName() !== 'sqlite') {
+            Schema::table('payment_logs', function (Blueprint $table) {
+                $table->foreign('payment_id', 'fk_pl_payment_id')->references('id')->on('payments')->onDelete('cascade');
+            });
+        }
+
         // File-based SQLite drops indexes when ->change() recreates the table.
         // In-memory SQLite (tests) and MySQL both keep the index, so we guard before adding.
         $indexExists = collect(DB::select("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='payment_logs'"))
@@ -47,6 +58,12 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() !== 'sqlite') {
+            Schema::table('payment_logs', function (Blueprint $table) {
+                $table->dropForeign('fk_pl_payment_id');
+            });
+        }
+
         Schema::table('payment_logs', function (Blueprint $table) {
             $table->dropIndex(['booking_reference']);
             $table->dropIndex(['gateway']);
@@ -58,7 +75,13 @@ return new class extends Migration
                 'raw_request', 'raw_response', 'http_status', 'duration_ms',
             ]);
 
-            $table->integer('payment_id')->nullable(false)->change();
+            $table->unsignedBigInteger('payment_id')->nullable(false)->change();
         });
+
+        if (DB::getDriverName() !== 'sqlite') {
+            Schema::table('payment_logs', function (Blueprint $table) {
+                $table->foreign('payment_id', 'fk_pl_payment_id')->references('id')->on('payments')->onDelete('cascade');
+            });
+        }
     }
 };
