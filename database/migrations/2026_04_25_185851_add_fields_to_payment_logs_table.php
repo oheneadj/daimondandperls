@@ -45,9 +45,12 @@ return new class extends Migration
 
         // File-based SQLite drops indexes when ->change() recreates the table.
         // In-memory SQLite (tests) and MySQL both keep the index, so we guard before adding.
-        $indexExists = collect(DB::select("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='payment_logs'"))
-            ->pluck('name')
-            ->contains('payment_logs_payment_id_index');
+        $indexExists = false;
+        if (DB::getDriverName() === 'sqlite') {
+            $indexExists = collect(DB::select("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='payment_logs'"))
+                ->pluck('name')
+                ->contains('payment_logs_payment_id_index');
+        }
 
         if (DB::getDriverName() === 'sqlite' && ! $indexExists) {
             Schema::table('payment_logs', function (Blueprint $table) {
