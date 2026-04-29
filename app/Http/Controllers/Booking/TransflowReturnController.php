@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Booking;
 
-use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use App\Models\CustomerPaymentMethod;
 use App\Models\Payment;
 use App\Notifications\BookingConfirmedNotification;
 use App\Services\InvoiceService;
 use App\Services\Payment\PaymentLogger;
+use App\Services\Payment\PaymentMethodService;
 use App\Services\Payment\TransflowGateway;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -47,7 +46,8 @@ class TransflowReturnController extends Controller
         Request $request,
         Booking $booking,
         TransflowGateway $gateway,
-        InvoiceService $invoiceService
+        InvoiceService $invoiceService,
+        PaymentMethodService $paymentMethodService
     ): RedirectResponse {
         $status = $request->query('status', 'failure');
 
@@ -68,7 +68,7 @@ class TransflowReturnController extends Controller
         );
 
         if ($status === 'success') {
-            return $this->handleSuccessReturn($booking, $gateway, $invoiceService);
+            return $this->handleSuccessReturn($booking, $gateway, $invoiceService, $paymentMethodService);
         }
 
         return $this->handleFailureReturn($booking);
@@ -83,7 +83,8 @@ class TransflowReturnController extends Controller
     private function handleSuccessReturn(
         Booking $booking,
         TransflowGateway $gateway,
-        InvoiceService $invoiceService
+        InvoiceService $invoiceService,
+        PaymentMethodService $paymentMethodService
     ): RedirectResponse {
         // Already marked paid (webhook beat the redirect) — go straight to confirmation
         if ($booking->payment_status === PaymentStatus::Paid) {
@@ -122,8 +123,8 @@ class TransflowReturnController extends Controller
                     $invoiceService->getDownloadUrl($booking)
                 ));
 
-                // Save entered MoMo number as a verified payment method for logged-in customers
-                $this->maybeSavePaymentMethod($booking);
+                // I save the MoMo number if the customer is logged in.
+                $paymentMethodService->saveFromBooking($booking);
 
                 Log::info('Transflow Return: Payment confirmed via verify()', ['booking' => $booking->reference]);
 
@@ -150,49 +151,6 @@ class TransflowReturnController extends Controller
         return redirect()
             ->route('booking.payment', ['booking' => $booking->reference])
             ->with('payment_awaiting', true);
-    }
-
-    /**
-     * If the customer entered a new MoMo number and is logged in, save it as a verified payment method.
-     */
-    private function maybeSavePaymentMethod(Booking $booking): void
-    {
-        if (empty($booking->payer_number) || empty($booking->payment_channel)) {
-            return;
-        }
-
-        $user = $booking->customer->user ?? null;
-
-        if (! $user) {
-            return;
-        }
-
-        $customer = $booking->customer;
-
-        $networkName = match ($booking->payment_channel) {
-            '13' => 'MTN MoMo',
-            '6' => 'Telecel Cash',
-            '7' => 'AirtelTigo Money',
-            default => 'Mobile Money',
-        };
-
-        $isFirst = $customer->paymentMethods()->count() === 0;
-
-        CustomerPaymentMethod::updateOrCreate(
-            ['customer_id' => $customer->id, 'account_number' => $booking->payer_number],
-            [
-                'type' => PaymentMethod::MobileMoney->value,
-                'label' => $networkName.' - '.$booking->payer_number,
-                'provider' => $booking->payment_channel,
-                'is_default' => $isFirst,
-                'verified_at' => now(),
-            ]
-        );
-
-        Log::info('Transflow Return: New payment method saved for customer', [
-            'customer' => $customer->id,
-            'number' => $booking->payer_number,
-        ]);
     }
 
     /**

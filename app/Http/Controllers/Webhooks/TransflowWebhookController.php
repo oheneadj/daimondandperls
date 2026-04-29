@@ -11,6 +11,7 @@ use App\Models\Payment;
 use App\Notifications\BookingConfirmedNotification;
 use App\Services\InvoiceService;
 use App\Services\Payment\PaymentLogger;
+use App\Services\Payment\PaymentMethodService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -40,8 +41,11 @@ use Illuminate\Support\Facades\Log;
 
 class TransflowWebhookController extends Controller
 {
-    public function __invoke(Request $request, InvoiceService $invoiceService): JsonResponse
-    {
+    public function __invoke(
+        Request $request,
+        InvoiceService $invoiceService,
+        PaymentMethodService $paymentMethodService
+    ): JsonResponse {
         // Transflow sends a flat JSON payload (not nested under 'data')
         $payload = $request->all();
 
@@ -86,7 +90,7 @@ class TransflowWebhookController extends Controller
 
         // Step 2 — Handle the outcome
         if ($responseCode === '01') {
-            $this->handleSuccess($booking, $payload, $invoiceService);
+            $this->handleSuccess($booking, $payload, $invoiceService, $paymentMethodService);
         } else {
             $this->handleFailure($booking, $payload);
         }
@@ -98,15 +102,22 @@ class TransflowWebhookController extends Controller
      * Mark booking as paid and send the confirmation notification.
      * Idempotent — safe to call multiple times for the same booking.
      */
-    private function handleSuccess(Booking $booking, array $payload, InvoiceService $invoiceService): void
-    {
+    private function handleSuccess(
+        Booking $booking,
+        array $payload,
+        InvoiceService $invoiceService,
+        PaymentMethodService $paymentMethodService
+    ): void {
         $alreadyPaid = $booking->payment_status === PaymentStatus::Paid;
 
-        // Always store the latest callback payload for auditing
+        // I always store the latest data so I have an audit trail.
         $booking->update([
             'payment_status' => PaymentStatus::Paid,
             'payment_details' => $payload,
         ]);
+
+        // I save the payment method if the customer is logged in.
+        $paymentMethodService->saveFromBooking($booking);
 
         Log::info('Transflow Webhook: Payment marked PAID', ['booking' => $booking->reference]);
 

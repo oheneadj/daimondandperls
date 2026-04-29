@@ -25,8 +25,8 @@ class CreateNewUser implements CreatesNewUsers
     {
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique(User::class), 'required_without:phone'],
-            'phone' => ['nullable', 'string', 'regex:/^(?:\+233|0)\d{9}$/', Rule::unique(User::class), 'required_without:email'],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique(User::class)],
+            'phone' => ['required', 'string', 'regex:/^(?:\+233|0)\d{9}$/', Rule::unique(User::class)],
             'password' => $this->passwordRules(),
         ])->validate();
 
