@@ -18,6 +18,32 @@
     <div class="flex-1 flex flex-col min-w-0 min-h-screen lg:ml-64">
         <x-customer.header :title="$title ?? null" />
 
+        {{-- Payment method nudge: shown until the customer adds at least one --}}
+        @auth
+            @php $hasPaymentMethod = Auth::user()->customer?->paymentMethods()->exists(); @endphp
+            @if(!$hasPaymentMethod)
+                <div class="bg-[#FFC926]/15 border-b border-[#FFC926]/30 px-6 md:px-10 lg:px-16 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="shrink-0 w-8 h-8 rounded-full bg-[#FFC926]/30 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#9A7A00]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                            </svg>
+                        </div>
+                        <p class="text-[13px] font-semibold text-[#7A6000]">
+                            Add a payment method to speed up your checkout experience.
+                        </p>
+                    </div>
+                    <a href="{{ route('dashboard.payment-methods') }}" wire:navigate
+                        class="shrink-0 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#FFC926] text-[#5A4500] text-[12px] font-bold hover:bg-[#e6b520] transition-colors whitespace-nowrap">
+                        Add Payment Method
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
+            @endif
+        @endauth
+
         <!-- Page Content -->
         <main class="flex-1 p-6 md:p-10 lg:p-16">
             <div class="max-w-7xl mx-auto">

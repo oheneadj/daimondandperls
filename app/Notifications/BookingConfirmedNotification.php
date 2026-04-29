@@ -3,7 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Booking;
-use App\Notifications\Channels\GaintSmsChannel;
+use App\Notifications\Channels\SmsChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -30,7 +30,7 @@ class BookingConfirmedNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database', GaintSmsChannel::class];
+        return ['mail', 'database', SmsChannels::primary()];
     }
 
     /**
@@ -61,7 +61,7 @@ class BookingConfirmedNotification extends Notification implements ShouldQueue
     /**
      * Get the SMS representation of the notification block.
      */
-    public function toGaintSms(object $notifiable): string
+    public function toSms(object $notifiable): string
     {
         $message = "Hi {$notifiable->name}, your booking {$this->booking->reference} for GHS "
             .number_format($this->booking->total_amount, 2)
@@ -73,6 +73,11 @@ class BookingConfirmedNotification extends Notification implements ShouldQueue
         }
 
         return $message;
+    }
+
+    public function toGaintSms(object $notifiable): string
+    {
+        return $this->toSms($notifiable);
     }
 
     /**

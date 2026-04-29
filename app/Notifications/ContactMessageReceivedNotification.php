@@ -6,7 +6,7 @@ namespace App\Notifications;
 
 use App\Enums\NotificationPreference;
 use App\Models\ContactMessage;
-use App\Notifications\Channels\GaintSmsChannel;
+use App\Notifications\Channels\SmsChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -29,7 +29,7 @@ class ContactMessageReceivedNotification extends Notification implements ShouldQ
         }
 
         if ($preference === NotificationPreference::Sms || $preference === NotificationPreference::Both) {
-            $channels[] = GaintSmsChannel::class;
+            $channels[] = SmsChannels::primary();
         }
 
         return $channels;
@@ -50,9 +50,14 @@ class ContactMessageReceivedNotification extends Notification implements ShouldQ
             ->line('Log in to the admin panel to read the full message and respond.');
     }
 
-    public function toGaintSms(object $notifiable): string
+    public function toSms(object $notifiable): string
     {
         return "New Contact: {$this->contactMessage->name} ({$this->contactMessage->inquiry_type}). View: ".route('admin.contact-messages');
+    }
+
+    public function toGaintSms(object $notifiable): string
+    {
+        return $this->toSms($notifiable);
     }
 
     public function toArray(object $notifiable): array

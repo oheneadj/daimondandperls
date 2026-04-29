@@ -77,6 +77,7 @@ class TransflowGateway implements PaymentGatewayContract
             'failureRedirectUrl' => route('booking.payment.return', ['booking' => $booking->reference, 'status' => 'failure']),
             'callbackUrl' => route('webhooks.transflow'),
             'pageTitle' => config('app.name'),
+            'msisdn' => $booking->customer->phone,
         ];
 
         if (! empty($context['payment_method'])) {
@@ -96,6 +97,8 @@ class TransflowGateway implements PaymentGatewayContract
             'booking' => $booking->reference,
             'payload' => $loggablePayload,
         ]);
+
+        // dd($payload);
 
         [$response, $httpStatus, $durationMs] = $this->post('/request-payments', $payload);
 

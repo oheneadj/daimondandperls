@@ -45,6 +45,8 @@ class ErrorLogIndex extends Component
 
     public ?PaymentLog $viewingPayment = null;
 
+    public ?SmsLog $viewingSms = null;
+
     public string $resolutionNote = '';
 
     public string $sortField = 'created_at';
@@ -128,6 +130,16 @@ class ErrorLogIndex extends Component
         $this->viewingPayment = null;
     }
 
+    public function viewSmsLog(int $id): void
+    {
+        $this->viewingSms = SmsLog::find($id);
+    }
+
+    public function closeSmsLog(): void
+    {
+        $this->viewingSms = null;
+    }
+
     public function markUnresolved(int $id): void
     {
         $log = ErrorLog::findOrFail($id);
@@ -176,6 +188,7 @@ class ErrorLogIndex extends Component
                         ->orWhere('message', 'like', "%{$this->search}%")
                         ->orWhere('message_id', 'like', "%{$this->search}%");
                 }))
+                ->when($this->filterSource, fn ($q) => $q->where('provider', $this->filterSource))
                 ->latest()
                 ->paginate(25);
         } elseif ($this->activeTab === 'activity') {

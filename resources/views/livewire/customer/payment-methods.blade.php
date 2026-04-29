@@ -2,11 +2,11 @@
     <!-- Header -->
     <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-            <h1 class="text-3xl font-semibold text-base-content mb-2">Payment Methods</h1>
-            <p class="text-base-content/60 text-[15px] font-medium">Manage your saved payment methods for faster checkout.</p>
+            <h1 class="text-[28px] font-semibold text-base-content leading-tight">Payment Methods</h1>
+            <p class="text-base-content/50 text-[14px] font-medium mt-1">Manage your saved payment methods for faster checkout.</p>
         </div>
-        @if(!$showForm)
-            <button wire:click="openForm" class="btn btn-primary btn-sm rounded-xl gap-2">
+        @if(!$showForm && $methods->isNotEmpty())
+            <button wire:click="openForm" class="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl font-semibold text-[13px] hover:bg-primary/90 transition-colors shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
@@ -17,7 +17,7 @@
 
     <!-- Add/Edit Form -->
     @if($showForm)
-        <div class="bg-white border border-base-content/10 rounded-[24px] p-6 md:p-10 shadow-sm mb-12 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div class="bg-white border border-base-content/10 rounded-2xl p-6 md:p-10 shadow-sm mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
             <div class="flex items-center justify-between mb-10">
                 <div>
                     <h2 class="text-2xl font-semibold text-base-content">{{ $editingId ? 'Edit Payment Method' : 'Add New Payment Method' }}</h2>
@@ -128,18 +128,21 @@
 
     <!-- Payment Methods List -->
     @if($methods->isEmpty() && !$showForm)
-        <div class="bg-white border border-base-content/10 rounded-[32px] p-16 md:p-24 text-center shadow-sm">
-            <div class="size-24 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-8 text-primary">
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" />
+        <div class="bg-white border border-base-content/10 rounded-2xl p-12 text-center shadow-sm">
+            <div class="size-20 bg-base-200 rounded-full flex items-center justify-center mx-auto mb-6 text-primary/40">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
                 </svg>
             </div>
-            <h3 class="text-2xl font-bold text-base-content mb-3">No saved accounts</h3>
-            <p class="text-base-content/50 text-[15px] max-w-sm mx-auto font-medium mb-10 leading-relaxed">
-                Save your payment methods here to speed up your future bookings.
+            <h3 class="text-xl font-semibold text-base-content mb-3">No saved payment methods</h3>
+            <p class="text-base-content/60 text-[14px] max-w-sm mx-auto font-medium mb-8">
+                Save your MoMo number here to speed up checkout on future bookings.
             </p>
-            <button wire:click="openForm" class="bg-primary text-white px-8 py-4 rounded-xl font-black uppercase tracking-widest text-[13px] shadow-xl shadow-primary/20 hover:-translate-y-1 transition-all">
-                Add Your First Payment Method
+            <button wire:click="openForm" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-semibold text-[14px] hover:bg-primary/90 transition-colors shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Add Payment Method
             </button>
         </div>
     @elseif($methods->isNotEmpty())

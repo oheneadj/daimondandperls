@@ -12,6 +12,7 @@ class SmsLog extends Model
         'to',
         'message',
         'status',
+        'provider',
         'response',
     ];
 

@@ -51,10 +51,10 @@ test('it respects user notification preferences', function () {
     expect($notification->via($emailAdmin))->toContain('mail', 'database');
     expect($notification->via($emailAdmin))->not->toContain(\App\Notifications\Channels\GaintSmsChannel::class);
 
-    expect($notification->via($smsAdmin))->toContain('database', \App\Notifications\Channels\GaintSmsChannel::class);
+    expect($notification->via($smsAdmin))->toContain('database', \App\Notifications\Channels\SmsChannels::primary());
     expect($notification->via($smsAdmin))->not->toContain('mail');
 
-    expect($notification->via($bothAdmin))->toContain('mail', 'database', \App\Notifications\Channels\GaintSmsChannel::class);
+    expect($notification->via($bothAdmin))->toContain('mail', 'database', \App\Notifications\Channels\SmsChannels::primary());
 });
 
 test('notification bell unread count is updated', function () {

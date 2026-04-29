@@ -52,7 +52,7 @@ trait HandlesBookingCheckout
      *    and use the customer's email as a fallback lookup.
      * 4. Only create a brand-new User if none of the above matched.
      */
-    public function sendOtp(): void
+    public function sendOtp(bool $isResend = false): void
     {
         $this->validate([
             'phone' => ['required', 'string', 'regex:/^(?:\+233|0)\d{9}$/'],
@@ -128,8 +128,7 @@ trait HandlesBookingCheckout
             'otp_expires_at' => now()->addMinutes(10),
         ]);
 
-        // Send the OTP to the user via their notification channel (SMS/email)
-        $user->notify(new OtpNotification($otp));
+        $user->notify(new OtpNotification($otp, isResend: $isResend));
 
         $this->otpStep = 2;
         $this->otpError = '';
@@ -182,7 +181,7 @@ trait HandlesBookingCheckout
     {
         $this->otp = '';
         $this->otpError = '';
-        $this->sendOtp();
+        $this->sendOtp(isResend: true);
     }
 
     public function cancelOtp(): void

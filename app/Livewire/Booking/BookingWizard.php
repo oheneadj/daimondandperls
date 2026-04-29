@@ -51,7 +51,8 @@ class BookingWizard extends Component
         }
 
         if (empty($this->phone) || ! preg_match('/^(?:\+233|0)\d{9}$/', $this->phone)) {
-           //if what the user entere isnt 0-9 clear the input
+            // if what the user entere isnt 0-9 clear the input
+
             return false;
         }
 

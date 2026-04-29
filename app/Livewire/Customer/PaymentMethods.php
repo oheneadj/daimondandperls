@@ -255,7 +255,7 @@ class PaymentMethods extends Component
         $newCode = (string) random_int(100000, 999999);
         $method->update(['verification_code' => Hash::make($newCode)]);
 
-        $customer->notify(new OtpNotification($newCode, 'payment_method'));
+        $customer->notify(new OtpNotification($newCode, 'payment_method', isResend: true));
 
         $this->verifyingId = $method->id;
         $this->otpCode = '';

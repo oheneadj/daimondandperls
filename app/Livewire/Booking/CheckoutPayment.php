@@ -170,7 +170,6 @@ class CheckoutPayment extends Component
 
         $result = $gateway->initiate($this->booking, $context);
 
-
         if ($result->isRedirect()) {
             $this->booking->update([
                 'payment_reference' => $result->reference,
@@ -223,7 +222,6 @@ class CheckoutPayment extends Component
      */
     private function buildPaymentContext(): array|false
     {
-        
 
         if ($this->paymentChoice === 'saved') {
             $method = $this->savedMethods->firstWhere('id', $this->selectedMethodId);
@@ -272,16 +270,19 @@ class CheckoutPayment extends Component
         }
 
         if ($this->paymentChoice === 'card') {
-            return ['payment_method' => 'card'];
+            return [
+                'payment_method' => 'card',
+                'msisdn' => $this->booking->customer->phone,
+            ];
         }
 
         // Guest / no pre-selection — let Transflow show all options
-        //for guests, take the momo number they entered and the network they selected
+        // for guests, take the momo number they entered and the network they selected
         if ($this->paymentChoice === '') {
 
-              $networkPrefixPattern = $this->getNetworkPrefixPattern($this->momoNetwork);
+            $networkPrefixPattern = $this->getNetworkPrefixPattern($this->momoNetwork);
 
-             $validationResult = validator(
+            $validationResult = validator(
                 ['momoNetwork' => $this->momoNetwork, 'momoNumber' => $this->momoNumber],
                 [
                     'momoNetwork' => 'required|in:13,6,7',

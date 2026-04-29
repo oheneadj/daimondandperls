@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Models\Booking;
-use App\Notifications\Channels\GaintSmsChannel;
+use App\Notifications\Channels\SmsChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -24,7 +24,7 @@ class QuoteUpdatedNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database', GaintSmsChannel::class];
+        return ['mail', 'database', SmsChannels::primary()];
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -40,12 +40,17 @@ class QuoteUpdatedNotification extends Notification implements ShouldQueue
             ->line('Thank you for choosing '.$companyName.'!');
     }
 
-    public function toGaintSms(object $notifiable): string
+    public function toSms(object $notifiable): string
     {
         return "Hi {$notifiable->name}, your quote for {$this->booking->reference} is GH₵"
             .number_format((float) $this->booking->total_amount, 2)
             .'. Pay here: '
             .route('booking.payment', ['booking' => $this->booking->reference]);
+    }
+
+    public function toGaintSms(object $notifiable): string
+    {
+        return $this->toSms($notifiable);
     }
 
     /**

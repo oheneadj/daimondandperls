@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Models\Booking;
-use App\Notifications\Channels\GaintSmsChannel;
+use App\Notifications\Channels\SmsChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -28,7 +28,7 @@ class BookingReceivedNotification extends Notification implements ShouldQueue
         }
 
         if ($preference === \App\Enums\NotificationPreference::Sms || $preference === \App\Enums\NotificationPreference::Both) {
-            $channels[] = GaintSmsChannel::class;
+            $channels[] = SmsChannels::primary();
         }
 
         return $channels;
@@ -47,9 +47,14 @@ class BookingReceivedNotification extends Notification implements ShouldQueue
             ->line('Thank you for using our application!');
     }
 
-    public function toGaintSms(object $notifiable): string
+    public function toSms(object $notifiable): string
     {
         return "New Booking Received!\nRef: {$this->booking->reference}\nAmt: GHS ".number_format((float) $this->booking->total_amount, 2)."\nView: ".route('admin.bookings.show', $this->booking->reference);
+    }
+
+    public function toGaintSms(object $notifiable): string
+    {
+        return $this->toSms($notifiable);
     }
 
     public function getBookingId(): int

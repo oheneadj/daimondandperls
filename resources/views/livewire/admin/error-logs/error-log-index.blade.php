@@ -197,11 +197,25 @@
     {{-- SMS Logs Tab --}}
     @if($activeTab === 'sms')
         <x-ui.table search="search">
-            <x-ui.table.th>Time</x-ui.table.th>
-            <x-ui.table.th>Recipient</x-ui.table.th>
-            <x-ui.table.th>Message</x-ui.table.th>
-            <x-ui.table.th>Message ID</x-ui.table.th>
-            <x-ui.table.th align="center">Status</x-ui.table.th>
+            <x-slot name="filters">
+                <div class="flex flex-wrap items-center gap-3">
+                    <select wire:model.live="filterSource" class="bg-base-200 border-none text-[13px] rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary/30 outline-none transition-all font-medium">
+                        <option value="">All Providers</option>
+                        <option value="gaintsms">GiantSMS</option>
+                        <option value="mnotify">mNotify</option>
+                    </select>
+                </div>
+            </x-slot>
+
+            <x-slot name="header">
+                <x-ui.table.th>Time</x-ui.table.th>
+                <x-ui.table.th>Recipient</x-ui.table.th>
+                <x-ui.table.th>Message</x-ui.table.th>
+                <x-ui.table.th>Provider</x-ui.table.th>
+                <x-ui.table.th>Message ID</x-ui.table.th>
+                <x-ui.table.th align="center">Status</x-ui.table.th>
+                <x-ui.table.th align="right">Actions</x-ui.table.th>
+            </x-slot>
 
             @forelse($smsLogs as $log)
                 <x-ui.table.row wire:key="sms-{{ $log->id }}">
@@ -216,6 +230,17 @@
                         <p class="text-[13px] text-base-content line-clamp-2 max-w-sm">{{ $log->message }}</p>
                     </x-ui.table.td>
                     <x-ui.table.td>
+                        @php
+                            $providerLabel = match($log->provider) {
+                                'mnotify' => ['label' => 'mNotify', 'class' => 'bg-blue-50 text-blue-700'],
+                                default   => ['label' => 'GiantSMS', 'class' => 'bg-base-200 text-base-content/60'],
+                            };
+                        @endphp
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider {{ $providerLabel['class'] }}">
+                            {{ $providerLabel['label'] }}
+                        </span>
+                    </x-ui.table.td>
+                    <x-ui.table.td>
                         @if($log->message_id)
                             <span class="text-[12px] font-mono text-base-content/50">{{ $log->message_id }}</span>
                         @else
@@ -228,10 +253,17 @@
                             {{ $log->status }}
                         </span>
                     </x-ui.table.td>
+                    <x-ui.table.td align="right">
+                        <button wire:click="viewSmsLog({{ $log->id }})"
+                            class="inline-flex items-center gap-1.5 text-[12px] font-semibold text-primary hover:text-primary/80 transition-colors">
+                            @include('layouts.partials.icons.eye', ['class' => 'w-4 h-4'])
+                            View
+                        </button>
+                    </x-ui.table.td>
                 </x-ui.table.row>
             @empty
                 <x-ui.table.row>
-                    <x-ui.table.td colspan="5">
+                    <x-ui.table.td colspan="7">
                         <div class="py-12 text-center">
                             <p class="text-[14px] font-semibold text-base-content/40">No SMS logs found</p>
                         </div>
@@ -591,6 +623,91 @@
                         <div>
                             <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-2">Response Body</p>
                             <pre class="text-[11px] font-mono text-base-content/70 bg-base-200/50 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-all">{{ json_encode($viewingPayment->raw_response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                        </div>
+                    @endif
+
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- SMS Log Detail Modal --}}
+    @if($viewingSms)
+        <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+            x-data x-init="$nextTick(() => $el.scrollIntoView({ behavior: 'smooth' }))">
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="closeSmsLog"></div>
+            <div class="relative bg-base-100 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto z-10">
+
+                <div class="flex items-center justify-between p-6 border-b border-base-content/10">
+                    <div>
+                        <h2 class="text-[17px] font-semibold text-base-content">SMS Log Detail</h2>
+                        <p class="text-[12px] text-base-content/40 mt-0.5">
+                            ID #{{ $viewingSms->id }} · {{ $viewingSms->created_at->diffForHumans() }}
+                        </p>
+                    </div>
+                    <button wire:click="closeSmsLog" class="size-8 rounded-full bg-base-200 hover:bg-base-300 flex items-center justify-center transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="p-6 space-y-5">
+
+                    {{-- Meta grid --}}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">Provider</p>
+                            @php
+                                $vp = match($viewingSms->provider) {
+                                    'mnotify' => ['label' => 'mNotify', 'class' => 'bg-blue-50 text-blue-700'],
+                                    default   => ['label' => 'GiantSMS', 'class' => 'bg-base-200 text-base-content/60'],
+                                };
+                            @endphp
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider {{ $vp['class'] }}">
+                                {{ $vp['label'] }}
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">Status</p>
+                            @php $sc = $viewingSms->status === 'sent' ? 'bg-[#9ABC05]/10 text-[#5A7A00]' : 'bg-[#D52518]/10 text-[#D52518]'; @endphp
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider {{ $sc }}">
+                                {{ $viewingSms->status }}
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">Recipient</p>
+                            <span class="text-[13px] font-mono text-base-content">{{ $viewingSms->to }}</span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">Sent At</p>
+                            <span class="text-[13px] text-base-content">{{ $viewingSms->created_at->format('d M Y, H:i:s') }}</span>
+                        </div>
+                        @if($viewingSms->message_id)
+                            <div class="col-span-2">
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">Message ID</p>
+                                <span class="text-[12px] font-mono text-base-content/70 break-all">{{ $viewingSms->message_id }}</span>
+                            </div>
+                        @endif
+                        @if($viewingSms->booking_id)
+                            <div class="col-span-2">
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">Booking ID</p>
+                                <span class="text-[13px] font-mono text-base-content">{{ $viewingSms->booking_id }}</span>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- Message body --}}
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-2">Message</p>
+                        <p class="text-[13px] text-base-content bg-base-200/50 rounded-lg p-3 leading-relaxed">{{ $viewingSms->message }}</p>
+                    </div>
+
+                    {{-- Raw API response --}}
+                    @if($viewingSms->response)
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-2">API Response</p>
+                            <pre class="text-[11px] font-mono text-base-content/70 bg-base-200/50 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-all">{{ json_encode($viewingSms->response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                         </div>
                     @endif
 

@@ -66,6 +66,9 @@ class AdminSettings extends Component
     /** Which payment gateway is active: 'transflow' or 'moolre' */
     public string $active_payment_gateway = 'transflow';
 
+    /** Which SMS provider is primary: 'gaintsms' or 'mnotify' */
+    public string $sms_primary_provider = 'gaintsms';
+
     // ── Notifications ─────────────────────────────────────────────────────────
 
     public bool $email_notifications = false;
@@ -110,6 +113,7 @@ class AdminSettings extends Component
         $this->social_tiktok = $settings->get('social_tiktok')?->value ?? '';
 
         $this->active_payment_gateway = $settings->get('active_payment_gateway')?->value ?? 'transflow';
+        $this->sms_primary_provider = $settings->get('sms_primary_provider')?->value ?? 'gaintsms';
 
         $this->email_notifications = (bool) ($settings->get('email_enabled')?->value ?? false);
         $this->sms_notifications = (bool) ($settings->get('sms_enabled')?->value ?? false);
@@ -194,6 +198,17 @@ class AdminSettings extends Component
         $this->updateSetting('active_payment_gateway', $this->active_payment_gateway, \App\Enums\SettingType::String, 'payment');
 
         $this->dispatch('banner', style: 'success', message: 'Active payment gateway updated.');
+    }
+
+    public function saveSmsProvider(): void
+    {
+        $this->validate([
+            'sms_primary_provider' => 'required|in:gaintsms,mnotify',
+        ]);
+
+        $this->updateSetting('sms_primary_provider', $this->sms_primary_provider, \App\Enums\SettingType::String, 'sms');
+
+        $this->dispatch('banner', style: 'success', message: 'Primary SMS provider updated.');
     }
 
     // ── Delivery Locations ────────────────────────────────────────────────────

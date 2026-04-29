@@ -1,40 +1,40 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications;
 
-use App\Notifications\Channels\GaintSmsChannel;
+use App\Notifications\Channels\SmsChannels;
 use Illuminate\Notifications\Notification;
 
 /**
  * Sends a one-time password (OTP) to the user via SMS.
  *
- * This notification is intentionally NOT queued so the user
- * receives the code immediately while waiting on the checkout page.
+ * Initial sends use the primary SMS provider; resends use the secondary
+ * provider so a different route is tried if the first message did not arrive.
+ *
+ * This notification is intentionally NOT queued so the user receives the
+ * code immediately while waiting on the checkout or verification page.
  */
 class OtpNotification extends Notification
 {
     /**
      * @param  string  $otp  The 6-digit OTP code to send.
-     * @param  string  $purpose  The context for the OTP ('login' or 'payment_method').
+     * @param  string  $purpose  Context: 'login' or 'payment_method'.
+     * @param  bool  $isResend  Whether this is a resend (uses secondary provider).
      */
     public function __construct(
-        public string $otp,
-        public string $purpose = 'login',
+        public readonly string $otp,
+        public readonly string $purpose = 'login',
+        public readonly bool $isResend = false,
     ) {}
 
-    /**
-     * Deliver via GaintSMS .
-     */
     public function via(object $notifiable): array
     {
-        return [GaintSmsChannel::class];
+        return SmsChannels::forOtp($this->isResend);
     }
 
-    /**
-     * Build the SMS message body.
-     * The label changes based on the OTP purpose (login vs payment verification).
-     */
-    public function toGaintSms(object $notifiable): string
+    public function toSms(object $notifiable): string
     {
         $label = match ($this->purpose) {
             'payment_method' => 'verification',
@@ -42,5 +42,11 @@ class OtpNotification extends Notification
         };
 
         return "Your Diamonds & Pearls {$label} code is: {$this->otp}. It expires in 10 minutes.";
+    }
+
+    /** Backwards-compat alias used by GaintSmsChannel when toSms is not detected first. */
+    public function toGaintSms(object $notifiable): string
+    {
+        return $this->toSms($notifiable);
     }
 }

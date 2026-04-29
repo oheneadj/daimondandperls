@@ -3,7 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Booking;
-use App\Notifications\Channels\GaintSmsChannel;
+use App\Notifications\Channels\SmsChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -28,7 +28,7 @@ class BookingCompletedNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database', GaintSmsChannel::class];
+        return ['mail', 'database', SmsChannels::primary()];
     }
 
     /**
@@ -48,10 +48,15 @@ class BookingCompletedNotification extends Notification implements ShouldQueue
     /**
      * Get the SMS representation of the notification.
      */
-    public function toGaintSms(object $notifiable): string
+    public function toSms(object $notifiable): string
     {
         return "Hi {$notifiable->name}, your Diamonds & Pearls booking {$this->booking->reference} is now complete. We hope you enjoyed our service! Details: "
             .route('booking.confirmation', ['booking' => $this->booking->reference]);
+    }
+
+    public function toGaintSms(object $notifiable): string
+    {
+        return $this->toSms($notifiable);
     }
 
     /**

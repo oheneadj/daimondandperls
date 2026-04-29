@@ -18,7 +18,7 @@ test('it can update general settings', function () {
         ->set('settings.business_phone', '0241111111')
         ->call('updateSettings')
         ->assertHasNoErrors()
-        ->assertDispatched('settings-updated');
+        ->assertDispatched('toast');
 
     expect(Setting::where('key', 'business_name')->first()->value)->toBe('My New Site');
     expect(Setting::where('key', 'business_email')->first()->value)->toBe('new@example.com');
@@ -29,7 +29,7 @@ test('it can update notification preferences', function () {
         ->set('notification_preference', 'sms')
         ->call('updateNotifications')
         ->assertHasNoErrors()
-        ->assertDispatched('notifications-updated');
+        ->assertDispatched('toast');
 
     expect($this->user->refresh()->notification_preference)->toBe(\App\Enums\NotificationPreference::Sms);
 });

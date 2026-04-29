@@ -14,11 +14,13 @@ class GaintSmsChannel
      */
     public function send(object $notifiable, Notification $notification): void
     {
-        if (! method_exists($notification, 'toGaintSms')) {
+        if (! method_exists($notification, 'toSms') && ! method_exists($notification, 'toGaintSms')) {
             return;
         }
 
-        $message = $notification->toGaintSms($notifiable);
+        $message = method_exists($notification, 'toSms')
+            ? $notification->toSms($notifiable)
+            : $notification->toGaintSms($notifiable);
 
         $phoneNumber = $notifiable->routeNotificationFor('gaintsms')
             ?? $notifiable->phone
@@ -78,17 +80,18 @@ class GaintSmsChannel
                 'message' => $message,
                 'status' => $status,
                 'response' => $response->json(),
+                'provider' => 'gaintsms',
             ]);
 
         } catch (\Exception $e) {
             Log::error('GaintSmsChannel: Exception thrown.', ['exception' => $e->getMessage()]);
 
-            // Log the failed attempt in db
             SmsLog::create([
                 'to' => $cleanedPhone,
                 'message' => $message,
                 'status' => 'failed',
                 'response' => ['error_message' => $e->getMessage()],
+                'provider' => 'gaintsms',
             ]);
         }
     }

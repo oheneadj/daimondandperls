@@ -304,6 +304,90 @@
                 </div>
             </div>
 
+            {{-- SMS Provider --}}
+            <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
+                <div class="px-6 py-5 border-b border-base-content/5">
+                    <h3 class="text-sm font-bold text-base-content">{{ __('SMS Provider') }}</h3>
+                    <p class="text-xs text-base-content/40 mt-0.5">{{ __('The primary provider sends all SMS messages. The secondary provider is used for OTP resends.') }}</p>
+                </div>
+                <div class="px-6 py-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                        {{-- GaintSMS option --}}
+                        <button type="button" wire:click="$set('sms_primary_provider', 'gaintsms')"
+                            @class([
+                                'relative text-left rounded-xl border-2 p-5 transition-all duration-150',
+                                'border-primary bg-primary/5 shadow-sm' => $sms_primary_provider === 'gaintsms',
+                                'border-base-content/10 hover:border-base-content/20 bg-base-100' => $sms_primary_provider !== 'gaintsms',
+                            ])>
+                            @if($sms_primary_provider === 'gaintsms')
+                                <span class="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold text-primary uppercase tracking-wide bg-primary/10 px-2 py-0.5 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span> Primary
+                                </span>
+                            @else
+                                <span class="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold text-base-content/40 uppercase tracking-wide bg-base-200 px-2 py-0.5 rounded-full">Resend</span>
+                            @endif
+                            <div class="flex items-center gap-3 mb-3">
+                                <div @class([
+                                    'w-9 h-9 rounded-lg flex items-center justify-center shrink-0',
+                                    'bg-primary/15' => $sms_primary_provider === 'gaintsms',
+                                    'bg-base-200' => $sms_primary_provider !== 'gaintsms',
+                                ])>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 {{ $sms_primary_provider === 'gaintsms' ? 'text-primary' : 'text-base-content/40' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-base-content">GiantSMS</p>
+                                    <p class="text-[10px] text-base-content/40 font-medium">api.giantsms.com</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-base-content/60 leading-relaxed">Ghana-based bulk SMS provider. Supports all networks.</p>
+                        </button>
+
+                        {{-- mNotify option --}}
+                        <button type="button" wire:click="$set('sms_primary_provider', 'mnotify')"
+                            @class([
+                                'relative text-left rounded-xl border-2 p-5 transition-all duration-150',
+                                'border-primary bg-primary/5 shadow-sm' => $sms_primary_provider === 'mnotify',
+                                'border-base-content/10 hover:border-base-content/20 bg-base-100' => $sms_primary_provider !== 'mnotify',
+                            ])>
+                            @if($sms_primary_provider === 'mnotify')
+                                <span class="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold text-primary uppercase tracking-wide bg-primary/10 px-2 py-0.5 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span> Primary
+                                </span>
+                            @else
+                                <span class="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold text-base-content/40 uppercase tracking-wide bg-base-200 px-2 py-0.5 rounded-full">Resend</span>
+                            @endif
+                            <div class="flex items-center gap-3 mb-3">
+                                <div @class([
+                                    'w-9 h-9 rounded-lg flex items-center justify-center shrink-0',
+                                    'bg-primary/15' => $sms_primary_provider === 'mnotify',
+                                    'bg-base-200' => $sms_primary_provider !== 'mnotify',
+                                ])>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 {{ $sms_primary_provider === 'mnotify' ? 'text-primary' : 'text-base-content/40' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-base-content">mNotify</p>
+                                    <p class="text-[10px] text-base-content/40 font-medium">apps.mnotify.net</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-base-content/60 leading-relaxed">Ghana-based SMS platform. Supports all local networks.</p>
+                        </button>
+
+                    </div>
+
+                    <div class="flex justify-end mt-4">
+                        <x-ui.button type="button" variant="primary" size="sm" wire:click="saveSmsProvider" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="saveSmsProvider">{{ __('Apply Provider') }}</span>
+                            <span wire:loading wire:target="saveSmsProvider">{{ __('Saving...') }}</span>
+                        </x-ui.button>
+                    </div>
+                </div>
+            </div>
+
             {{-- Notification Preference --}}
             <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
                 <div class="px-6 py-5 border-b border-base-content/5">

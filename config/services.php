@@ -40,6 +40,11 @@ return [
         'api_token' => env('GAINT_SMS_API_TOKEN'),
     ],
 
+    'mnotify' => [
+        'sender_id' => env('MNOTIFY_SENDER_ID'),
+        'api_key' => env('MNOTIFY_API_KEY'),
+    ],
+
     'moolre' => [
         'base_url' => env('MOOLRE_BASE_URL', 'https://api.moolre.com/open/transact'),
         'api_user' => env('MOOLRE_API_USER'),
