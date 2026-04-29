@@ -1,6 +1,10 @@
 @props([])
 
 @php
+    $logoPath     = dpc_setting('business_logo');
+    $logoUrl      = $logoPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($logoPath) : null;
+    $businessName = dpc_setting('business_name', 'Diamonds & Pearls');
+
     $navGroups = [
         'MAIN' => [
             ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'icon' => 'squares-2x2'],
@@ -34,10 +38,16 @@
 >
     {{-- Logo Area --}}
     <div class="p-6 border-b border-white/[0.03] flex items-center justify-between">
-        <div class="flex flex-col">
-            <span class="text-[18px] font-bold text-[#f3e8cc] tracking-tight leading-tight">Diamonds & Pearls</span>
-            <span class="text-[11px] font-bold uppercase tracking-widest text-[#9ABC05] mt-1.5 italic opacity-80">Catering Services</span>
-        </div>
+        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
+            @if($logoUrl)
+                <img src="{{ $logoUrl }}" alt="{{ $businessName }}" class="h-9 w-auto object-contain brightness-0 invert">
+            @else
+                <div class="flex flex-col">
+                    <span class="text-[18px] font-bold text-[#f3e8cc] tracking-tight leading-tight">{{ $businessName }}</span>
+                    <span class="text-[11px] font-bold uppercase tracking-widest text-[#9ABC05] mt-1.5 italic opacity-80">Catering Services</span>
+                </div>
+            @endif
+        </a>
         <button @click="mobileMenuOpen = false" class="p-2 lg:hidden text-white/50 hover:text-white transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />

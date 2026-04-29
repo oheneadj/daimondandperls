@@ -45,7 +45,7 @@
             <a href="{{ route('home') }}" class="flex items-center gap-3 group">
                 @if($logo)
                     <div class="size-9 bg-primary rounded-full flex items-center justify-center text-white text-sm transition-transform group-hover:scale-110">
-                        <img src="{{ $logo }}" alt="{{ $footerName }}" class="size-full object-contain rounded-full">
+                        <img src="{{ asset('storage/'.$logo) }}" alt="{{ $footerName }}" class="size-full object-contain rounded-full">
                     </div>
                 @else
                     <div class="size-9 bg-primary rounded-full flex items-center justify-center text-white text-sm transition-transform group-hover:scale-110">
@@ -350,7 +350,7 @@
                             </div>
                         </a>
                         <p class="text-[13px] text-white/80 leading-relaxed max-w-xs mx-auto sm:mx-0">
-                            Authentic Ghanaian cuisine delivered with care and professionalism. Serving Accra and surrounding areas since 2018.
+                            Authentic Ghanaian cuisine delivered with care and professionalism. Serving Accra and surrounding areas since 2021.
                         </p>
                         {{-- Contact details --}}
                         <div class="flex flex-col gap-3 text-[12px] text-white/45 font-medium">

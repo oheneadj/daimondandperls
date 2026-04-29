@@ -41,36 +41,25 @@
                 </h1>
 
                 <p class="text-[15px] sm:text-lg text-base-content/60 leading-relaxed mb-8 max-w-xl font-medium">
-                    Weddings · Corporate Events · Funerals · Naming Ceremonies.<br class="hidden sm:block">
-                    Experience authentic Ghanaian flavours and impeccable service.
+                    Exquisite flavours for Weddings, Corporate Events, and Private Celebrations.
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8">
                     <x-ui.button href="{{ route('packages.browse') }}" variant="primary" size="lg"
                         class="w-full sm:w-auto">
-                        Order Simple Meal
+                        Browse Our Menu
                     </x-ui.button>
                     <x-ui.button href="{{ route('event-booking') }}" variant="green" size="lg" class="w-full sm:w-auto">
-                        Plan an Event
+                        Book an Event
                     </x-ui.button>
                 </div>
 
                 <div class="flex items-center gap-3 mb-10 flex-wrap">
-                    <span class="text-[10px] font-bold text-base-content/40 uppercase tracking-widest pl-1">Trusted
-                        Payments:</span>
-                    <div class="flex items-center gap-2.5">
-                        <div class="bg-base-200 p-1.5 rounded-lg hover:-translate-y-0.5 transition-transform">
-                            <img src="{{ asset('logos/mtn-momo.png') }}" alt="MTN MoMo"
-                                class="h-6 w-auto object-contain">
-                        </div>
-                        <div class="bg-base-200 p-1.5 rounded-lg hover:-translate-y-0.5 transition-transform">
-                            <img src="{{ asset('logos/Telecel-Cash.jpg') }}" alt="Telecel Cash"
-                                class="h-6 w-auto object-contain rounded-[4px]">
-                        </div>
-                        <div class="bg-base-200 p-1.5 rounded-lg hover:-translate-y-0.5 transition-transform">
-                            <img src="{{ asset('logos/airteltigo-money.png') }}" alt="AirtelTigo Money"
-                                class="h-6 w-auto object-contain">
-                        </div>
+                    <span class="text-[10px] font-bold text-base-content/40 uppercase tracking-widest pl-1">Trusted By:</span>
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                        <span class="text-[12px] font-bold text-base-content/40 bg-base-200 px-3 py-1 rounded-md">UNDP</span>
+                        <span class="text-[12px] font-bold text-base-content/40 bg-base-200 px-3 py-1 rounded-md">Ministry of Education</span>
+                        <span class="text-[12px] font-bold text-base-content/40 bg-base-200 px-3 py-1 rounded-md">International Schools</span>
                     </div>
                 </div>
 
@@ -82,7 +71,7 @@
                     </div>
                     <div class="w-px h-8 sm:h-10 bg-base-content/10"></div>
                     <div>
-                        <div class="text-2xl sm:text-3xl font-bold text-[#18542A] mb-1 tracking-tight">6+</div>
+                        <div class="text-2xl sm:text-3xl font-bold text-[#18542A] mb-1 tracking-tight">5+</div>
                         <div class="text-[9px] sm:text-[10px] font-bold text-base-content/40 uppercase tracking-widest">
                             Years Exp.</div>
                     </div>
@@ -107,7 +96,7 @@
                     slides: [
                         { src: '{{ asset('images/dpc/jollof-rice-and-fried-chicken-takeaway-meal-4.jpg.webp') }}', alt: 'Jollof rice and fried chicken takeaway — Diamonds & Pearls Catering', label: 'Signature Dish', caption: 'Jollof Rice & Chicken' },
                         { src: '{{ asset('images/dpc/large-tray-waakye-with-boiled-eggs-on-plantain-leaves.jpg.webp') }}', alt: 'Waakye with boiled eggs served on plantain leaves — Diamonds & Pearls Catering', label: 'Fan Favourite', caption: 'Waakye Special' },
-                        { src: '{{ asset('images/dpc/large-tray-fried-fish-kenkey-banku-catering.jpg.webp') }}', alt: 'Fried fish with kenkey and banku catering tray — Diamonds & Pearls Catering', label: 'Ghanaian Classic', caption: 'Kenkey & Fried Fish' },
+                        { src: '{{ asset('images/dpc/large-tray-fried-fish-kenkey-banku-catering.jpg.webp') }}', alt: 'Fried fish with kenkey and banku catering tray — Diamonds & Pearls Catering', label: 'Ghanaian Classic', caption: 'Banku & Tilapia' },
                         { src: '{{ asset('images/dpc/fried-rice-and-chicken-takeaway-meal-with-salad.jpg.webp') }}', alt: 'Fried rice and chicken takeaway meal with salad — Diamonds & Pearls Catering', label: 'Party Staple', caption: 'Fried Rice & Chicken' },
                         { src: '{{ asset('images/dpc/diamonds-and-pearls-catering-branded-paper-bag.jpg.webp') }}', alt: 'Diamonds & Pearls Catering branded takeaway bag — Accra, Ghana', label: 'Our Brand', caption: 'Takeaway & Delivery' },
                         { src: '{{ asset('images/dpc/customers-enjoying-diamonds-and-pearls-catering-food.jpg.webp') }}', alt: 'Customers enjoying Diamonds & Pearls Catering food at an event in Accra', label: 'Happy Guests', caption: 'Moments That Matter' },
@@ -120,7 +109,7 @@
                     class="relative w-full aspect-[4/5] rounded-3xl bg-base-200 overflow-hidden shadow-2xl rotate-2 hover:rotate-0 transition-transform duration-500">
                     {{-- Slides --}}
                     <template x-for="(slide, index) in slides" :key="index">
-                        <div class="absolute inset-0 transition-opacity duration-1000"
+                        <div class="absolute rounded-3xl inset-0 transition-opacity duration-1000"
                             :class="current === index ? 'opacity-100 z-10' : 'opacity-0 z-0'">
                             <img :src="slide.src" :alt="slide.alt" class="w-full h-full object-cover"
                                 :loading="index === 0 ? 'eager' : 'lazy'" :fetchpriority="index === 0 ? 'high' : 'auto'"
@@ -371,11 +360,11 @@
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                 @php
                     $galleryImages = [
-                        ['src' => asset('images/dpc/jollof-rice-and-fried-chicken-takeaway-meal-1.jpg.webp'), 'alt' => 'Jollof rice and fried chicken takeaway meal — Diamonds & Pearls Catering Accra', 'label' => 'Jollof & Chicken'],
+                        ['src' => asset('images/dpc/jollof-rice-and-fried-chicken-takeaway-meal-1.jpg.webp'), 'alt' => 'Jollof rice and fried chicken takeaway meal — Diamonds & Pearls Catering Accra', 'label' => 'Jollof'],
                         ['src' => asset('images/dpc/large-party-size-jollof-rice-catering-tray.jpg.webp'), 'alt' => 'Large party-size jollof rice catering tray for events — Diamonds & Pearls Catering', 'label' => 'Party Catering'],
                         ['src' => asset('images/dpc/large-tray-waakye-with-boiled-eggs-on-plantain-leaves.jpg.webp'), 'alt' => 'Large tray of waakye with boiled eggs served on plantain leaves — Ghanaian catering', 'label' => 'Waakye Special'],
                         ['src' => asset('images/dpc/customers-enjoying-diamonds-and-pearls-catering-food.jpg.webp'), 'alt' => 'Customers enjoying Diamonds & Pearls Catering food at an event in Accra', 'label' => 'Happy Customers'],
-                        ['src' => asset('images/dpc/large-tray-fried-fish-kenkey-banku-catering.jpg.webp'), 'alt' => 'Large catering tray of fried fish with kenkey and banku — traditional Ghanaian cuisine', 'label' => 'Kenkey & Fish'],
+                        ['src' => asset('images/dpc/large-tray-fried-fish-kenkey-banku-catering.jpg.webp'), 'alt' => 'Large catering tray of fried fish with kenkey and banku — traditional Ghanaian cuisine', 'label' => 'Banku & Tilapia'],
                         ['src' => asset('images/dpc/diamonds-and-pearls-catering-branded-paper-bag.jpg.webp'), 'alt' => 'Diamonds & Pearls Catering branded paper bag — professional food packaging Accra', 'label' => 'Our Packaging'],
                     ];
                 @endphp
@@ -448,8 +437,9 @@
             </div>
             <h2 class="text-3xl sm:text-5xl lg:text-6xl font-semibold text-white leading-[1.1] mb-6 tracking-tight">Let
                 us handle the food.<br>You handle the memories.</h2>
-            <p class="text-[14px] sm:text-[16px] text-white/70 font-medium mb-8 sm:mb-12">Spots fill up fast — book
-                early to secure your preferred date.</p>
+            <p class="text-[14px] sm:text-[16px] text-white/70 font-medium mb-8 sm:mb-12">
+                We recommend booking at least one month in advance — secure your preferred date today.
+            </p>
 
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
                 <a href="{{ route('packages.browse') }}"
@@ -459,7 +449,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    Book Your Date Now
+                    Book for an Event
                 </a>
                 <x-ui.whatsapp-button size="lg" variant="white" label="Chat on WhatsApp"
                     class="w-full sm:w-auto hover:scale-105" />

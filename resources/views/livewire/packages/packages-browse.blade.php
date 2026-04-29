@@ -68,10 +68,10 @@
                 {{ __('Our Culinary Collections') }}
             </div>
             <h1 class="text-4xl sm:text-5xl lg:text-6xl font-semibold text-white leading-[1.1] tracking-tight">
-                Order a meal or cater your <span class="text-accent">event</span> with us.
+                Exquisite catering for every <span class="text-accent">occasion</span>.
             </h1>
             <p class="mt-4 text-[15px] text-white/60 font-medium max-w-lg">
-                Browse our full catalogue of catering packages — filter by category or search for a specific dish.
+                From daily meals to large-scale events. Trusted by the UNDP and FDA certified to deliver excellence.
             </p>
 
             {{-- Quick stats row --}}
@@ -235,9 +235,9 @@
         @endif
     </div>
 
-    <!-- Booking Bar (Dynamic) -->
+    <!-- Booking Bar (Dynamic) — desktop only -->
     @if($cartCount > 0)
-        <div class="fixed left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-xl animate-in fade-in slide-in-from-bottom-5 border border-accent rounded-3xl duration-500"
+        <div class="hidden sm:block fixed left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-xl animate-in fade-in slide-in-from-bottom-5 border border-accent rounded-3xl duration-500"
             style="bottom: max(2rem, env(safe-area-inset-bottom, 2rem))">
             <div class="booking-bar-status">
                 <div class="booking-count-badge">

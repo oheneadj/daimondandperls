@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Webhooks;
 
+use App\Enums\BookingStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
@@ -112,6 +113,7 @@ class TransflowWebhookController extends Controller
 
         // I always store the latest data so I have an audit trail.
         $booking->update([
+            'status' => BookingStatus::Confirmed,
             'payment_status' => PaymentStatus::Paid,
             'payment_details' => $payload,
         ]);

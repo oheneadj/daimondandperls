@@ -15,7 +15,7 @@
                 Legal
             </div>
             <h1 class="text-4xl sm:text-5xl lg:text-6xl font-semibold text-white tracking-tight mb-3 leading-tight">Terms of Service</h1>
-            <p class="text-[13px] text-white/50 font-medium mb-6">Last updated: April 14, 2026</p>
+            <p class="text-[13px] text-white/50 font-medium mb-6">Last updated: April 29, 2026</p>
             <p class="text-[15px] text-white/70 font-medium leading-relaxed max-w-2xl">
                 By using the Diamonds & Pearls Catering website and services, you agree to the following terms. Please read them carefully before placing a booking.
             </p>
@@ -80,10 +80,9 @@
                 <h2 class="text-xl font-bold text-base-content">Cancellation Policy</h2>
             </div>
             <ul class="list-disc pl-16 space-y-3 text-[15px] text-base-content/60 font-medium leading-relaxed">
-                <li>Cancellations made <strong class="text-base-content">14 days or more</strong> before the event qualify for a full refund of the deposit.</li>
-                <li>Cancellations made between <strong class="text-base-content">7 and 13 days</strong> before the event qualify for a 50% refund.</li>
-                <li>Cancellations made <strong class="text-base-content">less than 7 days</strong> before the event are non-refundable.</li>
-                <li>Any changes to guest count must be communicated at least <strong class="text-base-content">72 hours</strong> before the event and may affect the final invoice.</li>
+                <li>Cancellations made <strong class="text-base-content">at least 7 days before</strong> the scheduled event are eligible for a <strong class="text-base-content">90% refund</strong> of the deposit.</li>
+                <li>Cancellations made <strong class="text-base-content">within 7 days</strong> of the event are eligible for a <strong class="text-base-content">70% refund</strong>, as preparations typically begin during this window.</li>
+                <li>Any changes to guest count or service type must be communicated at least <strong class="text-base-content">72 hours</strong> before the event and may affect the final invoice.</li>
             </ul>
         </div>
     </div>
@@ -94,9 +93,17 @@
                 <div class="size-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary text-[13px] font-bold shrink-0">4</div>
                 <h2 class="text-xl font-bold text-base-content">Service Delivery</h2>
             </div>
-            <p class="text-[15px] text-base-content/60 font-medium leading-relaxed pl-11">
-                Service delivery is subject to the details provided during the booking process. Any structural changes to the event — including location, timing, or guest count — must be communicated and approved at least 72 hours prior to the event. Diamonds & Pearls Catering is not liable for delays or service adjustments resulting from inaccurate information provided by the customer.
-            </p>
+            <div class="pl-11 space-y-4 text-[15px] text-base-content/60 font-medium leading-relaxed">
+                <p>
+                    The minimum order size for event catering is <strong class="text-base-content">40 plates for a buffet service</strong> or <strong class="text-base-content">20 packs for packed meals</strong>.
+                </p>
+                <p>
+                    While we have specific primary delivery locations in Accra, we are willing to deliver <strong class="text-base-content">anywhere</strong> to meet our clients' needs, provided the client covers all associated transportation costs.
+                </p>
+                <p>
+                    We offer flexibility in our service types. Clients may request to switch between service options (e.g., from packed meals to a buffet service) provided the request is made at least 72 hours prior to the event and any cost differences are settled.
+                </p>
+            </div>
         </div>
     </div>
 

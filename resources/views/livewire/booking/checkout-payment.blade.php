@@ -365,8 +365,8 @@
                 </div>
             </div> {{-- end x-show="ready" wrapper --}}
 
-            <!-- Sidebar Summary -->
-            <div class="lg:col-span-1 space-y-6 order-1 lg:order-2">
+            <!-- Sidebar Summary — desktop only -->
+            <div class="hidden lg:block lg:col-span-1 space-y-6 order-1 lg:order-2">
                 <div class="bg-base-100 border border-base-content/10 rounded-lg p-6 lg:p-8 shadow-dp-lg">
                     <h4 class="text-lg font-semibold text-base-content mb-6 pb-4 border-b border-base-content/10">Order Summary</h4>
 

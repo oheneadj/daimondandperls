@@ -7,6 +7,7 @@ namespace App\Livewire\Admin\Reports;
 use App\Enums\BookingStatus;
 use App\Enums\PaymentGatewayStatus;
 use App\Models\Booking;
+use App\Models\Customer;
 use App\Models\Payment;
 use App\Traits\HasAdminAuthorization;
 use Carbon\Carbon;
@@ -171,6 +172,8 @@ class ReportsView extends Component
             ->toArray();
 
         $this->eventTypeBreakdown = Booking::whereBetween('created_at', [$start, $end])
+            ->where('booking_type', \App\Enums\BookingType::Event)
+            ->whereNotNull('event_type')
             ->selectRaw('event_type, count(*) as count')
             ->groupBy('event_type')
             ->get()
@@ -209,13 +212,13 @@ class ReportsView extends Component
             ->toArray();
 
         // Top 5 customers by confirmed revenue in the period
-        $this->topCustomers = \App\Models\User::query()
-            ->join('bookings', 'users.id', '=', 'bookings.customer_id')
+        $this->topCustomers = Customer::query()
+            ->join('bookings', 'customers.id', '=', 'bookings.customer_id')
             ->join('payments', 'bookings.id', '=', 'payments.booking_id')
             ->where('payments.status', PaymentGatewayStatus::Successful)
             ->whereBetween('payments.paid_at', [$start, $end])
-            ->selectRaw('users.id, users.name, users.phone, count(distinct bookings.id) as booking_count, sum(payments.amount) as total_spent')
-            ->groupBy('users.id', 'users.name', 'users.phone')
+            ->selectRaw('customers.id, customers.name, customers.phone, count(distinct bookings.id) as booking_count, sum(payments.amount) as total_spent')
+            ->groupBy('customers.id', 'customers.name', 'customers.phone')
             ->orderByDesc('total_spent')
             ->limit(5)
             ->get()
@@ -233,10 +236,8 @@ class ReportsView extends Component
         $this->cancellationRate = $totalBookings > 0
             ? round(($cancelledCount / $totalBookings) * 100, 1) : 0.0;
 
-        // New customers registered in the period
-        $this->newCustomers = \App\Models\User::whereBetween('created_at', [$start, $end])
-            ->where('type', \App\Enums\UserType::Customer)
-            ->count();
+        // New customers in the period — counts Customer records (covers both guests and registered users)
+        $this->newCustomers = \App\Models\Customer::whereBetween('created_at', [$start, $end])->count();
     }
 
     public function exportCsv(): StreamedResponse

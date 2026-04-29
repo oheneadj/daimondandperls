@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Booking;
 
+use App\Enums\BookingStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Notifications\BookingConfirmedNotification;
+use App\Services\CartService;
 use App\Services\InvoiceService;
 use App\Services\Payment\PaymentLogger;
 use App\Services\Payment\PaymentMethodService;
@@ -100,6 +102,7 @@ class TransflowReturnController extends Controller
             if ($result->paid) {
                 // Mark paid ourselves (idempotent if webhook fires later)
                 $booking->update([
+                    'status' => BookingStatus::Confirmed,
                     'payment_status' => PaymentStatus::Paid,
                     'payment_details' => $result->raw,
                 ]);
@@ -123,8 +126,10 @@ class TransflowReturnController extends Controller
                     $invoiceService->getDownloadUrl($booking)
                 ));
 
-                // I save the MoMo number if the customer is logged in.
+                // Save the MoMo number if the customer is logged in.
                 $paymentMethodService->saveFromBooking($booking);
+
+                app(CartService::class)->clear();
 
                 Log::info('Transflow Return: Payment confirmed via verify()', ['booking' => $booking->reference]);
 
