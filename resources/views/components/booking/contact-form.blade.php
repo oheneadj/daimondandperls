@@ -11,7 +11,7 @@
         name="name"
         type="text"
         :label="__('Your Full Name')"
-        wire:model="name"
+        wire:model.live.150ms="name"
         placeholder="e.g. Grace Ayensu"
     >
         <x-slot:icon>
@@ -23,8 +23,9 @@
         <x-app.input
             name="phone"
             type="tel"
+            required="true"
             :label="__('Phone Number')"
-            wire:model="phone"
+            wire:model.live.150ms="phone"
             placeholder="024 XXX XXXX"
         >
             <x-slot:icon>
@@ -39,9 +40,10 @@
     <x-app.input
         name="email"
         type="email"
+        required="true"
         :label="__('Email')"
-        :hint="__('Recommended')"
-        wire:model="email"
+        :hint="__('Required for invoice and receipt delivery')"
+        wire:model.live.150ms="email"
         placeholder="grace@example.com"
     >
         <x-slot:icon>
