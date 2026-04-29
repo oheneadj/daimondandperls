@@ -117,7 +117,12 @@ class TransflowWebhookController extends Controller
         ]);
 
         // I save the payment method if the customer is logged in.
-        $paymentMethodService->saveFromBooking($booking);
+        // I use the data from the payload (msisdn/network) because it's the verified truth.
+        $paymentMethodService->saveFromBooking(
+            $booking,
+            (string) ($payload['msisdn'] ?? ''),
+            (string) ($payload['network'] ?? '')
+        );
 
         Log::info('Transflow Webhook: Payment marked PAID', ['booking' => $booking->reference]);
 
