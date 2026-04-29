@@ -13,6 +13,19 @@
         </script>
     @endif
 
+     @php
+        $isBookingPage = request()->routeIs('checkout', 'event-booking', 'booking.payment', 'booking.confirmation', 'booking.select-type');
+        $logo    = dpc_setting('business_logo');
+        $footerName    = dpc_setting('business_name', 'Diamonds & Pearls');
+        $footerAddress = dpc_setting('business_address', 'P.O. Box 18123, Accra');
+        $footerPhone   = dpc_setting('business_phone', '+233 244 203 181');
+        $footerEmail   = dpc_setting('business_email', 'graceayesu@yahoo.com');
+        $footerFb      = dpc_setting('social_facebook');
+        $footerIg      = dpc_setting('social_instagram');
+        $footerTwitter = dpc_setting('social_twitter');
+        $footerTiktok  = dpc_setting('social_tiktok');
+    @endphp
+
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -30,10 +43,16 @@
         <div class="container mx-auto px-4 lg:px-8 flex justify-between items-center h-[68px]">
             <!-- Brand -->
             <a href="{{ route('home') }}" class="flex items-center gap-3 group">
-                <div class="size-9 bg-primary rounded-full flex items-center justify-center text-white text-sm transition-transform group-hover:scale-110">
-                    <span class=" font-medium">D&P</span>
-                </div>
-                <div class="flex flex-col leading-none">
+                @if($logo)
+                    <div class="size-9 bg-primary rounded-full flex items-center justify-center text-white text-sm transition-transform group-hover:scale-110">
+                        <img src="{{ $logo }}" alt="{{ $footerName }}" class="size-full object-contain rounded-full">
+                    </div>
+                @else
+                    <div class="size-9 bg-primary rounded-full flex items-center justify-center text-white text-sm transition-transform group-hover:scale-110">
+                        <span class=" font-medium">D&P</span>
+                    </div>
+                @endif
+                <div class="flex flex-col leading-none hidden lg:flex">
                     <span class=" text-xl font-semibold text-base-content">Diamonds & Pearls</span>
                     <span class="text-[10px] text-base-content/60 uppercase tracking-[0.08em] font-bold">Catering Services</span>
                 </div>
@@ -259,18 +278,7 @@
     </main>
 
     <!-- Footer -->
-    @php
-        $isBookingPage = request()->routeIs('checkout', 'event-booking', 'booking.payment', 'booking.confirmation', 'booking.select-type');
-
-        $footerName    = dpc_setting('business_name', 'Diamonds & Pearls');
-        $footerAddress = dpc_setting('business_address', 'P.O. Box 18123, Accra');
-        $footerPhone   = dpc_setting('business_phone', '+233 244 203 181');
-        $footerEmail   = dpc_setting('business_email', 'graceayesu@yahoo.com');
-        $footerFb      = dpc_setting('social_facebook');
-        $footerIg      = dpc_setting('social_instagram');
-        $footerTwitter = dpc_setting('social_twitter');
-        $footerTiktok  = dpc_setting('social_tiktok');
-    @endphp
+   
 
     @if($isBookingPage)
         {{-- Minimal footer for booking/checkout pages — business details only --}}
@@ -281,7 +289,11 @@
                     {{-- Brand --}}
                     <a href="{{ route('home') }}" class="inline-flex items-center gap-3 group">
                         <div class="size-9 bg-primary rounded-full flex items-center justify-center text-white text-xs font-bold transition-transform group-hover:scale-110 shadow-lg shadow-primary/30">
-                            D&P
+                            @if($logo)
+                                <img src="{{ asset('storage/'.$logo) }}" alt="{{ $footerName }}" class="size-full object-contain rounded-full">
+                            @else
+                                D&P
+                            @endif
                         </div>
                         <div class="flex flex-col leading-none text-left">
                             <span class="text-lg font-semibold text-white">Diamonds & Pearls</span>

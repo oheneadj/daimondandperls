@@ -46,14 +46,12 @@ class BookingWizard extends Component
     public function isReadyToConfirm(): bool
     {
 
-
         if (empty(trim((string) $this->name))) {
             return false;
         }
 
         if (empty($this->phone) || ! preg_match('/^(?:\+233|0)\d{9}$/', $this->phone)) {
            //if what the user entere isnt 0-9 clear the input
-           $this->phone = null;
             return false;
         }
 
