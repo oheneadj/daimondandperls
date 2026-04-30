@@ -9,7 +9,7 @@
     </div>
 
     {{-- Stats Bar --}}
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
         <div class="bg-white border border-base-content/5 rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:border-[#D52518]/30 transition-colors"
             wire:click="$set('activeTab', 'errors')">
             <div class="w-10 h-10 rounded-xl bg-[#D52518]/10 flex items-center justify-center">
@@ -28,6 +28,19 @@
             <div>
                 <p class="text-[20px] font-bold text-base-content">{{ number_format($stats['sms_total']) }}</p>
                 <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('SMS Sent') }}</p>
+            </div>
+        </div>
+        <div class="bg-white border border-base-content/5 rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:border-[#0EA5E9]/30 transition-colors"
+            wire:click="$set('activeTab', 'email')">
+            <div class="w-10 h-10 rounded-xl bg-[#0EA5E9]/10 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#0EA5E9]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+            </div>
+            <div>
+                <p class="text-[20px] font-bold text-base-content">{{ number_format($stats['email_total']) }}</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40">{{ __('Emails Sent') }}</p>
+                @if($stats['email_failed'] > 0)
+                    <p class="text-[10px] font-bold text-[#D52518]">{{ $stats['email_failed'] }} failed</p>
+                @endif
             </div>
         </div>
         <div class="bg-white border border-base-content/5 rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:border-[#9ABC05]/30 transition-colors"
@@ -68,6 +81,7 @@
             ['key' => 'errors', 'label' => 'App Errors'],
             ['key' => 'payments', 'label' => 'Payments'],
             ['key' => 'sms', 'label' => 'SMS Logs'],
+            ['key' => 'email', 'label' => 'Email Logs'],
             ['key' => 'activity', 'label' => 'Activity'],
             ['key' => 'notifications', 'label' => 'Notifications'],
         ] as $tab)
@@ -273,6 +287,78 @@
 
             <x-slot name="pagination">
                 {{ $smsLogs->links() }}
+            </x-slot>
+        </x-ui.table>
+    @endif
+
+    {{-- Email Logs Tab --}}
+    @if($activeTab === 'email')
+        <x-ui.table search="search">
+            <x-slot name="filters">
+                <div class="flex flex-wrap items-center gap-3">
+                    <select wire:model.live="filterLevel" class="bg-base-200 border-none text-[13px] rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary/30 outline-none transition-all font-medium">
+                        <option value="">All Statuses</option>
+                        <option value="sent">Sent</option>
+                        <option value="failed">Failed</option>
+                    </select>
+                </div>
+            </x-slot>
+
+            <x-slot name="header">
+                <x-ui.table.th>Time</x-ui.table.th>
+                <x-ui.table.th>Recipient</x-ui.table.th>
+                <x-ui.table.th>Subject</x-ui.table.th>
+                <x-ui.table.th>Mailer</x-ui.table.th>
+                <x-ui.table.th>Message ID</x-ui.table.th>
+                <x-ui.table.th align="center">Status</x-ui.table.th>
+            </x-slot>
+
+            @forelse($emailLogs as $log)
+                <x-ui.table.row wire:key="email-{{ $log->id }}">
+                    <x-ui.table.td>
+                        <span class="text-[13px] text-base-content font-medium whitespace-nowrap">{{ $log->created_at->format('d M Y') }}</span>
+                        <span class="block text-[11px] text-base-content/40">{{ $log->created_at->format('H:i:s') }}</span>
+                    </x-ui.table.td>
+                    <x-ui.table.td>
+                        <span class="text-[13px] font-mono text-base-content">{{ $log->to }}</span>
+                    </x-ui.table.td>
+                    <x-ui.table.td>
+                        <p class="text-[13px] text-base-content line-clamp-1 max-w-xs">{{ $log->subject ?? '—' }}</p>
+                        @if($log->error_message)
+                            <p class="text-[11px] text-[#D52518] line-clamp-1 mt-0.5">{{ $log->error_message }}</p>
+                        @endif
+                    </x-ui.table.td>
+                    <x-ui.table.td>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#0EA5E9]/10 text-[#0EA5E9]">
+                            {{ $log->mailer ?? 'default' }}
+                        </span>
+                    </x-ui.table.td>
+                    <x-ui.table.td>
+                        @if($log->message_id)
+                            <span class="text-[12px] font-mono text-base-content/50">{{ Str::limit($log->message_id, 40) }}</span>
+                        @else
+                            <span class="text-base-content/30 text-[13px]">—</span>
+                        @endif
+                    </x-ui.table.td>
+                    <x-ui.table.td align="center">
+                        @php $statusClass = $log->status === 'sent' ? 'bg-[#9ABC05]/10 text-[#5A7A00]' : 'bg-[#D52518]/10 text-[#D52518]'; @endphp
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider {{ $statusClass }}">
+                            {{ $log->status }}
+                        </span>
+                    </x-ui.table.td>
+                </x-ui.table.row>
+            @empty
+                <x-ui.table.row>
+                    <x-ui.table.td colspan="6">
+                        <div class="py-12 text-center">
+                            <p class="text-[14px] font-semibold text-base-content/40">No email logs found</p>
+                        </div>
+                    </x-ui.table.td>
+                </x-ui.table.row>
+            @endforelse
+
+            <x-slot name="pagination">
+                {{ $emailLogs->links() }}
             </x-slot>
         </x-ui.table>
     @endif

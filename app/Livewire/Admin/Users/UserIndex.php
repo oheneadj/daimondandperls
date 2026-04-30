@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Admin\Users;
 
+use App\Enums\UserType;
+use App\Models\Role;
 use App\Models\User;
 use App\Notifications\AdminInvitationNotification;
 use App\Traits\HasAdminAuthorization;
@@ -172,6 +174,7 @@ class UserIndex extends Component
     public function render(): View
     {
         $users = User::query()
+            ->where('type', UserType::Admin)
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('name', 'like', '%'.$this->search.'%')
@@ -191,7 +194,7 @@ class UserIndex extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(10);
 
-        $roles = \App\Models\Role::all();
+        $roles = Role::all();
 
         return view('livewire.admin.users.user-index', [
             'users' => $users,

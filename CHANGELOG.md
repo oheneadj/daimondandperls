@@ -9,6 +9,33 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+#### Email Logging — Track All Sent Emails in System Logs
+Every outbound email is now recorded in the `email_logs` table and shown on the System Logs page under a new "Email Logs" tab.
+
+**Affected files:**
+- `database/migrations/2026_04_30_194416_create_email_logs_table.php` — new table: `to`, `subject`, `mailer`, `message_id`, `status`, `error_message`
+- `app/Models/EmailLog.php` — new model
+- `app/Listeners/LogSentEmail.php` — new listener; fires on `MessageSent` event, writes a row to `email_logs`
+- `app/Providers/AppServiceProvider.php` — registers the `MessageSent → LogSentEmail` listener via `Event::listen()`
+- `app/Livewire/Admin/ErrorLogs/ErrorLogIndex.php` — added `emailLogs` to render, `email` tab query, `email_total` and `email_failed` to stats
+- `resources/views/livewire/admin/error-logs/error-log-index.blade.php` — added Email Logs stat card, "Email Logs" tab, and full email logs table with status filter
+
+**Why:** Transactional emails (booking confirmations, OTPs, invitations) were invisible — no way to tell if Brevo delivered them without checking the Brevo dashboard. The log provides an instant in-app view of every email sent and any failures.
+
+---
+
+#### Payment Methods Form — Real-Time Network Mismatch Validation
+The phone number field now shows an inline error when the user enters a 10-digit number that doesn't match the selected network's valid prefixes.
+
+**Affected files:**
+- `resources/views/livewire/customer/payment-methods.blade.php` — added inline `@if` block below the account number input using `isMomoFormValid` computed property; shows network name and expected prefix hint in error style
+
+**Why:** The save button was already disabled for invalid numbers, but users had no feedback explaining why. The mismatch message makes the problem immediately clear without waiting for form submission.
+
+---
+
+### Added
+
 #### Multi-Provider Email — Brevo First
 All transactional emails now route through a configurable provider (Brevo by default), mirroring the existing SMS provider abstraction. Adding a future provider requires only a new mailer entry in `config/mail.php` and a new option in admin settings — no notification code changes.
 

@@ -6,6 +6,7 @@ namespace App\Livewire\Admin\ErrorLogs;
 
 use App\Models\ActivityLog;
 use App\Models\BookingNotificationLog;
+use App\Models\EmailLog;
 use App\Models\ErrorLog;
 use App\Models\PaymentLog;
 use App\Models\SmsLog;
@@ -163,6 +164,7 @@ class ErrorLogIndex extends Component
     {
         $logs = null;
         $smsLogs = null;
+        $emailLogs = null;
         $activityLogs = null;
         $notificationLogs = null;
         $paymentLogs = null;
@@ -211,6 +213,16 @@ class ErrorLogIndex extends Component
                 }))
                 ->latest()
                 ->paginate(25);
+        } elseif ($this->activeTab === 'email') {
+            $emailLogs = EmailLog::query()
+                ->when($this->search, fn ($q) => $q->where(function ($q) {
+                    $q->where('to', 'like', "%{$this->search}%")
+                        ->orWhere('subject', 'like', "%{$this->search}%")
+                        ->orWhere('message_id', 'like', "%{$this->search}%");
+                }))
+                ->when($this->filterLevel, fn ($q) => $q->where('status', $this->filterLevel))
+                ->latest()
+                ->paginate(25);
         } elseif ($this->activeTab === 'payments') {
             $paymentLogs = PaymentLog::query()
                 ->when($this->search, fn ($q) => $q->where(function ($q) {
@@ -228,6 +240,8 @@ class ErrorLogIndex extends Component
         $stats = [
             'errors_unresolved' => ErrorLog::where('resolved', false)->count(),
             'sms_total' => SmsLog::count(),
+            'email_total' => EmailLog::count(),
+            'email_failed' => EmailLog::where('status', 'failed')->count(),
             'activity_today' => ActivityLog::whereDate('created_at', today())->count(),
             'notifications_failed' => BookingNotificationLog::whereNotNull('error_message')->count(),
             'payments_failed' => PaymentLog::where('status', 'failed')->count(),
@@ -236,6 +250,7 @@ class ErrorLogIndex extends Component
         return view('livewire.admin.error-logs.error-log-index', [
             'logs' => $logs,
             'smsLogs' => $smsLogs,
+            'emailLogs' => $emailLogs,
             'activityLogs' => $activityLogs,
             'notificationLogs' => $notificationLogs,
             'paymentLogs' => $paymentLogs,
