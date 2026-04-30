@@ -13,6 +13,25 @@
         </div>
     </div>
 
+    {{-- Phone verification alert --}}
+    @if(! auth()->user()->hasVerifiedPhone())
+        <div class="mb-6 flex items-center gap-4 bg-warning/10 border border-warning/20 rounded-xl px-5 py-4">
+            <div class="size-9 rounded-full bg-warning/15 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-[13px] font-semibold text-base-content">Verify your phone number</p>
+                <p class="text-[12px] text-base-content/50 mt-0.5">Confirm your number so we can send you booking updates via SMS.</p>
+            </div>
+            <a href="{{ route('verification.phone') }}"
+                class="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-warning text-warning-content text-[12px] font-semibold rounded-lg hover:bg-warning/90 transition-colors whitespace-nowrap">
+                Verify Now
+            </a>
+        </div>
+    @endif
+
     {{-- Stat Cards --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-8 sm:mb-10">
         <div class="bg-white border border-base-content/10 rounded-2xl p-4 sm:p-6 shadow-sm">

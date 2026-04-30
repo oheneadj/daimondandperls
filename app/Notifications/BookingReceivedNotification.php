@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Models\Booking;
+use App\Notifications\Channels\MailChannels;
 use App\Notifications\Channels\SmsChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -37,6 +38,7 @@ class BookingReceivedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
+            ->mailer(MailChannels::primary())
             ->subject('New Booking Received: '.$this->booking->reference)
             ->greeting('Hello '.$notifiable->name.'!')
             ->line('A new booking has been received.')

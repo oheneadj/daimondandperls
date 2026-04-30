@@ -69,34 +69,17 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
-                        <h2 class="text-[11px] font-bold uppercase tracking-[0.2em] text-base-content">{{ __('Price & Guest Requirements') }}</h2>
+                        <h2 class="text-[11px] font-bold uppercase tracking-[0.2em] text-base-content">{{ __('Pricing') }}</h2>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-2">
-                            <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Price per Head') }} <span class="text-[#F96015]">*</span></label>
+                            <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Price') }} <span class="text-[#F96015]">*</span></label>
                             <div class="relative group">
                                 <span class="absolute inset-y-0 left-4 flex items-center text-[12px] font-bold text-base-content/40 group-focus-within:text-[#F96015] transition-colors">GHS</span>
                                 <x-ui.input wire:model="price" type="number" step="0.01" min="0" placeholder="0.00" class="pl-14" />
                             </div>
                             @error('price') <p class="text-[11px] text-error font-bold mt-1">{{ $message }}</p> @enderror
-                        </div>
-
-                        <div class="space-y-2">
-                            <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Minimum Guests') }} <span class="text-[#F96015]">*</span></label>
-                            <div class="relative group">
-                                <span class="absolute inset-y-0 left-4 flex items-center text-base-content/20 group-focus-within:text-primary transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857m0 0c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                                </span>
-                                <x-ui.input wire:model="min_guests" type="number" min="1" placeholder="e.g. 50" class="pl-11" />
-                            </div>
-                            @error('min_guests') <p class="text-[11px] text-error font-bold mt-1">{{ $message }}</p> @enderror
-                        </div>
-
-                        <div class="space-y-2">
-                            <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Serving Size') }}</label>
-                            <x-ui.input wire:model="serving_size" placeholder="e.g. 10 bowls" />
-                            @error('serving_size') <p class="text-[11px] text-error font-bold mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
                 </div>

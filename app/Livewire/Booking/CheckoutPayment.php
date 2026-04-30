@@ -7,7 +7,10 @@ namespace App\Livewire\Booking;
 use App\Contracts\PaymentGatewayContract;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
+use App\Services\CartService;
+use App\Services\Payment\PaymentConfirmationService;
 use App\Services\Payment\PaymentLogger;
+use App\Services\Payment\TransflowGateway;
 use App\Traits\HandlesMomoValidation;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -89,26 +92,32 @@ class CheckoutPayment extends Component
             return;
         }
 
-        // Load saved verified MoMo methods for logged-in users
-        if (Auth::check()) {
-            $customer = Auth::user()->customer;
+        $this->loadSavedMethods();
+    }
 
-            if ($customer) {
-                $this->savedMethods = $customer->paymentMethods()
-                    ->where('type', \App\Enums\PaymentMethod::MobileMoney->value)
-                    ->whereNotNull('verified_at')
-                    ->orderByDesc('is_default')
-                    ->orderBy('created_at')
-                    ->get();
-            }
+    private function loadSavedMethods(): void
+    {
+        if (! Auth::check()) {
+            return;
+        }
 
-            if ($this->savedMethods->isNotEmpty()) {
-                $default = $this->savedMethods->firstWhere('is_default', true)
-                    ?? $this->savedMethods->first();
+        $customer = Auth::user()->customer;
 
-                $this->paymentChoice = 'saved';
-                $this->selectedMethodId = $default->id;
-            }
+        if ($customer) {
+            $this->savedMethods = $customer->paymentMethods()
+                ->where('type', \App\Enums\PaymentMethod::MobileMoney->value)
+                ->whereNotNull('verified_at')
+                ->orderByDesc('is_default')
+                ->orderBy('created_at')
+                ->get();
+        }
+
+        if ($this->savedMethods->isNotEmpty()) {
+            $default = $this->savedMethods->firstWhere('is_default', true)
+                ?? $this->savedMethods->first();
+
+            $this->paymentChoice = 'saved';
+            $this->selectedMethodId = $default->id;
         }
     }
 
@@ -325,39 +334,103 @@ class CheckoutPayment extends Component
         };
     }
 
-    public function checkPaymentStatus(): void
+    // I run this every 3 seconds silently. I only read the local DB —
+    // no API call — to avoid hammering Transflow. The webhook updates the DB
+    // when payment completes, so polling the DB is enough for the background check.
+    public function pollPaymentStatus(): void
     {
         $this->booking->refresh();
 
         if ($this->booking->payment_status === PaymentStatus::Paid) {
-            app(\App\Services\CartService::class)->clear();
-
+            app(CartService::class)->clear();
             $this->redirect(route('booking.confirmation', ['booking' => $this->booking->reference]));
 
             return;
         }
 
         if ($this->booking->payment_status === PaymentStatus::Failed) {
-            Log::warning('Payment failed via webhook/poll', [
+            $this->handleFailedStatus();
+        }
+    }
+
+    // I call this only when the user clicks "Check Status Now".
+    // I check the DB first, then call Transflow directly if still Pending —
+    // useful when the webhook is delayed or never arrives.
+    public function checkPaymentStatus(
+        TransflowGateway $gateway,
+        PaymentConfirmationService $confirmationService,
+    ): void {
+        $this->booking->refresh();
+
+        if ($this->booking->payment_status === PaymentStatus::Paid) {
+            app(CartService::class)->clear();
+            $this->redirect(route('booking.confirmation', ['booking' => $this->booking->reference]));
+
+            return;
+        }
+
+        if ($this->booking->payment_status === PaymentStatus::Failed) {
+            $this->handleFailedStatus();
+
+            return;
+        }
+
+        // I ask Transflow directly since the local DB is still Pending.
+        $reference = (string) ($this->booking->payment_reference ?? '');
+
+        if (empty($reference)) {
+            return;
+        }
+
+        $result = $gateway->verify($reference);
+
+        if ($result->paid) {
+            // I let the service handle DB updates and the notification.
+            // It won't double-notify if the webhook fires at the same time.
+            $confirmationService->confirmFromVerify($this->booking, $result);
+
+            app(CartService::class)->clear();
+
+            Log::info('CheckoutPayment: Payment confirmed via manual verify()', [
                 'booking' => $this->booking->reference,
-                'payment_details' => $this->booking->payment_details,
             ]);
 
             PaymentLogger::log(
-                event: 'webhook-failed',
-                gateway: (string) config('payments.default', 'transflow'),
-                direction: 'inbound',
+                event: 'manual-verify',
+                gateway: 'transflow',
+                direction: 'outbound',
                 bookingReference: $this->booking->reference,
-                level: 'warning',
-                status: 'failed',
-                errorMessage: 'Payment was declined or failed.',
-                rawResponse: $this->booking->payment_details ?? [],
+                level: 'info',
+                status: 'paid',
+                gatewayRef: $reference,
             );
 
-            $this->paymentStep = 'form';
-            $this->errorMessage = 'Payment was declined or failed. Please try again.';
-            session()->flash('error', $this->errorMessage);
+            $this->redirect(route('booking.confirmation', ['booking' => $this->booking->reference]));
         }
+    }
+
+    // I extracted this so the failure path is easy to read and reuse.
+    private function handleFailedStatus(): void
+    {
+        Log::warning('CheckoutPayment: Payment failed', [
+            'booking' => $this->booking->reference,
+            'payment_details' => $this->booking->payment_details,
+        ]);
+
+        PaymentLogger::log(
+            event: 'poll-failed',
+            gateway: 'transflow',
+            direction: 'inbound',
+            bookingReference: $this->booking->reference,
+            level: 'warning',
+            status: 'failed',
+            errorMessage: 'Payment was declined or failed.',
+            rawResponse: $this->booking->payment_details ?? [],
+        );
+
+        $this->paymentStep = 'form';
+        $this->errorMessage = 'Payment was declined or failed. Please try again.';
+        $this->loadSavedMethods();
     }
 
     public function retry(): void
@@ -371,6 +444,10 @@ class CheckoutPayment extends Component
     public function cancelPayment(): void
     {
         $this->paymentStep = 'form';
+        $this->showNewMomoForm = false;
+        $this->momoNetwork = '';
+        $this->momoNumber = '';
+        $this->errorMessage = null;
 
         $this->booking->update([
             'payment_status' => PaymentStatus::Unpaid,
@@ -378,6 +455,8 @@ class CheckoutPayment extends Component
             'payment_channel' => null,
             'payer_number' => null,
         ]);
+
+        $this->loadSavedMethods();
     }
 
     #[Title('Payment Processing')]

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Packages;
 
+use App\Jobs\OptimiseImage;
 use App\Models\Category;
 use App\Models\Package;
 use App\Traits\HasAdminAuthorization;
@@ -29,13 +30,9 @@ class PackageForm extends Component
 
     public string $price = '';
 
-    public string $serving_size = '';
-
     public ?int $category_id = null;
 
     public bool $is_active = true;
-
-    public int $min_guests = 50;
 
     public array $features = [];
 
@@ -57,8 +54,6 @@ class PackageForm extends Component
             $this->name = $this->package->name;
             $this->description = $this->package->description ?? '';
             $this->price = (string) $this->package->price;
-            $this->serving_size = $this->package->serving_size ?? '';
-            $this->min_guests = $this->package->min_guests ?? 50;
             $this->features = $this->package->features ?? [];
             $this->is_popular = (bool) $this->package->is_popular;
             $this->window_exempt = (bool) $this->package->window_exempt;
@@ -85,8 +80,6 @@ class PackageForm extends Component
             'name' => ['required', 'string', 'min:2', 'max:150'],
             'description' => ['nullable', 'string', 'max:5000'],
             'price' => ['required', 'numeric', 'min:0', 'max:999999.99'],
-            'serving_size' => ['nullable', 'string', 'max:100'],
-            'min_guests' => ['required', 'integer', 'min:1'],
             'features' => ['nullable', 'array'],
             'features.*' => ['nullable', 'string', 'max:150'],
             'is_popular' => ['boolean'],
@@ -121,9 +114,7 @@ class PackageForm extends Component
             'slug' => $slug,
             'description' => $this->description,
             'price' => $this->price,
-            'serving_size' => $this->serving_size,
-            'min_guests' => $this->min_guests,
-            'features' => array_filter($this->features), // Remove empty features
+            'features' => array_filter($this->features),
             'is_popular' => $this->is_popular,
             'window_exempt' => $this->window_exempt,
             'category_id' => $this->category_id,
@@ -133,11 +124,23 @@ class PackageForm extends Component
 
         if ($this->package) {
             $this->package->update($data);
+            $savedPackage = $this->package;
             session()->flash('success', 'Package updated successfully.');
         } else {
             $data['sort_order'] = Package::max('sort_order') + 1;
-            Package::create($data);
+            $savedPackage = Package::create($data);
             session()->flash('success', 'Package created successfully.');
+        }
+
+        // I dispatch the optimisation job only when a new image was uploaded
+        if ($this->image && $imagePath) {
+            OptimiseImage::dispatch(
+                disk: 'public',
+                path: (string) $imagePath,
+                modelClass: Package::class,
+                modelId: $savedPackage->id,
+                modelColumn: 'image_path',
+            );
         }
 
         return $this->redirect(route('admin.manage-packages.index'));

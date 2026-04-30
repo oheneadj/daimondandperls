@@ -173,9 +173,9 @@ test('customer can add and verify a mobile money payment method', function () {
     expect($method->verified_at)->toBeNull();
     expect($method->verification_code)->not->toBeNull();
 
-    // Extract the OTP from the notification (verification_code is now hashed)
+    // Extract the OTP from the on-demand notification (sent to the account number, not the customer)
     $otp = null;
-    Notification::assertSentTo($this->customer, \App\Notifications\OtpNotification::class, function ($notification) use (&$otp) {
+    Notification::assertSentOnDemand(\App\Notifications\OtpNotification::class, function ($notification) use (&$otp) {
         $otp = $notification->otp;
 
         return true;
@@ -206,9 +206,9 @@ test('existing payment method can be verified later', function () {
         ->call('resendOtp', $method->id)
         ->assertSet('showOtpModal', true);
 
-    // Extract OTP from notification
+    // Extract OTP from on-demand notification (sent to the account number)
     $otp = null;
-    Notification::assertSentTo($this->customer, \App\Notifications\OtpNotification::class, function ($notification) use (&$otp) {
+    Notification::assertSentOnDemand(\App\Notifications\OtpNotification::class, function ($notification) use (&$otp) {
         $otp = $notification->otp;
 
         return true;

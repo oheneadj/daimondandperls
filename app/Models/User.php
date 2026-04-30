@@ -30,6 +30,7 @@ class User extends Authenticatable
         'last_login_at',
         'notification_preference',
         'phone',
+        'phone_verified_at',
         'otp_code',
         'otp_expires_at',
         'saved_momo_number',
@@ -60,7 +61,9 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
+            'phone_verified_at' => 'datetime',
             'email_verified_at' => 'datetime',
+            'otp_expires_at' => 'datetime',
             'password' => 'hashed',
             'role' => \App\Enums\UserRole::class,
             'type' => \App\Enums\UserType::class,
@@ -81,6 +84,11 @@ class User extends Authenticatable
     public function customer(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(Customer::class);
+    }
+
+    public function hasVerifiedPhone(): bool
+    {
+        return $this->phone_verified_at !== null;
     }
 
     public function isAdmin(): bool

@@ -388,6 +388,56 @@
                 </div>
             </div>
 
+            {{-- Email Provider --}}
+            <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
+                <div class="px-6 py-5 border-b border-base-content/5">
+                    <h3 class="text-sm font-bold text-base-content">{{ __('Email Provider') }}</h3>
+                    <p class="text-xs text-base-content/40 mt-0.5">{{ __('All transactional emails (confirmations, invitations, quotes) are sent through the active provider.') }}</p>
+                </div>
+                <div class="px-6 py-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                        {{-- Brevo option --}}
+                        <button type="button" wire:click="$set('email_primary_provider', 'brevo')"
+                            @class([
+                                'relative text-left rounded-xl border-2 p-5 transition-all duration-150',
+                                'border-primary bg-primary/5 shadow-sm' => $email_primary_provider === 'brevo',
+                                'border-base-content/10 hover:border-base-content/20 bg-base-100' => $email_primary_provider !== 'brevo',
+                            ])>
+                            @if($email_primary_provider === 'brevo')
+                                <span class="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold text-primary uppercase tracking-wide bg-primary/10 px-2 py-0.5 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span> Active
+                                </span>
+                            @endif
+                            <div class="flex items-center gap-3 mb-3">
+                                <div @class([
+                                    'w-9 h-9 rounded-lg flex items-center justify-center shrink-0',
+                                    'bg-primary/15' => $email_primary_provider === 'brevo',
+                                    'bg-base-200' => $email_primary_provider !== 'brevo',
+                                ])>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 {{ $email_primary_provider === 'brevo' ? 'text-primary' : 'text-base-content/40' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-base-content">Brevo</p>
+                                    <p class="text-[10px] text-base-content/40 font-medium">smtp-relay.brevo.com</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-base-content/60 leading-relaxed">Transactional email via Brevo SMTP relay. Reliable delivery with analytics.</p>
+                        </button>
+
+                    </div>
+
+                    <div class="flex justify-end mt-4">
+                        <x-ui.button type="button" variant="primary" size="sm" wire:click="saveEmailProvider" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="saveEmailProvider">{{ __('Apply Provider') }}</span>
+                            <span wire:loading wire:target="saveEmailProvider">{{ __('Saving...') }}</span>
+                        </x-ui.button>
+                    </div>
+                </div>
+            </div>
+
             {{-- Notification Preference --}}
             <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
                 <div class="px-6 py-5 border-b border-base-content/5">

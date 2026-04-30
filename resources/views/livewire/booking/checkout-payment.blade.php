@@ -43,10 +43,7 @@
                     class="bg-base-100 border border-base-content/10 rounded-lg overflow-hidden shadow-dp-lg">
                     <div class="p-5 sm:p-8 lg:p-10">
                         <div class="mb-8">
-                            <h1 class="text-xl font-semibold text-base-content mb-2">Secure Payment</h1>
-                            <p class="text-[14px] text-base-content/50 font-medium">Complete your payment for booking
-                                <span class="text-primary font-semibold">{{ $booking->reference }}</span>
-                            </p>
+                           
                         </div>
 
                         {{-- Fatal error --}}
@@ -61,13 +58,16 @@
                                     <div class="flex-1 min-w-0">
                                         <p class="text-[14px] font-semibold text-error mb-1">Payment Unavailable</p>
                                         <p class="text-[13px] text-error/80">{{ $fatalError }}</p>
+                                        @php
+                                            $supportPhone = dpc_setting('business_phone', '+233244203181');
+                                        @endphp
                                         <div class="mt-3">
-                                            <a href="tel:+233596070822"
+                                            <a href="tel:{{ $supportPhone }}"
                                                 class="inline-flex items-center gap-1.5 text-[13px] font-semibold text-error hover:text-error/80 transition-colors">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                                                 </svg>
-                                                Call / WhatsApp: +233 59 607 0822
+                                                Call / WhatsApp: {{ $supportPhone }}
                                             </a>
                                         </div>
                                     </div>
@@ -95,7 +95,7 @@
 
                                 {{-- Awaiting step --}}
                                 @if ($paymentStep === 'awaiting')
-                                    <div wire:poll.3s="checkPaymentStatus"
+                                    <div wire:poll.3s="pollPaymentStatus"
                                         class="bg-base-200/50 border border-base-content/10 rounded-lg p-8 text-center relative overflow-hidden transition-all duration-500">
                                         <div class="absolute inset-0 bg-primary/5 animate-pulse"></div>
                                         <div class="relative z-10">
@@ -107,10 +107,19 @@
                                                 If you've completed payment on the checkout page, please wait a moment while we confirm your transaction.
                                             </p>
                                             <div class="flex items-center justify-center gap-3">
-                                                <x-app.button wire:click="checkPaymentStatus" variant="outline" size="sm">
-                                                    Check Status Now
+                                                <x-app.button wire:click="checkPaymentStatus" wire:loading.attr="disabled" wire:target="checkPaymentStatus" variant="primary" size="md">
+                                                    <span wire:loading.remove wire:target="checkPaymentStatus" class="flex items-center gap-2">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+                                                        </svg>
+                                                        Check Status Now
+                                                    </span>
+                                                    <span wire:loading wire:target="checkPaymentStatus" class="flex items-center gap-2">
+                                                        <span class="loading loading-spinner loading-xs"></span>
+                                                        Checking...
+                                                    </span>
                                                 </x-app.button>
-                                                <x-app.button wire:click="cancelPayment" variant="ghost" size="sm"
+                                                <x-app.button wire:click="cancelPayment" wire:loading.attr="disabled" wire:target="cancelPayment" variant="secondary" size="md"
                                                     class="text-error hover:bg-error/10">
                                                     Cancel & Try Again
                                                 </x-app.button>
@@ -224,7 +233,8 @@
                                                         </x-slot:icon>
                                                     </x-app.input>
 
-                                                    @if($momoNumber && strlen($momoNumber) === 10 && !$this->isMomoFormValid)
+                                                    @error('momoNumber') <p class="text-xs text-error flex items-center gap-1 -mt-4"><span>⚠</span> {{ $message }}</p> @enderror
+                                                    @if(!$errors->has('momoNumber') && $momoNumber && strlen($momoNumber) === 10 && !$this->isMomoFormValid)
                                                         <p class="text-xs text-error flex items-center gap-1 -mt-4"><span>⚠</span> This number doesn't match the selected network</p>
                                                     @endif
 
@@ -324,7 +334,8 @@
                                                 </x-slot:icon>
                                             </x-app.input>
 
-                                            @if($momoNumber && strlen($momoNumber) === 10 && !$this->isMomoFormValid)
+                                            @error('momoNumber') <p class="text-xs text-error flex items-center gap-1 -mt-4"><span>⚠</span> {{ $message }}</p> @enderror
+                                            @if(!$errors->has('momoNumber') && $momoNumber && strlen($momoNumber) === 10 && !$this->isMomoFormValid)
                                                 <p class="text-xs text-error flex items-center gap-1 -mt-4"><span>⚠</span> This number doesn't match the selected network</p>
                                             @endif
 
@@ -345,16 +356,32 @@
 
                                     {{-- Pay button --}}
                                     <div class="pt-4 border-t border-base-content/5">
-                                        <x-app.button type="button" variant="primary" size="lg" class="w-full"
-                                            wireClick="initiateCheckout" wireTarget="initiateCheckout"
-                                            loadingText="Redirecting to secure checkout...">
-                                           <div class="flex items-center gap-2">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                                </svg>
+                                        @php
+                                            $canPay = match(true) {
+                                                $paymentChoice === 'card' => true,
+                                                $paymentChoice === 'saved' => $selectedMethodId !== null,
+                                                $paymentChoice === 'new_momo' || $paymentChoice === '' => $this->isMomoFormValid,
+                                                default => false,
+                                            };
+                                        @endphp
+                                        <button type="button"
+                                            wire:click="initiateCheckout"
+                                            wire:loading.attr="disabled"
+                                            wire:target="initiateCheckout"
+                                            @disabled(! $canPay)
+                                            @class([
+                                                'w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-[14px] transition-all',
+                                                'bg-primary text-white hover:bg-primary/90 shadow-sm' => $canPay,
+                                                'bg-primary/30 text-white cursor-not-allowed' => ! $canPay,
+                                            ])>
+                                            <span wire:loading.remove wire:target="initiateCheckout">
                                                 Pay GH₵ {{ number_format($booking->total_amount, 2) }} — Proceed to Checkout
-                                            </div>
-                                        </x-app.button>
+                                            </span>
+                                            <span wire:loading wire:target="initiateCheckout" class="flex items-center gap-2">
+                                                <span class="loading loading-spinner loading-sm"></span>
+                                                Redirecting...
+                                            </span>
+                                        </button>
                                     </div>
 
                                 @endif {{-- end form step --}}

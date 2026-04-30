@@ -23,6 +23,17 @@
                     <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
                     {{ __('Customer') }}
                 </span>
+                @if(auth()->user()->hasVerifiedPhone())
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/10 text-success text-[11px] font-bold uppercase tracking-widest">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                        Phone Verified
+                    </span>
+                @else
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-warning/10 text-warning text-[11px] font-bold uppercase tracking-widest">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                        Phone Unverified
+                    </span>
+                @endif
             </div>
 
             {{-- Tips card --}}
@@ -79,6 +90,19 @@
                         placeholder="024XXXXXXX"
                     />
                     @error('phone') <p class="text-[12px] font-bold text-error -mt-3">{{ $message }}</p> @enderror
+
+                    @if(! auth()->user()->hasVerifiedPhone())
+                        <div class="flex items-center gap-3 p-4 bg-warning/8 border border-warning/20 rounded-xl -mt-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-warning shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                            </svg>
+                            <p class="text-[12px] text-base-content/60 flex-1">Your phone number has not been verified yet.</p>
+                            <a href="{{ route('verification.phone') }}"
+                                class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 bg-warning text-warning-content text-[11px] font-bold rounded-lg hover:bg-warning/90 transition-colors whitespace-nowrap uppercase tracking-wide">
+                                Verify Now
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
 

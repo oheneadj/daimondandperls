@@ -223,7 +223,7 @@
                     <!-- Actions Section -->
                     <div class="flex flex-wrap gap-2 mt-6 pt-5 border-t border-base-content/5">
                         @if(!$method->isVerified())
-                            <button wire:click="resendOtp({{ $method->id }})" class="btn btn-sm border-2 border-primary rounded-lg bg-primary text-white hover:bg-primary hover:text-white flex items-center justify-center transition-all group shadow-sm active:scale-95" title="Verify Now">
+                            <button wire:click="startVerification({{ $method->id }})" class="btn btn-sm border-2 border-primary rounded-lg bg-primary text-white hover:bg-primary hover:text-white flex items-center justify-center transition-all group shadow-sm active:scale-95" title="Verify Now">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A3.333 3.333 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                                 </svg>

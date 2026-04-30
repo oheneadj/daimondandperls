@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Livewire\Customer;
 
 use App\Enums\PaymentMethod;
+use App\Notifications\Channels\SmsChannels;
 use App\Notifications\OtpNotification;
 use App\Traits\HandlesMomoValidation;
 use App\Traits\ResolvesCustomer;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -153,7 +155,7 @@ class PaymentMethods extends Component
                 $data['verified_at'] = null;
                 $existing->update($data);
 
-                $customer->notify(new OtpNotification($otp, 'payment_method'));
+                $this->sendPaymentOtp($this->accountNumber, $otp);
 
                 $this->verifyingId = $existing->id;
                 $this->showOtpModal = true;
@@ -172,7 +174,7 @@ class PaymentMethods extends Component
             $data['verification_code'] = Hash::make($otp);
             $method = $customer->paymentMethods()->create($data);
 
-            $customer->notify(new OtpNotification($otp, 'payment_method'));
+            $this->sendPaymentOtp($this->accountNumber, $otp);
 
             $this->verifyingId = $method->id;
             $this->showOtpModal = true;
@@ -232,6 +234,28 @@ class PaymentMethods extends Component
         }
     }
 
+    public function startVerification(int $id): void
+    {
+        $customer = $this->resolveCustomer();
+
+        /** @var \App\Models\CustomerPaymentMethod $method */
+        $method = $customer->paymentMethods()->findOrFail($id);
+
+        $otp = (string) random_int(100000, 999999);
+        $method->update(['verification_code' => Hash::make($otp), 'verified_at' => null]);
+
+        $this->sendPaymentOtp($method->account_number, $otp);
+
+        $this->verifyingId = $method->id;
+        $this->otpCode = '';
+        $this->showOtpModal = true;
+
+        $this->dispatch('toast', [
+            'type' => 'info',
+            'message' => 'Verification code sent to '.$method->account_number.'.',
+        ]);
+    }
+
     public function resendOtp(int $id): void
     {
         $customer = $this->resolveCustomer();
@@ -255,7 +279,7 @@ class PaymentMethods extends Component
         $newCode = (string) random_int(100000, 999999);
         $method->update(['verification_code' => Hash::make($newCode)]);
 
-        $customer->notify(new OtpNotification($newCode, 'payment_method', isResend: true));
+        $this->sendPaymentOtp($method->account_number, $newCode, isResend: true);
 
         $this->verifyingId = $method->id;
         $this->otpCode = '';
@@ -265,6 +289,15 @@ class PaymentMethods extends Component
             'type' => 'info',
             'message' => 'New verification code sent.',
         ]);
+    }
+
+    private function sendPaymentOtp(string $accountNumber, string $otp, bool $isResend = false): void
+    {
+        $channelClass = $isResend ? SmsChannels::secondary() : SmsChannels::primary();
+        $channelKey = $channelClass === \App\Notifications\Channels\MNotifyChannel::class ? 'mnotify' : 'gaintsms';
+        $notification = new OtpNotification($otp, 'payment_method', $isResend);
+
+        Notification::route($channelKey, $accountNumber)->notify($notification);
     }
 
     public function setDefault(int $id): void

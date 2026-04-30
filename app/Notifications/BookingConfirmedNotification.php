@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Booking;
+use App\Notifications\Channels\MailChannels;
 use App\Notifications\Channels\SmsChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -41,6 +42,7 @@ class BookingConfirmedNotification extends Notification implements ShouldQueue
         $companyName = dpc_setting('company_name') ?? config('app.name');
 
         $mail = (new MailMessage)
+            ->mailer(MailChannels::primary())
             ->subject('Booking Confirmation - '.$this->booking->reference)
             ->greeting('Hello '.$notifiable->name.',')
             ->line('Your booking (Reference: '.$this->booking->reference.') has been successfully confirmed and payment is received.')

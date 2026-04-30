@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Settings;
 
+use App\Jobs\OptimiseImage;
 use App\Models\Setting;
 use App\Traits\HasAdminAuthorization;
 use Illuminate\Contracts\View\View;
@@ -69,6 +70,9 @@ class AdminSettings extends Component
     /** Which SMS provider is primary: 'gaintsms' or 'mnotify' */
     public string $sms_primary_provider = 'gaintsms';
 
+    /** Which email provider is primary: 'brevo' */
+    public string $email_primary_provider = 'brevo';
+
     // ── Notifications ─────────────────────────────────────────────────────────
 
     public bool $email_notifications = false;
@@ -114,6 +118,7 @@ class AdminSettings extends Component
 
         $this->active_payment_gateway = $settings->get('active_payment_gateway')?->value ?? 'transflow';
         $this->sms_primary_provider = $settings->get('sms_primary_provider')?->value ?? 'gaintsms';
+        $this->email_primary_provider = $settings->get('email_primary_provider')?->value ?? 'brevo';
 
         $this->email_notifications = (bool) ($settings->get('email_enabled')?->value ?? false);
         $this->sms_notifications = (bool) ($settings->get('sms_enabled')?->value ?? false);
@@ -146,6 +151,18 @@ class AdminSettings extends Component
             $this->updateSetting('business_logo', $path, \App\Enums\SettingType::String, 'business');
             $this->current_logo_path = $path;
             $this->business_logo = null;
+
+            // I dispatch after the setting row exists so the job can update it by ID
+            $logoSetting = Setting::firstWhere('key', 'business_logo');
+            if ($logoSetting) {
+                OptimiseImage::dispatch(
+                    disk: 'public',
+                    path: (string) $path,
+                    modelClass: Setting::class,
+                    modelId: $logoSetting->id,
+                    modelColumn: 'value',
+                );
+            }
         }
 
         $this->updateSetting('business_name', $this->business_name, \App\Enums\SettingType::String, 'business');
@@ -209,6 +226,17 @@ class AdminSettings extends Component
         $this->updateSetting('sms_primary_provider', $this->sms_primary_provider, \App\Enums\SettingType::String, 'sms');
 
         $this->dispatch('banner', style: 'success', message: 'Primary SMS provider updated.');
+    }
+
+    public function saveEmailProvider(): void
+    {
+        $this->validate([
+            'email_primary_provider' => 'required|in:brevo',
+        ]);
+
+        $this->updateSetting('email_primary_provider', $this->email_primary_provider, \App\Enums\SettingType::String, 'email');
+
+        $this->dispatch('banner', style: 'success', message: 'Primary email provider updated.');
     }
 
     // ── Delivery Locations ────────────────────────────────────────────────────

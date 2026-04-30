@@ -73,6 +73,15 @@
                                         Edit
                                     </button>
                                 </div>
+                                @if(! Auth::user()->hasVerifiedPhone())
+                                    <div class="mt-3 flex items-center gap-2.5 bg-warning/8 border border-warning/20 rounded-lg px-3 py-2.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-warning shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                                        </svg>
+                                        <p class="text-[11px] text-base-content/55 flex-1">Phone not verified — confirmations may not reach you.</p>
+                                        <a href="{{ route('verification.phone') }}" class="text-[11px] text-warning font-semibold hover:underline whitespace-nowrap">Verify</a>
+                                    </div>
+                                @endif
                             </div>
 
                             {{-- Edit form --}}

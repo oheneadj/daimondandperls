@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Booking;
+use App\Notifications\Channels\MailChannels;
 use App\Notifications\Channels\SmsChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -37,6 +38,7 @@ class BookingCompletedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
+            ->mailer(MailChannels::primary())
             ->subject('Your Event Catering is Complete! - '.$this->booking->reference)
             ->greeting('Hello '.$notifiable->name.',')
             ->line('We are delighted to inform you that your catering service for booking '.$this->booking->reference.' has been successfully completed.')

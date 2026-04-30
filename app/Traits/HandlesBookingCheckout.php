@@ -155,6 +155,7 @@ trait HandlesBookingCheckout
         $user->update([
             'otp_code' => null,
             'otp_expires_at' => null,
+            'phone_verified_at' => $user->phone_verified_at ?? now(),
         ]);
 
         Auth::login($user, true);

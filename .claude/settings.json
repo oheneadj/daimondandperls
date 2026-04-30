@@ -82,7 +82,13 @@
       "Bash(sed -n '9,30p' /home/oheneadj/server/dpc/app/Models/ActivityLog.php)",
       "Bash(sed -n '9,25p' /home/oheneadj/server/dpc/app/Models/SmsLog.php)",
       "Bash(vendor/bin/pint app/Models/ContactMessage.php app/Livewire/ContactForm.php app/Livewire/Admin/ContactMessages/Index.php app/Notifications/ContactMessageReceivedNotification.php app/Models/User.php database/factories/ContactMessageFactory.php database/seeders/RolesAndPermissionsSeeder.php tests/Feature/ContactMessageTest.php --format agent)",
-      "Bash(composer dump-autoload *)"
+      "Bash(composer dump-autoload *)",
+      "Bash(curl -s -X POST https://api.giantsms.com/api/v1/send -H 'Authorization: Basic c0hSak10Zm86WGdvbllIUHBlTA==' -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode 'from=D&PCatering' --data-urlencode to=0243633538 --data-urlencode 'msg=Your Diamonds & Pearls verification code is: 123456. It expires in 10 minutes.')",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s -X POST https://api.giantsms.com/api/v1/send -H 'Authorization: Basic c0hSak10Zm86WGdvbllIUHBlTA==' -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode 'from=D&PCatering' --data-urlencode to=0206657172 --data-urlencode 'msg=Your Diamonds & Pearls verification code is: 123456. It expires in 10 minutes.')",
+      "Bash(vendor/bin/pint --dirty --format agent app/Services/Payment/PaymentConfirmationService.php app/Http/Controllers/Booking/TransflowReturnController.php app/Livewire/Booking/CheckoutPayment.php)",
+      "Bash(vendor/bin/pint app/Livewire/Packages/PackageForm.php --format agent)",
+      "Bash(composer require *)"
     ],
     "additionalDirectories": [
       "/home/oheneadj/server/dpc/resources/views/components",

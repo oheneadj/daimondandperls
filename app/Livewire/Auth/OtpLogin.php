@@ -21,7 +21,7 @@ class OtpLogin extends Component
 
     public string $error = '';
 
-    public function sendOtp(): void
+    public function sendOtp(bool $isResend = false): void
     {
         $this->validate([
             'phone' => ['required', 'string', 'regex:/^(?:\+233|0)\d{9}$/'],
@@ -49,13 +49,13 @@ class OtpLogin extends Component
             return;
         }
 
-        $otp = (string) rand(100000, 999999);
+        $otp = (string) random_int(100000, 999999);
         $user->update([
             'otp_code' => $otp,
             'otp_expires_at' => now()->addMinutes(10),
         ]);
 
-        $user->notify(new OtpNotification($otp));
+        $user->notify(new OtpNotification($otp, isResend: $isResend));
 
         $this->step = 2;
         $this->error = '';
@@ -103,7 +103,7 @@ class OtpLogin extends Component
     {
         $this->otp = '';
         $this->error = '';
-        $this->sendOtp();
+        $this->sendOtp(isResend: true);
     }
 
     public function backToPhone(): void

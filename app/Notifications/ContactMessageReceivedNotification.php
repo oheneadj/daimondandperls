@@ -6,6 +6,7 @@ namespace App\Notifications;
 
 use App\Enums\NotificationPreference;
 use App\Models\ContactMessage;
+use App\Notifications\Channels\MailChannels;
 use App\Notifications\Channels\SmsChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -40,6 +41,7 @@ class ContactMessageReceivedNotification extends Notification implements ShouldQ
         $snippet = mb_substr($this->contactMessage->message, 0, 100).(strlen($this->contactMessage->message) > 100 ? '...' : '');
 
         return (new MailMessage)
+            ->mailer(MailChannels::primary())
             ->subject('New Contact Message: '.$this->contactMessage->inquiry_type)
             ->greeting('Hello '.$notifiable->name.'!')
             ->line('A new contact message has been received.')

@@ -21,6 +21,10 @@ Route::get('/privacy', function () {
     return view('public.privacy');
 })->name('privacy');
 
+Route::middleware(['auth'])
+    ->get('/verify-phone', \App\Livewire\Auth\PhoneVerification::class)
+    ->name('verification.phone');
+
 Route::middleware(['auth', 'customer'])
     ->prefix('dashboard')
     ->name('dashboard.')

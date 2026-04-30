@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Models\Booking;
+use App\Notifications\Channels\MailChannels;
 use App\Notifications\Channels\SmsChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -32,6 +33,7 @@ class QuoteUpdatedNotification extends Notification implements ShouldQueue
         $companyName = dpc_setting('company_name') ?? config('app.name');
 
         return (new MailMessage)
+            ->mailer(MailChannels::primary())
             ->subject('Your Event Quote is Ready - '.$this->booking->reference)
             ->greeting('Hello '.$notifiable->name.',')
             ->line('Great news! We have prepared a quote for your event booking (Reference: '.$this->booking->reference.').')

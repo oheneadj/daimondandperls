@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Models\Booking;
+use App\Notifications\Channels\MailChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -26,6 +27,7 @@ class CustomerBookingReceivedNotification extends Notification implements Should
         $resumeUrl = route('booking.payment', $this->booking->reference);
 
         return (new MailMessage)
+            ->mailer(MailChannels::primary())
             ->subject('Booking Received: '.$this->booking->reference)
             ->greeting('Hello '.$this->booking->customer->name.'!')
             ->line('Thank you for choosing Diamonds & Pearls Catering. Your booking has been received and is currently pending payment.')

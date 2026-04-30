@@ -25,6 +25,9 @@
                 wire:model="phone"
                 required
                 placeholder="e.g., 0244000000"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="10"
             >
                 <x-slot:icon>
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -32,6 +35,7 @@
                     </svg>
                 </x-slot:icon>
             </x-app.input>
+            <p class="text-[11px] text-base-content/40 -mt-2 ml-1">Ghana numbers only · starts with 0 · 10 digits (e.g. 0241234567)</p>
 
             <x-app.button type="button" class="w-full" wireClick="sendOtp" wireTarget="sendOtp" loadingText="Sending...">
                 Send Verification Code

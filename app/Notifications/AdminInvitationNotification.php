@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Notifications\Channels\MailChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -29,6 +30,7 @@ class AdminInvitationNotification extends Notification implements ShouldQueue
         $companyName = dpc_setting('company_name') ?? config('app.name');
 
         return (new MailMessage)
+            ->mailer(MailChannels::primary())
             ->subject("You've been invited to {$companyName}")
             ->greeting("Hello {$notifiable->name},")
             ->line("You have been invited to join the **{$companyName}** admin team.")

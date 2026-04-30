@@ -21,6 +21,10 @@ class RegisterResponse implements RegisterResponseContract
             return redirect()->intended(route('admin.dashboard'));
         }
 
+        if (! $user->hasVerifiedPhone()) {
+            return redirect()->route('verification.phone');
+        }
+
         return redirect(route('dashboard.index'));
     }
 }

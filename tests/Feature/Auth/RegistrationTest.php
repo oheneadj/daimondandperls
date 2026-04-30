@@ -19,7 +19,7 @@ test('new users can register with both email and phone', function () {
     ]);
 
     $response->assertSessionHasNoErrors()
-        ->assertRedirect(route('dashboard.index', absolute: false));
+        ->assertRedirect(route('verification.phone', absolute: false));
 
     $this->assertAuthenticated();
 
