@@ -70,8 +70,8 @@ class AdminSettings extends Component
     /** Which SMS provider is primary: 'gaintsms' or 'mnotify' */
     public string $sms_primary_provider = 'gaintsms';
 
-    /** Which email provider is primary: 'brevo' */
-    public string $email_primary_provider = 'brevo';
+    /** Which email provider is primary: 'smtp' */
+    public string $email_primary_provider = 'smtp';
 
     // ── Notifications ─────────────────────────────────────────────────────────
 
@@ -118,7 +118,7 @@ class AdminSettings extends Component
 
         $this->active_payment_gateway = $settings->get('active_payment_gateway')?->value ?? 'transflow';
         $this->sms_primary_provider = $settings->get('sms_primary_provider')?->value ?? 'gaintsms';
-        $this->email_primary_provider = $settings->get('email_primary_provider')?->value ?? 'brevo';
+        $this->email_primary_provider = $settings->get('email_primary_provider')?->value ?? 'smtp';
 
         $this->email_notifications = (bool) ($settings->get('email_enabled')?->value ?? false);
         $this->sms_notifications = (bool) ($settings->get('sms_enabled')?->value ?? false);
@@ -231,7 +231,7 @@ class AdminSettings extends Component
     public function saveEmailProvider(): void
     {
         $this->validate([
-            'email_primary_provider' => 'required|in:brevo',
+            'email_primary_provider' => 'required|in:smtp,brevo',
         ]);
 
         $this->updateSetting('email_primary_provider', $this->email_primary_provider, \App\Enums\SettingType::String, 'email');

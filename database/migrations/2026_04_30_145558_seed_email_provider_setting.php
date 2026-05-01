@@ -11,7 +11,7 @@ return new class extends Migration
         Setting::updateOrCreate(
             ['key' => 'email_primary_provider'],
             [
-                'value' => 'brevo',
+                'value' => 'smtp',
                 'type' => SettingType::String,
                 'group' => 'email',
                 'label' => 'Email Primary Provider',

@@ -50,13 +50,8 @@ return [
         ],
 
         'brevo' => [
-            'transport' => 'smtp',
-            'host' => env('BREVO_SMTP_HOST', 'smtp-relay.brevo.com'),
-            'port' => env('BREVO_SMTP_PORT', 587),
-            'encryption' => env('BREVO_SMTP_ENCRYPTION', 'tls'),
-            'username' => env('BREVO_SMTP_USERNAME'),
-            'password' => env('BREVO_SMTP_PASSWORD'),
-            'timeout' => null,
+            'transport' => 'brevo',
+            'key' => env('BREVO_API_KEY'),
         ],
 
         'ses' => [

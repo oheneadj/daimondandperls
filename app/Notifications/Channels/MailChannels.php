@@ -10,6 +10,6 @@ class MailChannels
     // Adding a new provider = add a mailer to config/mail.php and a new option in admin settings.
     public static function primary(): string
     {
-        return dpc_setting('email_primary_provider') ?? 'brevo';
+        return dpc_setting('email_primary_provider') ?? 'smtp';
     }
 }
