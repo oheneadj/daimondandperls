@@ -5,6 +5,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [Unreleased] — 2026-05-01
+
+### Added
+
+#### Branded Email Templates — DPC Design System
+All transactional emails now render with DPC branding: red gradient accent bar, company logo, business name, contact details in footer, and red CTA buttons.
+
+**Affected files:**
+- `resources/views/vendor/mail/html/layout.blade.php` — full custom layout with logo, brand name, accent bar, and footer with address/phone/email from settings
+- `resources/views/vendor/mail/html/button.blade.php` — red (`#D52518`) rounded CTA button
+- `resources/views/vendor/mail/html/themes/default.css` — complete DPC brand CSS: colors, typography, card styling, responsive breakpoints
+
+**Why:** Default Laravel mail template had no branding. Every email now looks like it came from DPC.
+
+#### Brevo API Transport — Replaced Failing SMTP
+Switched from Brevo SMTP (persistently returning 535 auth errors) to the Brevo API transport via `symfony/brevo-mailer` + `symfony/http-client`.
+
+**Affected files:**
+- `composer.json` — added `symfony/brevo-mailer ^7.4` and `symfony/http-client ^7.4`
+- `config/mail.php` — `brevo` mailer now uses `transport: brevo` (API) with `BREVO_API_KEY`
+- `app/Providers/AppServiceProvider.php` — registers `BrevoApiTransport` via `Mail::extend('brevo', ...)`
+
+**Why:** Brevo SMTP credentials repeatedly failed with 535 auth errors. The API key (already in use for the SDK) works reliably.
+
+---
+
 ## [Unreleased] — 2026-04-30
 
 ### Added
