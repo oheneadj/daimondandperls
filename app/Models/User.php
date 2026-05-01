@@ -3,16 +3,27 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\NotificationPreference;
+use App\Enums\PaymentGatewayStatus;
+use App\Enums\UserRole;
+use App\Enums\UserType;
+use App\Notifications\Auth\ResetPasswordNotification;
+use App\Notifications\BookingReceivedNotification;
+use App\Traits\HasRoles;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use \App\Traits\HasRoles, HasFactory, \Illuminate\Database\Eloquent\Concerns\HasUuids, Notifiable, TwoFactorAuthenticatable;
+    /** @use HasFactory<UserFactory> */
+    use HasFactory, HasRoles, \Illuminate\Database\Eloquent\Concerns\HasUuids, Notifiable, TwoFactorAuthenticatable;
 
     /**
      * The attributes that are mass assignable.
@@ -65,9 +76,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'otp_expires_at' => 'datetime',
             'password' => 'hashed',
-            'role' => \App\Enums\UserRole::class,
-            'type' => \App\Enums\UserType::class,
-            'notification_preference' => \App\Enums\NotificationPreference::class,
+            'role' => UserRole::class,
+            'type' => UserType::class,
+            'notification_preference' => NotificationPreference::class,
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
             'invitation_sent_at' => 'datetime',
@@ -81,7 +92,7 @@ class User extends Authenticatable
         return ['uuid'];
     }
 
-    public function customer(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function customer(): HasOne
     {
         return $this->hasOne(Customer::class);
     }
@@ -93,25 +104,25 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->type === \App\Enums\UserType::Admin;
+        return $this->type === UserType::Admin;
     }
 
     public function isCustomer(): bool
     {
-        return $this->type === \App\Enums\UserType::Customer;
+        return $this->type === UserType::Customer;
     }
 
-    public function confirmedBookings(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function confirmedBookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'confirmed_by');
     }
 
-    public function verifiedPayments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function verifiedPayments(): HasMany
     {
         return $this->hasMany(Payment::class, 'verified_by');
     }
 
-    public function activityLogs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function activityLogs(): HasMany
     {
         return $this->hasMany(ActivityLog::class);
     }
@@ -143,18 +154,23 @@ class User extends Authenticatable
     public function unreadBookingsCount(): int
     {
         return $this->unreadNotifications()
-            ->where('type', \App\Notifications\BookingReceivedNotification::class)
+            ->where('type', BookingReceivedNotification::class)
             ->count();
     }
 
     public function pendingPaymentsCount(): int
     {
-        return \App\Models\Payment::where('status', \App\Enums\PaymentGatewayStatus::Pending)->count();
+        return Payment::where('status', PaymentGatewayStatus::Pending)->count();
     }
 
     public function newContactMessagesCount(): int
     {
         // Cached for 60s so the dashboard and sidebar share one query per minute.
-        return \Illuminate\Support\Facades\Cache::remember('contact_messages.new_count', 60, fn () => \App\Models\ContactMessage::where('status', 'new')->count());
+        return Cache::remember('contact_messages.new_count', 60, fn () => ContactMessage::where('status', 'new')->count());
+    }
+
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }

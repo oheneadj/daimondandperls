@@ -37,16 +37,21 @@
     :class="mobileMenuOpen ? '!translate-x-0' : '-translate-x-full'"
 >
     {{-- Logo Area --}}
-    <div class="p-6 border-b border-white/[0.03] flex items-center justify-between">
-        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
-            @if($logoUrl)
-                <img src="{{ $logoUrl }}" alt="{{ $businessName }}" class="h-9 w-auto object-contain brightness-0 invert">
-            @else
-                <div class="flex flex-col">
-                    <span class="text-[18px] font-bold text-[#f3e8cc] tracking-tight leading-tight">{{ $businessName }}</span>
-                    <span class="text-[11px] font-bold uppercase tracking-widest text-[#9ABC05] mt-1.5 italic opacity-80">Catering Services</span>
-                </div>
-            @endif
+    <div class="p-5 border-b border-white/[0.06] flex items-center justify-between">
+        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 min-w-0">
+            {{-- Logo avatar --}}
+            <div class="size-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0 overflow-hidden">
+                @if($logoUrl)
+                    <img src="{{ $logoUrl }}" alt="{{ $businessName }}" class="size-full object-cover">
+                @else
+                    <x-app-logo-icon class="size-5 fill-primary" />
+                @endif
+            </div>
+            {{-- Business name --}}
+            <div class="flex flex-col leading-none min-w-0">
+                <span class="text-[15px] font-bold text-white tracking-tight truncate">{{ $businessName ?: 'DPCatering' }}</span>
+                <span class="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35 mt-0.5">Catering Services</span>
+            </div>
         </a>
         <button @click="mobileMenuOpen = false" class="p-2 lg:hidden text-white/50 hover:text-white transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

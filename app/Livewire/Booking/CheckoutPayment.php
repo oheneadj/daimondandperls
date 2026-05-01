@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Livewire\Booking;
 
 use App\Contracts\PaymentGatewayContract;
+use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
+use App\Models\CustomerPaymentMethod;
 use App\Services\CartService;
 use App\Services\Payment\PaymentConfirmationService;
 use App\Services\Payment\PaymentLogger;
@@ -27,7 +29,7 @@ class CheckoutPayment extends Component
 
     public Booking $booking;
 
-    /** 'form' | 'awaiting' */
+    /** 'form' | 'awaiting' | 'offline' */
     public string $paymentStep = 'form';
 
     public ?string $errorMessage = null;
@@ -43,7 +45,7 @@ class CheckoutPayment extends Component
 
     public ?int $selectedMethodId = null;
 
-    /** @var Collection<int, \App\Models\CustomerPaymentMethod> */
+    /** @var Collection<int, CustomerPaymentMethod> */
     public Collection $savedMethods;
 
     public bool $showNewMomoForm = false;
@@ -92,6 +94,12 @@ class CheckoutPayment extends Component
             return;
         }
 
+        if (dpc_setting('payment_mode') === 'offline') {
+            $this->paymentStep = 'offline';
+
+            return;
+        }
+
         $this->loadSavedMethods();
     }
 
@@ -105,7 +113,7 @@ class CheckoutPayment extends Component
 
         if ($customer) {
             $this->savedMethods = $customer->paymentMethods()
-                ->where('type', \App\Enums\PaymentMethod::MobileMoney->value)
+                ->where('type', PaymentMethod::MobileMoney->value)
                 ->whereNotNull('verified_at')
                 ->orderByDesc('is_default')
                 ->orderBy('created_at')
@@ -157,6 +165,12 @@ class CheckoutPayment extends Component
      */
     public function initiateCheckout(PaymentGatewayContract $gateway): void
     {
+        if (dpc_setting('payment_mode') === 'offline') {
+            $this->paymentStep = 'offline';
+
+            return;
+        }
+
         $this->loading = 'initiateCheckout';
         $this->errorMessage = null;
 
@@ -439,6 +453,13 @@ class CheckoutPayment extends Component
         $this->fatalError = null;
         $this->paymentStep = 'form';
         session()->forget('error');
+    }
+
+    public function confirmOfflinePayment(): void
+    {
+        app(CartService::class)->clear();
+
+        $this->redirect(route('bookings.offline-waiting', $this->booking));
     }
 
     public function cancelPayment(): void

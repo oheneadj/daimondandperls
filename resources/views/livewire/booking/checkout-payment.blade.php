@@ -93,8 +93,120 @@
                         <div class="space-y-8">
                             <div class="animate-fade-in space-y-6">
 
+                                {{-- Offline payment instructions step --}}
+                                @if ($paymentStep === 'offline')
+                                    <div class="animate-fade-in space-y-5">
+
+                                        {{-- Manual transfer card (active) --}}
+                                        <div class="bg-primary/5 border border-primary/20 rounded-2xl p-5">
+                                            <div class="flex items-center gap-3 mb-4">
+                                                <div class="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <div class="flex items-center gap-2">
+                                                        <h3 class="text-sm font-bold text-base-content">Direct MoMo Transfer</h3>
+                                                        <span class="inline-flex items-center gap-1 text-[10px] font-bold text-primary uppercase tracking-wide bg-primary/10 px-2 py-0.5 rounded-full">
+                                                            <span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span> Available Now
+                                                        </span>
+                                                    </div>
+                                                    <p class="text-xs text-base-content/50 mt-0.5">Send directly to our MoMo number — no app needed</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="bg-white rounded-xl border border-base-content/10 divide-y divide-base-content/5 mb-4">
+                                                <div class="flex items-center justify-between px-4 py-3">
+                                                    <span class="text-xs text-base-content/50 font-medium">Account Name</span>
+                                                    <span class="text-sm font-bold text-base-content">{{ dpc_setting('business_momo_name') ?: '—' }}</span>
+                                                </div>
+                                                <div class="flex items-center justify-between px-4 py-3">
+                                                    <span class="text-xs text-base-content/50 font-medium">Network</span>
+                                                    <span class="text-sm font-bold text-base-content">{{ dpc_setting('business_momo_network') ?: '—' }}</span>
+                                                </div>
+                                                <div class="flex items-center justify-between px-4 py-3">
+                                                    <span class="text-xs text-base-content/50 font-medium">MoMo Number</span>
+                                                    <span class="text-sm font-bold text-base-content tracking-widest">{{ dpc_setting('business_momo_number') ?: '—' }}</span>
+                                                </div>
+                                                <div class="flex items-center justify-between px-4 py-3">
+                                                    <span class="text-xs text-base-content/50 font-medium">Amount to Send</span>
+                                                    <span class="text-sm font-bold text-primary">GH₵ {{ number_format($booking->total_amount, 2) }}</span>
+                                                </div>
+                                            </div>
+
+                                            <p class="text-xs text-base-content/60 leading-relaxed">
+                                                Send exactly <strong>GH₵ {{ number_format($booking->total_amount, 2) }}</strong> to the number above, then tap the button below. Our team will verify your payment and confirm your booking shortly.
+                                            </p>
+                                        </div>
+
+                                        <x-app.button wire:click="confirmOfflinePayment" wire:loading.attr="disabled" variant="primary" size="lg" class="w-full">
+                                            <span wire:loading.remove wire:target="confirmOfflinePayment">I've Made the Payment</span>
+                                            <span wire:loading wire:target="confirmOfflinePayment" class="flex items-center gap-2">
+                                                <span class="loading loading-spinner loading-xs"></span>
+                                                Processing...
+                                            </span>
+                                        </x-app.button>
+
+                                        {{-- Divider --}}
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex-1 h-px bg-base-content/10"></div>
+                                            <span class="text-[11px] font-semibold text-base-content/30 uppercase tracking-widest">Other payment options</span>
+                                            <div class="flex-1 h-px bg-base-content/10"></div>
+                                        </div>
+
+                                        {{-- Online unavailability notice --}}
+                                        <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3.5">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            <p class="text-[12px] text-amber-700 leading-relaxed">
+                                                <span class="font-semibold">Online payments are temporarily unavailable.</span>
+                                                We're putting the finishing touches on our secure checkout — it'll be ready very soon.
+                                                We'll notify you as soon as it's live. In the meantime, the direct transfer option above works just as well!
+                                            </p>
+                                        </div>
+
+                                        {{-- Disabled MoMo option --}}
+                                        <div class="relative rounded-xl border-2 border-base-content/8 bg-base-100/50 p-5 opacity-50 select-none pointer-events-none">
+                                            <div class="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold text-base-content/40 uppercase tracking-wide bg-base-200 px-2 py-0.5 rounded-full">
+                                                Coming soon
+                                            </div>
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-9 h-9 rounded-lg bg-base-200 flex items-center justify-center shrink-0">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-bold text-base-content/40">Mobile Money (Online)</p>
+                                                    <p class="text-xs text-base-content/30">Instant MoMo prompt to your phone</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Disabled Card option --}}
+                                        <div class="relative rounded-xl border-2 border-base-content/8 bg-base-100/50 p-5 opacity-50 select-none pointer-events-none">
+                                            <div class="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold text-base-content/40 uppercase tracking-wide bg-base-200 px-2 py-0.5 rounded-full">
+                                                Coming soon
+                                            </div>
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-9 h-9 rounded-lg bg-base-200 flex items-center justify-center shrink-0">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-bold text-base-content/40">Card Payment</p>
+                                                    <p class="text-xs text-base-content/30">Visa & Mastercard accepted</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
                                 {{-- Awaiting step --}}
-                                @if ($paymentStep === 'awaiting')
+                                @elseif ($paymentStep === 'awaiting')
                                     <div wire:poll.3s="pollPaymentStatus"
                                         class="bg-base-200/50 border border-base-content/10 rounded-lg p-8 text-center relative overflow-hidden transition-all duration-500">
                                         <div class="absolute inset-0 bg-primary/5 animate-pulse"></div>

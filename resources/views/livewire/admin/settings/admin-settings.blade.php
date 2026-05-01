@@ -304,6 +304,124 @@
                 </div>
             </div>
 
+            {{-- Payment Mode --}}
+            <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
+                <div class="px-6 py-5 border-b border-base-content/5">
+                    <h3 class="text-sm font-bold text-base-content">{{ __('Payment Mode') }}</h3>
+                    <p class="text-xs text-base-content/40 mt-0.5">{{ __('Online routes customers through the selected gateway. Offline shows your MoMo details for manual transfer — admin confirms payment.') }}</p>
+                </div>
+                <div class="px-6 py-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                        {{-- Online option --}}
+                        <button type="button" wire:click="$set('payment_mode', 'online')"
+                            @class([
+                                'relative text-left rounded-xl border-2 p-5 transition-all duration-150',
+                                'border-primary bg-primary/5 shadow-sm' => $payment_mode === 'online',
+                                'border-base-content/10 hover:border-base-content/20 bg-base-100' => $payment_mode !== 'online',
+                            ])>
+                            @if($payment_mode === 'online')
+                                <span class="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold text-primary uppercase tracking-wide bg-primary/10 px-2 py-0.5 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span> Active
+                                </span>
+                            @endif
+                            <div class="flex items-center gap-3 mb-3">
+                                <div @class([
+                                    'w-9 h-9 rounded-lg flex items-center justify-center shrink-0',
+                                    'bg-primary/15' => $payment_mode === 'online',
+                                    'bg-base-200' => $payment_mode !== 'online',
+                                ])>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 {{ $payment_mode === 'online' ? 'text-primary' : 'text-base-content/40' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-base-content">Online (Gateway)</p>
+                                    <p class="text-[10px] text-base-content/40 font-medium">Automated payment</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-base-content/60 leading-relaxed">Customers pay through the selected gateway. Payment is confirmed instantly and automatically.</p>
+                        </button>
+
+                        {{-- Offline option --}}
+                        <button type="button" wire:click="$set('payment_mode', 'offline')"
+                            @class([
+                                'relative text-left rounded-xl border-2 p-5 transition-all duration-150',
+                                'border-primary bg-primary/5 shadow-sm' => $payment_mode === 'offline',
+                                'border-base-content/10 hover:border-base-content/20 bg-base-100' => $payment_mode !== 'offline',
+                            ])>
+                            @if($payment_mode === 'offline')
+                                <span class="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold text-primary uppercase tracking-wide bg-primary/10 px-2 py-0.5 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span> Active
+                                </span>
+                            @endif
+                            <div class="flex items-center gap-3 mb-3">
+                                <div @class([
+                                    'w-9 h-9 rounded-lg flex items-center justify-center shrink-0',
+                                    'bg-primary/15' => $payment_mode === 'offline',
+                                    'bg-base-200' => $payment_mode !== 'offline',
+                                ])>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 {{ $payment_mode === 'offline' ? 'text-primary' : 'text-base-content/40' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-base-content">Offline (Manual)</p>
+                                    <p class="text-[10px] text-base-content/40 font-medium">Admin confirms payment</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-base-content/60 leading-relaxed">Customers see your MoMo number and transfer manually. An admin must verify the payment before the booking is confirmed.</p>
+                        </button>
+
+                    </div>
+
+                    <div class="flex justify-end mt-4">
+                        <x-ui.button type="button" variant="primary" size="sm" wire:click="savePaymentMode" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="savePaymentMode">{{ __('Apply Mode') }}</span>
+                            <span wire:loading wire:target="savePaymentMode">{{ __('Saving...') }}</span>
+                        </x-ui.button>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Business MoMo Details (only when offline mode is active) --}}
+            @if($payment_mode === 'offline')
+            <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
+                <div class="px-6 py-5 border-b border-base-content/5">
+                    <h3 class="text-sm font-bold text-base-content">{{ __('Business MoMo Details') }}</h3>
+                    <p class="text-xs text-base-content/40 mt-0.5">{{ __('Customers will be shown this number and network at checkout when offline mode is active.') }}</p>
+                </div>
+                <div class="px-6 py-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-base-content/60 mb-1.5">{{ __('MoMo Network') }}</label>
+                            <input type="text" wire:model="business_momo_network" placeholder="e.g. MTN, Telecel, AirtelTigo"
+                                class="input input-bordered w-full text-sm" />
+                            @error('business_momo_network') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-base-content/60 mb-1.5">{{ __('MoMo Number') }}</label>
+                            <input type="text" wire:model="business_momo_number" placeholder="0XXXXXXXXX" inputmode="numeric" maxlength="10"
+                                class="input input-bordered w-full text-sm" />
+                            @error('business_momo_number') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold text-base-content/60 mb-1.5">{{ __('Account Name') }}</label>
+                            <input type="text" wire:model="business_momo_name" placeholder="e.g. Diamonds & Pearls Catering"
+                                class="input input-bordered w-full text-sm" />
+                            @error('business_momo_name') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+                    <div class="flex justify-end mt-4">
+                        <x-ui.button type="button" variant="primary" size="sm" wire:click="saveBusinessMomoDetails" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="saveBusinessMomoDetails">{{ __('Save MoMo Details') }}</span>
+                            <span wire:loading wire:target="saveBusinessMomoDetails">{{ __('Saving...') }}</span>
+                        </x-ui.button>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             {{-- SMS Provider --}}
             <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
                 <div class="px-6 py-5 border-b border-base-content/5">

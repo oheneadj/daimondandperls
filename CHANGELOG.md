@@ -7,6 +7,53 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased] — 2026-05-01
 
+### Fixed
+
+#### Password Reset Email — Switched Default Mailer to Brevo API
+Password reset emails were failing with 535 SMTP auth errors because `MAIL_MAILER` was still set to `smtp`. Changed to `brevo` so all system mail (including Fortify's built-in password reset and OTP flows) routes through the Brevo API transport.
+
+**Affected files:**
+- `.env` — changed `MAIL_MAILER=smtp` to `MAIL_MAILER=brevo`
+
+**Why:** Fortify's password reset sends mail directly through the default mailer without going through `MailChannels::primary()`. Setting the default to `brevo` covers all mail paths without needing to override each Fortify notification.
+
+---
+
+### Changed
+
+#### Offline Waiting Page — Live Polling with Redirect on Confirmation
+Converted the offline waiting page from a static Blade view to a Livewire component. It now polls every 5 seconds and automatically redirects the customer to the booking confirmation page the moment an admin confirms payment — no manual refresh needed.
+
+**Affected files:**
+- `app/Livewire/Booking/OfflineWaiting.php` — new Livewire component; polls `checkConfirmation()` which refreshes the booking and redirects when `payment_status === Paid`
+- `resources/views/livewire/booking/offline-waiting.blade.php` — new view with `wire:poll.5s`; animated ping rings, bouncing dots, and pulsing status badge while waiting
+- `routes/web.php` — route now maps to `OfflineWaiting::class` instead of a static view closure
+- `resources/views/booking/offline-waiting.blade.php` — deleted (replaced by Livewire view)
+
+**Why:** Customers had no way to know when their payment was confirmed without refreshing. The polling closes that gap — the page transitions automatically when the admin clicks Verify.
+
+---
+
+### Added
+
+#### Offline / Manual Payment Mode Toggle
+Admins can now switch between Online (gateway) and Offline (manual MoMo transfer) payment modes from the admin settings. When offline is active, the checkout shows the business MoMo number and amount instead of launching the payment gateway. After clicking "I've Made the Payment", the customer lands on a waiting page explaining that an admin will confirm. Admin confirms via the existing "Verify Payment" button on the booking — only then does the booking confirmation SMS/email fire.
+
+**Affected files:**
+- `database/migrations/2026_05_01_085513_seed_payment_mode_settings.php` — seeds `payment_mode = 'online'`, `business_momo_network`, and `business_momo_number` settings
+- `app/Livewire/Admin/Settings/AdminSettings.php` — added `$payment_mode`, `$business_momo_network`, `$business_momo_number` properties, `savePaymentMode()` and `saveBusinessMomoDetails()` methods
+- `resources/views/livewire/admin/settings/admin-settings.blade.php` — added Payment Mode card (Online/Offline toggle) and Business MoMo Details card (shown only in offline mode) in the Payments tab
+- `app/Livewire/Booking/CheckoutPayment.php` — `initiateCheckout()` branches to `paymentStep = 'offline'` when mode is offline; added `confirmOfflinePayment()` which redirects to the waiting page
+- `resources/views/livewire/booking/checkout-payment.blade.php` — added offline instructions block showing business MoMo number, network, and amount
+- `routes/web.php` — added `GET /booking/offline-waiting/{booking}` route (`bookings.offline-waiting`)
+- `resources/views/booking/offline-waiting.blade.php` — new static waiting page: shows booking reference, 3-step next-steps list, and contact phone
+
+**Why:** Provides a fallback when the gateway is unavailable and gives customers who prefer direct transfers a clear path to complete their booking. Admin retains full control — no booking is confirmed until manually verified.
+
+---
+
+
+
 ### Added
 
 #### Branded Email Templates — DPC Design System

@@ -14,7 +14,7 @@
     @endif
 
      @php
-        $isBookingPage = request()->routeIs('checkout', 'event-booking', 'booking.payment', 'booking.confirmation', 'booking.select-type');
+        $isBookingPage = request()->routeIs('checkout', 'event-booking', 'booking.payment', 'booking.confirmation', 'booking.select-type', 'bookings.offline-waiting');
         $logo    = dpc_setting('business_logo');
         $footerName    = dpc_setting('business_name', 'Diamonds & Pearls');
         $footerAddress = dpc_setting('business_address', 'P.O. Box 18123, Accra');
@@ -114,7 +114,7 @@
                                 <p class="text-[11px] font-medium text-base-content/50 truncate">{{ Auth::user()->email }}</p>
                             </div>
 
-                            @if(Auth::user()->role?->value === 'admin' || Auth::user()->role?->value === 'super_admin')
+                            @if(Auth::user()->role === \App\Enums\UserRole::Admin || Auth::user()->role === \App\Enums\UserRole::SuperAdmin)
                                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-2 text-[13px] font-semibold text-base-content/70 hover:text-primary hover:bg-primary/5 transition-colors mx-1 rounded-xl">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
@@ -251,10 +251,22 @@
                     <!-- Footer CTA -->
                     <div class="px-4 pb-6 pt-2 border-t border-base-content/8 space-y-2.5">
                         @auth
-                            <a href="{{ route('admin.dashboard') }}"
-                               class="flex items-center justify-center gap-2 w-full bg-base-content text-base-100 font-bold py-3.5 rounded-xl text-[14px] hover:bg-base-content/90 transition-all">
-                                Go to Dashboard
-                            </a>
+                            @if(Auth::user()->role === \App\Enums\UserRole::Admin || Auth::user()->role === \App\Enums\UserRole::SuperAdmin)
+                                <a href="{{ route('admin.dashboard') }}"
+                                   class="flex items-center justify-center gap-2 w-full bg-base-content text-base-100 font-bold py-3.5 rounded-xl text-[14px] hover:bg-base-content/90 transition-all">
+                                    Go to Dashboard
+                                </a>
+                            @else
+                                <a href="{{ route('packages.browse') }}"
+                                   class="flex items-center justify-center gap-2 w-full bg-primary text-white font-bold py-3.5 rounded-xl text-[14px] shadow-sm hover:bg-primary/90 transition-all">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                                    Browse & Book
+                                </a>
+                                <a href="{{ route('dashboard.index') }}"
+                                   class="flex items-center justify-center w-full bg-base-200 text-base-content font-bold py-3.5 rounded-xl hover:bg-base-300 transition-all text-[14px]">
+                                    My Bookings
+                                </a>
+                            @endif
                         @else
                             <a href="{{ route('packages.browse') }}"
                                class="flex items-center justify-center gap-2 w-full bg-primary text-white font-bold py-3.5 rounded-xl text-[14px] shadow-sm hover:bg-primary/90 transition-all">

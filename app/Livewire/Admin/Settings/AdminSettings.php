@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Settings;
 
+use App\Enums\SettingType;
 use App\Jobs\OptimiseImage;
 use App\Models\Setting;
 use App\Traits\HasAdminAuthorization;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Attributes\Computed;
@@ -67,6 +70,15 @@ class AdminSettings extends Component
     /** Which payment gateway is active: 'transflow' or 'moolre' */
     public string $active_payment_gateway = 'transflow';
 
+    /** Whether payment is processed online via gateway or offline/manually */
+    public string $payment_mode = 'online';
+
+    public string $business_momo_network = '';
+
+    public string $business_momo_number = '';
+
+    public string $business_momo_name = '';
+
     /** Which SMS provider is primary: 'gaintsms' or 'mnotify' */
     public string $sms_primary_provider = 'gaintsms';
 
@@ -117,12 +129,16 @@ class AdminSettings extends Component
         $this->social_tiktok = $settings->get('social_tiktok')?->value ?? '';
 
         $this->active_payment_gateway = $settings->get('active_payment_gateway')?->value ?? 'transflow';
+        $this->payment_mode = $settings->get('payment_mode')?->value ?? 'online';
+        $this->business_momo_network = $settings->get('business_momo_network')?->value ?? '';
+        $this->business_momo_number = $settings->get('business_momo_number')?->value ?? '';
+        $this->business_momo_name = $settings->get('business_momo_name')?->value ?? '';
         $this->sms_primary_provider = $settings->get('sms_primary_provider')?->value ?? 'gaintsms';
         $this->email_primary_provider = $settings->get('email_primary_provider')?->value ?? 'smtp';
 
         $this->email_notifications = (bool) ($settings->get('email_enabled')?->value ?? false);
         $this->sms_notifications = (bool) ($settings->get('sms_enabled')?->value ?? false);
-        $this->notification_preference = \Illuminate\Support\Facades\Auth::user()->notification_preference?->value ?? 'email';
+        $this->notification_preference = Auth::user()->notification_preference?->value ?? 'email';
 
         $this->delivery_locations = $settings->get('delivery_locations')?->value ?? [];
         $this->event_lead_days = (int) ($settings->get('event_lead_days')?->value ?? 0);
@@ -146,9 +162,9 @@ class AdminSettings extends Component
             'business_logo' => 'nullable|image|max:2048',
         ]);
 
-        if ($this->business_logo instanceof \Illuminate\Http\UploadedFile) {
+        if ($this->business_logo instanceof UploadedFile) {
             $path = $this->business_logo->store('logos', 'public');
-            $this->updateSetting('business_logo', $path, \App\Enums\SettingType::String, 'business');
+            $this->updateSetting('business_logo', $path, SettingType::String, 'business');
             $this->current_logo_path = $path;
             $this->business_logo = null;
 
@@ -165,11 +181,11 @@ class AdminSettings extends Component
             }
         }
 
-        $this->updateSetting('business_name', $this->business_name, \App\Enums\SettingType::String, 'business');
-        $this->updateSetting('business_address', $this->business_address, \App\Enums\SettingType::String, 'business');
-        $this->updateSetting('business_phone', $this->business_phone, \App\Enums\SettingType::String, 'business');
-        $this->updateSetting('business_whatsapp', $this->business_whatsapp, \App\Enums\SettingType::String, 'business');
-        $this->updateSetting('business_email', $this->business_email, \App\Enums\SettingType::String, 'business');
+        $this->updateSetting('business_name', $this->business_name, SettingType::String, 'business');
+        $this->updateSetting('business_address', $this->business_address, SettingType::String, 'business');
+        $this->updateSetting('business_phone', $this->business_phone, SettingType::String, 'business');
+        $this->updateSetting('business_whatsapp', $this->business_whatsapp, SettingType::String, 'business');
+        $this->updateSetting('business_email', $this->business_email, SettingType::String, 'business');
 
         $this->dispatch('banner', style: 'success', message: 'Business information updated successfully.');
     }
@@ -183,10 +199,10 @@ class AdminSettings extends Component
             'branch_code' => 'nullable|string|max:20',
         ]);
 
-        $this->updateSetting('bank_name', $this->bank_name, \App\Enums\SettingType::String, 'bank');
-        $this->updateSetting('account_name', $this->account_name, \App\Enums\SettingType::String, 'bank');
-        $this->updateSetting('account_number', $this->account_number, \App\Enums\SettingType::String, 'bank');
-        $this->updateSetting('branch_code', $this->branch_code, \App\Enums\SettingType::String, 'bank');
+        $this->updateSetting('bank_name', $this->bank_name, SettingType::String, 'bank');
+        $this->updateSetting('account_name', $this->account_name, SettingType::String, 'bank');
+        $this->updateSetting('account_number', $this->account_number, SettingType::String, 'bank');
+        $this->updateSetting('branch_code', $this->branch_code, SettingType::String, 'bank');
 
         $this->dispatch('banner', style: 'success', message: 'Bank details updated successfully.');
     }
@@ -199,9 +215,9 @@ class AdminSettings extends Component
             'social_tiktok' => 'nullable|url|max:255',
         ]);
 
-        $this->updateSetting('social_facebook', $this->social_facebook, \App\Enums\SettingType::String, 'social');
-        $this->updateSetting('social_instagram', $this->social_instagram, \App\Enums\SettingType::String, 'social');
-        $this->updateSetting('social_tiktok', $this->social_tiktok, \App\Enums\SettingType::String, 'social');
+        $this->updateSetting('social_facebook', $this->social_facebook, SettingType::String, 'social');
+        $this->updateSetting('social_instagram', $this->social_instagram, SettingType::String, 'social');
+        $this->updateSetting('social_tiktok', $this->social_tiktok, SettingType::String, 'social');
 
         $this->dispatch('banner', style: 'success', message: 'Social media links updated.');
     }
@@ -212,9 +228,35 @@ class AdminSettings extends Component
             'active_payment_gateway' => 'required|in:transflow,moolre',
         ]);
 
-        $this->updateSetting('active_payment_gateway', $this->active_payment_gateway, \App\Enums\SettingType::String, 'payment');
+        $this->updateSetting('active_payment_gateway', $this->active_payment_gateway, SettingType::String, 'payment');
 
         $this->dispatch('banner', style: 'success', message: 'Active payment gateway updated.');
+    }
+
+    public function savePaymentMode(): void
+    {
+        $this->validate([
+            'payment_mode' => 'required|in:online,offline',
+        ]);
+
+        $this->updateSetting('payment_mode', $this->payment_mode, SettingType::String, 'payment');
+
+        $this->dispatch('banner', style: 'success', message: 'Payment mode updated.');
+    }
+
+    public function saveBusinessMomoDetails(): void
+    {
+        $this->validate([
+            'business_momo_network' => 'required|string|max:50',
+            'business_momo_number' => ['required', 'regex:/^(?:\+233|0)\d{9}$/'],
+            'business_momo_name' => 'required|string|max:100',
+        ]);
+
+        $this->updateSetting('business_momo_network', $this->business_momo_network, SettingType::String, 'payment');
+        $this->updateSetting('business_momo_number', $this->business_momo_number, SettingType::String, 'payment');
+        $this->updateSetting('business_momo_name', $this->business_momo_name, SettingType::String, 'payment');
+
+        $this->dispatch('banner', style: 'success', message: 'Business MoMo details updated.');
     }
 
     public function saveSmsProvider(): void
@@ -223,7 +265,7 @@ class AdminSettings extends Component
             'sms_primary_provider' => 'required|in:gaintsms,mnotify',
         ]);
 
-        $this->updateSetting('sms_primary_provider', $this->sms_primary_provider, \App\Enums\SettingType::String, 'sms');
+        $this->updateSetting('sms_primary_provider', $this->sms_primary_provider, SettingType::String, 'sms');
 
         $this->dispatch('banner', style: 'success', message: 'Primary SMS provider updated.');
     }
@@ -234,7 +276,7 @@ class AdminSettings extends Component
             'email_primary_provider' => 'required|in:smtp,brevo',
         ]);
 
-        $this->updateSetting('email_primary_provider', $this->email_primary_provider, \App\Enums\SettingType::String, 'email');
+        $this->updateSetting('email_primary_provider', $this->email_primary_provider, SettingType::String, 'email');
 
         $this->dispatch('banner', style: 'success', message: 'Primary email provider updated.');
     }
@@ -312,7 +354,7 @@ class AdminSettings extends Component
 
     private function persistDeliveryLocations(): void
     {
-        $this->updateSetting('delivery_locations', json_encode(array_values($this->delivery_locations)), \App\Enums\SettingType::Json, 'booking');
+        $this->updateSetting('delivery_locations', json_encode(array_values($this->delivery_locations)), SettingType::Json, 'booking');
     }
 
     // ── Event Settings ────────────────────────────────────────────────────────
@@ -325,7 +367,7 @@ class AdminSettings extends Component
             'event_lead_days.max' => 'Maximum lead time is 4 weeks (28 days).',
         ]);
 
-        $this->updateSetting('event_lead_days', $this->event_lead_days, \App\Enums\SettingType::Integer, 'event');
+        $this->updateSetting('event_lead_days', $this->event_lead_days, SettingType::Integer, 'event');
 
         $this->dispatch('banner', style: 'success', message: 'Event booking settings updated.');
     }
@@ -334,13 +376,13 @@ class AdminSettings extends Component
 
     public function updatedEmailNotifications($value): void
     {
-        $this->updateSetting('email_enabled', $value, \App\Enums\SettingType::Boolean, 'notifications');
+        $this->updateSetting('email_enabled', $value, SettingType::Boolean, 'notifications');
         $this->dispatch('banner', style: 'success', message: 'Notification preferences updated.');
     }
 
     public function updatedSmsNotifications($value): void
     {
-        $this->updateSetting('sms_enabled', $value, \App\Enums\SettingType::Boolean, 'notifications');
+        $this->updateSetting('sms_enabled', $value, SettingType::Boolean, 'notifications');
         $this->dispatch('banner', style: 'success', message: 'Notification preferences updated.');
     }
 
@@ -350,7 +392,7 @@ class AdminSettings extends Component
             'notification_preference' => ['required', 'in:email,sms,both'],
         ]);
 
-        \Illuminate\Support\Facades\Auth::user()->update([
+        Auth::user()->update([
             'notification_preference' => $this->notification_preference,
         ]);
 
@@ -411,7 +453,7 @@ class AdminSettings extends Component
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private function updateSetting(string $key, mixed $value, \App\Enums\SettingType $type = \App\Enums\SettingType::String, ?string $group = null): void
+    private function updateSetting(string $key, mixed $value, SettingType $type = SettingType::String, ?string $group = null): void
     {
         Setting::updateOrCreate(
             ['key' => $key],
