@@ -19,7 +19,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Layout('layouts.admin')]
-#[Title('Command Center')]
+#[Title('Dashboard')]
 class Dashboard extends Component
 {
     // ── KPI row ─────────────────────────────────────────────────

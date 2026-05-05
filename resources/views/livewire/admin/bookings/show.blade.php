@@ -85,7 +85,7 @@
 
         <div class="flex flex-wrap items-center justify-end gap-3">
             @if($booking->payment_status?->value === 'paid')
-                <x-ui.button variant="success" class="border" size="sm" href="{!! app(\App\Services\InvoiceService::class)->getDownloadUrl($booking) !!}" target="_blank" title="{{ __('Download Invoice') }}">
+                <x-ui.button variant="success" class="border" size="md" href="{!! app(\App\Services\InvoiceService::class)->getDownloadUrl($booking) !!}" target="_blank" title="{{ __('Download Invoice') }}">
                     <x-slot:icon>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -95,7 +95,7 @@
                 </x-ui.button>
             @endif
 
-             <x-ui.button variant="black" class="border-0" size="sm" href="{{ $booking->booking_type === \App\Enums\BookingType::Event ? route('admin.events.index') : route('admin.bookings.index') }}" wire:navigate title="{{ __('Back') }}">
+             <x-ui.button variant="black" class="border-0" size="md" href="{{ $booking->booking_type === \App\Enums\BookingType::Event ? route('admin.events.index') : route('admin.bookings.index') }}" wire:navigate title="{{ __('Back') }}">
                 <x-slot:icon>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />

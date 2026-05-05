@@ -8,7 +8,7 @@
             <p class="text-[14px] text-base-content/50 mt-1">{{ __('Manage and engage with your catering clientele.') }}</p>
         </div>
 
-        <x-ui.button variant="primary" size="sm" href="{{ route('admin.customers.create') }}" wire:navigate>
+        <x-ui.button variant="primary" size="md" href="{{ route('admin.customers.create') }}" wire:navigate disabled>
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
             {{ __('New Customer') }}
         </x-ui.button>

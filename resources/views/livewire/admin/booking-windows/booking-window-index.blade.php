@@ -5,7 +5,7 @@
             <h1 class="text-[28px] font-semibold text-base-content leading-tight">Booking Windows</h1>
             <p class="text-[14px] text-base-content/50 mt-1">Define weekly delivery schedules and assign them to packages.</p>
         </div>
-        <x-ui.button variant="primary" size="sm" wire:click="openCreateModal" class="shadow-sm">
+        <x-ui.button variant="primary" size="md" wire:click="openCreateModal" class="shadow-sm">
             <x-slot:icon>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />

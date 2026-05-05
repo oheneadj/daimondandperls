@@ -1,6 +1,14 @@
 {
+  "_apex-DccCmaLf.js": {
+    "file": "assets/apex-DccCmaLf.js",
+    "name": "apex"
+  },
+  "_chart-Bcjh2pZL.js": {
+    "file": "assets/chart-Bcjh2pZL.js",
+    "name": "chart"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-CDjdZv4E.css",
+    "file": "assets/app-D-pBO010.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -9,10 +17,14 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-Bphxx3r8.js",
+    "file": "assets/app-eiKIKyW8.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
+    "imports": [
+      "_chart-Bcjh2pZL.js",
+      "_apex-DccCmaLf.js"
+    ],
     "css": [
       "assets/app-GbLOqleP.css"
     ]

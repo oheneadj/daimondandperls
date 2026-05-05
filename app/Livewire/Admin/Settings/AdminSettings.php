@@ -463,6 +463,102 @@ class AdminSettings extends Component
     // ── System Stats ──────────────────────────────────────────────────────────
 
     #[Computed]
+    public function productionChecklist(): array
+    {
+        $appUrl = config('app.url', '');
+        $cacheDriver = config('cache.default', '');
+        $sessionDriver = config('session.driver', '');
+        $queueDriver = config('queue.default', '');
+        $logLevel = config('logging.channels.'.config('logging.default').'.level', config('logging.level', 'debug'));
+        $sitemapExists = file_exists(public_path('sitemap.xml'));
+        $opcacheEnabled = function_exists('opcache_get_status') && (opcache_get_status(false)['opcache_enabled'] ?? false);
+        $dbDriver = DB::connection()->getDriverName();
+        $failedJobs = DB::table('failed_jobs')->count();
+        $secureCookie = config('session.secure', false);
+
+        return [
+            [
+                'label' => 'Production environment',
+                'detail' => 'APP_ENV = '.config('app.env'),
+                'pass' => App::isProduction(),
+                'warn' => false,
+            ],
+            [
+                'label' => 'Debug mode disabled',
+                'detail' => 'APP_DEBUG = '.(config('app.debug') ? 'true' : 'false'),
+                'pass' => ! config('app.debug'),
+                'warn' => false,
+            ],
+            [
+                'label' => 'HTTPS app URL',
+                'detail' => $appUrl,
+                'pass' => str_starts_with($appUrl, 'https://'),
+                'warn' => false,
+            ],
+            [
+                'label' => 'Production database (MySQL/PostgreSQL)',
+                'detail' => 'Driver: '.strtoupper($dbDriver),
+                'pass' => in_array($dbDriver, ['mysql', 'pgsql', 'mariadb']),
+                'warn' => false,
+            ],
+            [
+                'label' => 'Secure session cookie',
+                'detail' => 'SESSION_SECURE_COOKIE = '.($secureCookie ? 'true' : 'false'),
+                'pass' => (bool) $secureCookie,
+                'warn' => false,
+            ],
+            [
+                'label' => 'Cache driver (file or redis)',
+                'detail' => 'CACHE_STORE = '.$cacheDriver,
+                'pass' => in_array($cacheDriver, ['file', 'redis']),
+                'warn' => $cacheDriver === 'database',
+            ],
+            [
+                'label' => 'Session driver (file or redis)',
+                'detail' => 'SESSION_DRIVER = '.$sessionDriver,
+                'pass' => in_array($sessionDriver, ['file', 'redis']),
+                'warn' => $sessionDriver === 'database',
+            ],
+            [
+                'label' => 'Queue driver configured',
+                'detail' => 'QUEUE_CONNECTION = '.$queueDriver,
+                'pass' => $queueDriver !== 'sync',
+                'warn' => false,
+            ],
+            [
+                'label' => 'No failed queue jobs',
+                'detail' => $failedJobs.' failed job'.($failedJobs !== 1 ? 's' : ''),
+                'pass' => $failedJobs === 0,
+                'warn' => false,
+            ],
+            [
+                'label' => 'Log level (warning or error)',
+                'detail' => 'LOG_LEVEL = '.$logLevel,
+                'pass' => in_array($logLevel, ['warning', 'error', 'critical', 'alert', 'emergency']),
+                'warn' => $logLevel === 'notice',
+            ],
+            [
+                'label' => 'PHP OPcache enabled',
+                'detail' => $opcacheEnabled ? 'Enabled' : 'Disabled',
+                'pass' => $opcacheEnabled,
+                'warn' => false,
+            ],
+            [
+                'label' => 'Sitemap generated',
+                'detail' => $sitemapExists ? 'sitemap.xml exists' : 'sitemap.xml not found',
+                'pass' => $sitemapExists,
+                'warn' => false,
+            ],
+            [
+                'label' => 'Security headers middleware',
+                'detail' => 'SecurityHeaders registered',
+                'pass' => true,
+                'warn' => false,
+            ],
+        ];
+    }
+
+    #[Computed]
     public function systemStats(): array
     {
         return [

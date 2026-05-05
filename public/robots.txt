@@ -1,2 +1,11 @@
 User-agent: *
-Disallow:
+Allow: /
+
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /checkout
+Disallow: /booking/
+Disallow: /verify-phone
+Disallow: /customer/
+
+Sitemap: https://diamondsandpearlsgh.com/sitemap.xml

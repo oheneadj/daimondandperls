@@ -9,7 +9,7 @@
     </div>
 
     {{-- Stats Bar --}}
-    <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
         <div class="bg-white border border-base-content/5 rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:border-[#D52518]/30 transition-colors"
             wire:click="$set('activeTab', 'errors')">
             <div class="w-10 h-10 rounded-xl bg-[#D52518]/10 flex items-center justify-center">
@@ -76,24 +76,26 @@
     </div>
 
     {{-- Tabs --}}
-    <div class="flex gap-1 bg-base-200 p-1 rounded-xl w-full sm:w-auto sm:inline-flex">
-        @foreach([
-            ['key' => 'errors', 'label' => 'App Errors'],
-            ['key' => 'payments', 'label' => 'Payments'],
-            ['key' => 'sms', 'label' => 'SMS Logs'],
-            ['key' => 'email', 'label' => 'Email Logs'],
-            ['key' => 'activity', 'label' => 'Activity'],
-            ['key' => 'notifications', 'label' => 'Notifications'],
-        ] as $tab)
-            <button wire:click="$set('activeTab', '{{ $tab['key'] }}')"
-                @class([
-                    'flex-1 sm:flex-none px-4 py-2 rounded-lg text-[13px] font-semibold transition-all whitespace-nowrap',
-                    'bg-white text-base-content shadow-sm' => $activeTab === $tab['key'],
-                    'text-base-content/50 hover:text-base-content' => $activeTab !== $tab['key'],
-                ])>
-                {{ $tab['label'] }}
-            </button>
-        @endforeach
+    <div class="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div class="flex gap-1 bg-base-200 p-1 rounded-xl inline-flex min-w-full sm:min-w-0 w-max sm:w-auto">
+            @foreach([
+                ['key' => 'errors', 'label' => 'App Errors'],
+                ['key' => 'payments', 'label' => 'Payments'],
+                ['key' => 'sms', 'label' => 'SMS Logs'],
+                ['key' => 'email', 'label' => 'Email Logs'],
+                ['key' => 'activity', 'label' => 'Activity'],
+                ['key' => 'notifications', 'label' => 'Notifications'],
+            ] as $tab)
+                <button wire:click="$set('activeTab', '{{ $tab['key'] }}')"
+                    @class([
+                        'px-4 py-2 rounded-lg text-[13px] font-semibold transition-all whitespace-nowrap',
+                        'bg-white text-base-content shadow-sm' => $activeTab === $tab['key'],
+                        'text-base-content/50 hover:text-base-content' => $activeTab !== $tab['key'],
+                    ])>
+                    {{ $tab['label'] }}
+                </button>
+            @endforeach
+        </div>
     </div>
 
     {{-- Payment Errors Tab --}}

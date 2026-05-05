@@ -12,6 +12,16 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'chart': ['chart.js'],
+                    'apex': ['apexcharts'],
+                },
+            },
+        },
+    },
     server: {
         cors: true,
         watch: {

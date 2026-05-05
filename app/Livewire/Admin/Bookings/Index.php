@@ -6,9 +6,13 @@ namespace App\Livewire\Admin\Bookings;
 
 use App\Enums\BookingStatus;
 use App\Enums\BookingType;
+use App\Enums\PaymentGateway;
+use App\Enums\PaymentGatewayStatus;
+use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Traits\HasAdminAuthorization;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -94,7 +98,7 @@ class Index extends Component
             $booking->update([
                 'status' => BookingStatus::Confirmed,
                 'confirmed_at' => now(),
-                'confirmed_by' => \Illuminate\Support\Facades\Auth::id(),
+                'confirmed_by' => Auth::id(),
             ]);
 
             session()->flash('success', "Booking {$booking->reference} has been confirmed.");
@@ -156,17 +160,22 @@ class Index extends Component
                 [
                     'amount' => $booking->total_amount,
                     'currency' => 'GHS',
-                    'status' => \App\Enums\PaymentGatewayStatus::Successful,
-                    'method' => \App\Enums\PaymentMethod::BankTransfer,
-                    'gateway' => \App\Enums\PaymentGateway::Manual,
+                    'status' => PaymentGatewayStatus::Successful,
+                    'method' => PaymentMethod::BankTransfer,
+                    'gateway' => PaymentGateway::Manual,
                     'paid_at' => now(),
-                    'verified_by' => \Illuminate\Support\Facades\Auth::id(),
+                    'verified_by' => Auth::id(),
                     'verified_at' => now(),
                 ]
             );
 
             session()->flash('success', "Payment for {$booking->reference} has been verified.");
         }
+    }
+
+    public function mount(): void
+    {
+        $this->authorizePermission('manage_bookings');
     }
 
     public function render()
@@ -207,8 +216,8 @@ class Index extends Component
         return view('livewire.admin.bookings.index', [
             'bookings' => $bookings,
             'counts' => $counts,
-            'statuses' => \App\Enums\BookingStatus::cases(),
-            'paymentStatuses' => \App\Enums\PaymentStatus::cases(),
+            'statuses' => BookingStatus::cases(),
+            'paymentStatuses' => PaymentStatus::cases(),
         ]);
     }
 }

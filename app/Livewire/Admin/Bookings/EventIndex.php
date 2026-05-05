@@ -114,6 +114,11 @@ class EventIndex extends Component
         }
     }
 
+    public function mount(): void
+    {
+        $this->authorizePermission('manage_events');
+    }
+
     public function render()
     {
         $query = Booking::with(['customer', 'items.package'])

@@ -10,7 +10,7 @@
         </div>
         
         <div class="flex items-center gap-3">
-            <x-ui.button variant="outline" size="sm" @click="reordering = !reordering" x-bind:class="reordering ? '!bg-neutral !text-white' : ''" title="{{ __('Reorder Packages') }}">
+            <x-ui.button variant="outline" size="md" @click="reordering = !reordering" x-bind:class="reordering ? '!bg-neutral !text-white' : ''" title="{{ __('Reorder Packages') }}">
                 <x-slot:icon>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
@@ -19,7 +19,7 @@
                 <span x-text="reordering ? '{{ __('Finalize Order') }}' : '{{ __('Reorder Packages') }}'"></span>
             </x-ui.button>
 
-            <x-ui.button variant="primary" size="sm" href="{{ route('admin.manage-packages.create') }}" wire:navigate>
+            <x-ui.button variant="primary" size="md" href="{{ route('admin.manage-packages.create') }}" wire:navigate>
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>

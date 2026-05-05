@@ -154,7 +154,7 @@
                             <x-ui.input label="Branch Code" wire:model="branch_code" placeholder="Optional" :error="$errors->first('branch_code')" />
                         </div>
                         <div class="flex justify-end pt-2">
-                            <x-ui.button type="submit" variant="secondary" size="sm" wire:loading.attr="disabled">
+                            <x-ui.button type="submit" variant="primary" size="md" wire:loading.attr="disabled">
                                 <span wire:loading.remove wire:target="saveBankDetails">{{ __('Save Details') }}</span>
                                 <span wire:loading wire:target="saveBankDetails">{{ __('Saving...') }}</span>
                             </x-ui.button>
@@ -212,7 +212,7 @@
                             @error($field) <p class="text-xs text-error mt-2">{{ $message }}</p> @enderror
                         @endforeach
                         <div class="flex justify-end pt-4">
-                            <x-ui.button type="submit" variant="secondary" size="sm" wire:loading.attr="disabled">
+                            <x-ui.button type="submit" variant="primary" size="md" wire:loading.attr="disabled">
                                 <span wire:loading.remove wire:target="saveSocialLinks">{{ __('Save Links') }}</span>
                                 <span wire:loading wire:target="saveSocialLinks">{{ __('Saving...') }}</span>
                             </x-ui.button>
@@ -300,7 +300,7 @@
                     </div>
 
                     <div class="flex justify-end mt-4">
-                        <x-ui.button type="button" variant="primary" size="sm" wire:click="savePaymentGateway" wire:loading.attr="disabled">
+                        <x-ui.button type="button" variant="primary" size="md" wire:click="savePaymentGateway" wire:loading.attr="disabled">
                             <span wire:loading.remove wire:target="savePaymentGateway">{{ __('Apply Gateway') }}</span>
                             <span wire:loading wire:target="savePaymentGateway">{{ __('Saving...') }}</span>
                         </x-ui.button>
@@ -380,7 +380,7 @@
                     </div>
 
                     <div class="flex justify-end mt-4">
-                        <x-ui.button type="button" variant="primary" size="sm" wire:click="savePaymentMode" wire:loading.attr="disabled">
+                        <x-ui.button type="button" variant="primary" size="md" wire:click="savePaymentMode" wire:loading.attr="disabled">
                             <span wire:loading.remove wire:target="savePaymentMode">{{ __('Apply Mode') }}</span>
                             <span wire:loading wire:target="savePaymentMode">{{ __('Saving...') }}</span>
                         </x-ui.button>
@@ -417,7 +417,7 @@
                         </div>
                     </div>
                     <div class="flex justify-end mt-4">
-                        <x-ui.button type="button" variant="primary" size="sm" wire:click="saveBusinessMomoDetails" wire:loading.attr="disabled">
+                        <x-ui.button type="button" variant="primary" size="md" wire:click="saveBusinessMomoDetails" wire:loading.attr="disabled">
                             <span wire:loading.remove wire:target="saveBusinessMomoDetails">{{ __('Save MoMo Details') }}</span>
                             <span wire:loading wire:target="saveBusinessMomoDetails">{{ __('Saving...') }}</span>
                         </x-ui.button>
@@ -502,7 +502,7 @@
                     </div>
 
                     <div class="flex justify-end mt-4">
-                        <x-ui.button type="button" variant="primary" size="sm" wire:click="saveSmsProvider" wire:loading.attr="disabled">
+                        <x-ui.button type="button" variant="primary" size="md" wire:click="saveSmsProvider" wire:loading.attr="disabled">
                             <span wire:loading.remove wire:target="saveSmsProvider">{{ __('Apply Provider') }}</span>
                             <span wire:loading wire:target="saveSmsProvider">{{ __('Saving...') }}</span>
                         </x-ui.button>
@@ -552,7 +552,7 @@
                     </div>
 
                     <div class="flex justify-end mt-4">
-                        <x-ui.button type="button" variant="primary" size="sm" wire:click="saveEmailProvider" wire:loading.attr="disabled">
+                        <x-ui.button type="button" variant="primary" size="md" wire:click="saveEmailProvider" wire:loading.attr="disabled">
                             <span wire:loading.remove wire:target="saveEmailProvider">{{ __('Apply Provider') }}</span>
                             <span wire:loading wire:target="saveEmailProvider">{{ __('Saving...') }}</span>
                         </x-ui.button>
@@ -604,7 +604,7 @@
                         <h3 class="text-sm font-bold text-base-content">{{ __('Delivery Locations') }}</h3>
                         <p class="text-xs text-base-content/40 mt-0.5">{{ __('Zones customers choose from when placing a meal order.') }}</p>
                     </div>
-                    <x-ui.button type="button" variant="outline" size="sm" wire:click="openAddLocationModal">
+                    <x-ui.button type="button" variant="outline" size="md" wire:click="openAddLocationModal">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -621,7 +621,7 @@
                             </div>
                             <p class="text-sm font-semibold text-base-content/50">No delivery zones yet</p>
                             <p class="text-xs text-base-content/35 mt-1 max-w-xs">Customers won't be asked to pick a delivery location until you add one.</p>
-                            <x-ui.button type="button" variant="outline" size="sm" class="mt-4" wire:click="openAddLocationModal">
+                            <x-ui.button type="button" variant="outline" size="md" class="mt-4" wire:click="openAddLocationModal">
                                 Add first location
                             </x-ui.button>
                         </div>
@@ -700,7 +700,7 @@
                         </div>
                     </div>
                     <div class="flex justify-end mt-4">
-                        <x-ui.button type="submit" variant="secondary" size="sm" wire:loading.attr="disabled" wire:target="saveEventSettings">
+                        <x-ui.button type="submit" variant="primary" size="md" wire:loading.attr="disabled" wire:target="saveEventSettings">
                             <span wire:loading.remove wire:target="saveEventSettings">{{ __('Save Rules') }}</span>
                             <span wire:loading wire:target="saveEventSettings">{{ __('Saving...') }}</span>
                         </x-ui.button>
@@ -765,7 +765,7 @@
                 </div>
 
                 <div class="flex justify-end">
-                    <x-ui.button type="submit" variant="secondary" size="sm" wire:loading.attr="disabled" wire:target="saveLoyaltySettings">
+                    <x-ui.button type="submit" variant="primary" size="md" wire:loading.attr="disabled" wire:target="saveLoyaltySettings">
                         <span wire:loading.remove wire:target="saveLoyaltySettings">{{ __('Save Loyalty Settings') }}</span>
                         <span wire:loading wire:target="saveLoyaltySettings">{{ __('Saving...') }}</span>
                     </x-ui.button>
@@ -797,7 +797,7 @@
                 </div>
 
                 <div class="flex justify-end">
-                    <x-ui.button type="submit" variant="secondary" size="sm" wire:loading.attr="disabled" wire:target="saveReviewSettings">
+                    <x-ui.button type="submit" variant="primary" size="md" wire:loading.attr="disabled" wire:target="saveReviewSettings">
                         <span wire:loading.remove wire:target="saveReviewSettings">{{ __('Save Review Settings') }}</span>
                         <span wire:loading wire:target="saveReviewSettings">{{ __('Saving...') }}</span>
                     </x-ui.button>
@@ -897,6 +897,55 @@
                 </div>
 
             </div>
+
+            {{-- Production Readiness --}}
+            <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
+                <div class="px-6 py-5 border-b border-base-content/5 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-base-content">{{ __('Production Readiness') }}</h3>
+                        <p class="text-[11px] text-base-content/40 mt-0.5">{{ __('Key configuration checks for a healthy production deployment.') }}</p>
+                    </div>
+                    @php
+                        $passed = collect($this->productionChecklist)->where('pass', true)->count();
+                        $total  = count($this->productionChecklist);
+                    @endphp
+                    <span @class([
+                        'text-[11px] font-black px-3 py-1 rounded-full',
+                        'bg-success/10 text-success' => $passed === $total,
+                        'bg-warning/10 text-warning' => $passed >= ($total * 0.7) && $passed < $total,
+                        'bg-error/10 text-error'     => $passed < ($total * 0.7),
+                    ])>{{ $passed }}/{{ $total }} passed</span>
+                </div>
+                <div class="divide-y divide-base-content/5">
+                    @foreach($this->productionChecklist as $check)
+                        <div class="px-6 py-3.5 flex items-center justify-between gap-4">
+                            <div class="flex items-center gap-3 min-w-0">
+                                @if($check['pass'])
+                                    <span class="shrink-0 w-5 h-5 rounded-full bg-success/10 flex items-center justify-center">
+                                        <svg class="w-3 h-3 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                    </span>
+                                @else
+                                    <span class="shrink-0 w-5 h-5 rounded-full bg-error/10 flex items-center justify-center">
+                                        <svg class="w-3 h-3 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </span>
+                                @endif
+                                <div class="min-w-0">
+                                    <p class="text-[13px] font-semibold text-base-content leading-tight">{{ $check['label'] }}</p>
+                                    <p class="text-[11px] text-base-content/40 font-mono mt-0.5 truncate">{{ $check['detail'] }}</p>
+                                </div>
+                            </div>
+                            @if($check['pass'])
+                                <span class="shrink-0 text-[10px] font-black uppercase tracking-widest text-success">Pass</span>
+                            @elseif($check['warn'])
+                                <span class="shrink-0 text-[10px] font-black uppercase tracking-widest text-warning">Warn</span>
+                            @else
+                                <span class="shrink-0 text-[10px] font-black uppercase tracking-widest text-error">Fail</span>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
         </div>
     @endif
 

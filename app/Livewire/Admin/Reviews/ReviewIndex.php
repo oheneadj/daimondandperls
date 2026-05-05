@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Admin\Reviews;
 
 use App\Models\Review;
+use App\Traits\HasAdminAuthorization;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -14,6 +15,7 @@ use Livewire\WithPagination;
 #[Title('Reviews')]
 class ReviewIndex extends Component
 {
+    use HasAdminAuthorization;
     use WithPagination;
 
     public ?int $filterStars = null;
@@ -23,6 +25,11 @@ class ReviewIndex extends Component
     public ?Review $selectedReview = null;
 
     public bool $showViewModal = false;
+
+    public function mount(): void
+    {
+        $this->authorizePermission('manage_bookings');
+    }
 
     public function updatedFilterStars(): void
     {

@@ -2,6 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserRole;
+use App\Models\Permission;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class RolesAndPermissionsSeeder extends Seeder
@@ -16,8 +20,8 @@ class RolesAndPermissionsSeeder extends Seeder
             // Operations
             'manage_bookings' => ['name' => 'Manage Bookings',   'description' => 'View, confirm, update, and cancel meal and event bookings'],
             'manage_events' => ['name' => 'Manage Events',     'description' => 'View and manage event inquiry bookings'],
-            'manage_packages' => ['name' => 'Manage Packages',   'description' => 'Create, edit, and delete catering packages'],
-            'manage_categories' => ['name' => 'Manage Categories', 'description' => 'Create and manage package categories and delivery windows'],
+            'manage_packages' => ['name' => 'Manage Packages',   'description' => 'Create, edit, and delete catering packages and booking windows'],
+            'manage_categories' => ['name' => 'Manage Categories', 'description' => 'Create and manage package categories (collections)'],
             'manage_customers' => ['name' => 'Manage Customers',  'description' => 'View and edit customer profiles and history'],
             // Finance
             'manage_payments' => ['name' => 'Manage Payments',   'description' => 'View and process payments, verify transactions'],
@@ -33,7 +37,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ];
 
         foreach ($permissions as $slug => $data) {
-            \App\Models\Permission::updateOrCreate(
+            Permission::updateOrCreate(
                 ['slug' => $slug],
                 [
                     'name' => $data['name'],
@@ -66,7 +70,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ];
 
         foreach ($roles as $slug => $data) {
-            $role = \App\Models\Role::updateOrCreate(
+            $role = Role::updateOrCreate(
                 ['slug' => $slug],
                 [
                     'name' => $data['name'],
@@ -74,14 +78,14 @@ class RolesAndPermissionsSeeder extends Seeder
                 ]
             );
 
-            $permissionIds = \App\Models\Permission::whereIn('slug', $data['permissions'])->pluck('id');
+            $permissionIds = Permission::whereIn('slug', $data['permissions'])->pluck('id');
             $role->permissions()->sync($permissionIds);
         }
 
         // Assign Super Admin role to the seeded super_admin user
-        $superAdminUser = \App\Models\User::where('role', \App\Enums\UserRole::SuperAdmin)->first();
+        $superAdminUser = User::where('role', UserRole::SuperAdmin)->first();
         if ($superAdminUser) {
-            $superAdminRole = \App\Models\Role::where('slug', 'super_admin')->first();
+            $superAdminRole = Role::where('slug', 'super_admin')->first();
             if ($superAdminRole) {
                 $superAdminUser->roles()->syncWithoutDetaching([$superAdminRole->id]);
             }

@@ -4,12 +4,14 @@
             <h1 class="text-2xl font-bold text-base-content">User Management</h1>
             <p class="text-sm text-base-content/60">Manage administrative users and their roles.</p>
         </div>
-        <a href="{{ route('admin.users.create') }}" class="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-hover transition-all shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-            </svg>
-            Invite User
-        </a>
+        <x-ui.button variant="primary" size="md" href="{{ route('admin.users.create') }}" wire:navigate>
+            <x-slot:icon>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+            </x-slot:icon>
+            {{ __('Invite User') }}
+        </x-ui.button>
     </div>
 
     <x-ui.table 

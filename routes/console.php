@@ -13,3 +13,6 @@ Schedule::command('booking:cleanup-abandoned')->hourly();
 
 // Purge stale log entries older than 7 days (runs at 2am daily)
 Schedule::command('logs:purge')->dailyAt('02:00');
+
+// Regenerate sitemap with current categories and pages
+Schedule::command('sitemap:generate')->daily();
