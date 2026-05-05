@@ -147,8 +147,42 @@
             </div>
 
             {{-- Order summary: right sidebar on desktop, above form on mobile --}}
-            <div class="order-first lg:order-none lg:col-span-5">
-                <x-booking.order-summary :cartItems="$cartItems" :cartTotal="$cartTotal" :isEvent="false" :hideOnMobile="false" />
+            <div class="order-first lg:order-none lg:col-span-5 space-y-4">
+                <x-booking.order-summary :cartItems="$cartItems" :cartTotal="$cartTotal" :pointsDiscount="$pointsDiscount" :isEvent="false" :hideOnMobile="false" />
+
+                {{-- Loyalty redemption panel --}}
+                @if(!empty($loyaltyData) && $loyaltyData['max_discount_ghc'] > 0)
+                    <div class="bg-base-100 border border-primary/20 rounded-2xl p-5 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="size-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-primary" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.006z" clip-rule="evenodd"/></svg>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-[13px] font-bold text-base-content">Your Loyalty Points</p>
+                                <p class="text-[11px] text-base-content/50">{{ number_format($loyaltyData['balance']) }} pts · ≈ GH₵{{ number_format($loyaltyData['balance_ghc'], 2) }}</p>
+                            </div>
+                        </div>
+
+                        @if($usePoints)
+                            <div class="flex items-center justify-between bg-success/8 border border-success/20 rounded-xl px-4 py-3 mb-3">
+                                <div>
+                                    <p class="text-[13px] font-bold text-success">GH₵{{ number_format($pointsDiscount, 2) }} discount applied</p>
+                                    <p class="text-[11px] text-base-content/50">{{ number_format($pointsToRedeem) }} pts will be deducted</p>
+                                </div>
+                                <button wire:click="removePoints" class="text-[11px] font-bold text-base-content/40 hover:text-error transition-colors">Remove</button>
+                            </div>
+                        @else
+                            <div class="bg-base-200/60 rounded-xl px-4 py-3 mb-3">
+                                <p class="text-[12px] text-base-content/60">
+                                    Apply up to <span class="font-bold text-primary">GH₵{{ number_format($loyaltyData['max_discount_ghc'], 2) }}</span> discount on this order
+                                </p>
+                            </div>
+                            <button wire:click="applyPoints" class="w-full flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/15 text-primary font-bold text-[13px] py-2.5 rounded-xl transition-colors">
+                                Apply GH₵{{ number_format($loyaltyData['max_discount_ghc'], 2) }} Discount
+                            </button>
+                        @endif
+                    </div>
+                @endif
             </div>
 
         </div>

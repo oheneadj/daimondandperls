@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Package>
+ * @extends Factory<Package>
  */
 class PackageFactory extends Factory
 {
@@ -30,7 +30,6 @@ class PackageFactory extends Factory
         ];
 
         return [
-            'category_id' => \App\Models\Category::factory(),
             'name' => Str::title($name),
             'slug' => Str::slug($name),
             'description' => $this->faker->paragraph(2),

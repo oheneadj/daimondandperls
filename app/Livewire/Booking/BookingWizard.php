@@ -9,8 +9,11 @@ use App\Enums\BookingType;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Services\CartService;
+use App\Services\LoyaltyService;
 use App\Traits\HandlesBookingCheckout;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -24,8 +27,13 @@ class BookingWizard extends Component
 {
     use HandlesBookingCheckout;
 
-    // Delivery location
     public ?string $deliveryLocation = null;
+
+    public bool $usePoints = false;
+
+    public int $pointsToRedeem = 0;
+
+    public float $pointsDiscount = 0.0;
 
     public function mount(): void
     {
@@ -40,6 +48,54 @@ class BookingWizard extends Component
         }
 
         $this->prefillFromAuth();
+    }
+
+    /**
+     * @return array{balance: int, balance_ghc: float, max_discount_ghc: float, max_points: int}|null
+     */
+    #[Computed]
+    public function loyaltyData(CartService $cart): ?array
+    {
+        $loyalty = app(LoyaltyService::class);
+
+        if (! $loyalty->isEnabled() || ! Auth::check()) {
+            return null;
+        }
+
+        $customer = Auth::user()->customer;
+
+        if (! $customer || $customer->loyalty_points <= 0) {
+            return null;
+        }
+
+        return $loyalty->getRedeemablePoints($customer, $cart->getTotal());
+    }
+
+    public function applyPoints(CartService $cart): void
+    {
+        if (! Auth::check()) {
+            return;
+        }
+
+        $customer = Auth::user()->customer;
+
+        if (! $customer) {
+            return;
+        }
+
+        $loyalty = app(LoyaltyService::class);
+        $data = $loyalty->getRedeemablePoints($customer, $cart->getTotal());
+
+        $this->pointsToRedeem = $data['max_points'];
+        $this->pointsDiscount = $data['max_discount_ghc'];
+        $this->usePoints = true;
+    }
+
+    public function removePoints(): void
+    {
+        $this->usePoints = false;
+        $this->pointsToRedeem = 0;
+        $this->pointsDiscount = 0.0;
     }
 
     #[Computed]
@@ -81,10 +137,12 @@ class BookingWizard extends Component
         $this->validateDeliveryLocation();
         $this->validateContactInfo();
 
-        $booking = DB::transaction(function () use ($cart): Booking {
+        $discount = $this->usePoints ? (float) $this->pointsDiscount : 0.0;
+
+        $booking = DB::transaction(function () use ($cart, $discount): Booking {
             $customer = $this->resolveCustomer();
             $reference = $this->generateReference();
-            $totalAmount = $cart->getTotal();
+            $totalAmount = max(0, $cart->getTotal() - $discount);
 
             $existing = $this->findDuplicateBooking($customer->id, $totalAmount);
             if ($existing) {
@@ -96,6 +154,7 @@ class BookingWizard extends Component
                 'booking_type' => BookingType::Meal,
                 'customer_id' => $customer->id,
                 'total_amount' => $totalAmount,
+                'discount_amount' => $discount,
                 'status' => BookingStatus::Pending,
                 'payment_status' => PaymentStatus::Unpaid,
                 'delivery_location' => $this->deliveryLocation,
@@ -106,6 +165,19 @@ class BookingWizard extends Component
 
             return $booking;
         });
+
+        if ($discount > 0) {
+            try {
+                app(LoyaltyService::class)->confirmRedemption($booking);
+            } catch (\Throwable $e) {
+                Log::error('LoyaltyService: redemption failed', [
+                    'booking' => $booking->reference,
+                    'exception' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        $this->saveWizardState();
 
         return redirect()->route('booking.payment', ['booking' => $booking->reference]);
     }
@@ -124,12 +196,18 @@ class BookingWizard extends Component
     {
         return [
             'deliveryLocation' => $this->deliveryLocation,
+            'usePoints' => $this->usePoints,
+            'pointsToRedeem' => $this->pointsToRedeem,
+            'pointsDiscount' => $this->pointsDiscount,
         ];
     }
 
     protected function restoreWizardSpecificState(array $state): void
     {
         $this->deliveryLocation = $state['deliveryLocation'] ?? null;
+        $this->usePoints = $state['usePoints'] ?? false;
+        $this->pointsToRedeem = $state['pointsToRedeem'] ?? 0;
+        $this->pointsDiscount = $state['pointsDiscount'] ?? 0.0;
     }
 
     #[Title('Checkout')]
@@ -145,6 +223,7 @@ class BookingWizard extends Component
             'cartItems' => $cart->getCart(),
             'cartTotal' => $cart->getTotal(),
             'deliveryLocations' => $deliveryLocations,
+            'loyaltyData' => $this->loyaltyData($cart),
         ]);
     }
 

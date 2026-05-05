@@ -69,7 +69,6 @@
             <x-ui.table.th sortable wire:click="sortBy('name')" :direction="$sortField === 'name' ? $sortDirection : null">{{ __('Name') }}</x-ui.table.th>
             <x-ui.table.th sortable wire:click="sortBy('slug')" :direction="$sortField === 'slug' ? $sortDirection : null">{{ __('Slug') }}</x-ui.table.th>
             <x-ui.table.th sortable align="center" wire:click="sortBy('packages_count')" :direction="$sortField === 'packages_count' ? $sortDirection : null">{{ __('Packages') }}</x-ui.table.th>
-            <x-ui.table.th>{{ __('Booking Window') }}</x-ui.table.th>
             <x-ui.table.th sortable wire:click="sortBy('created_at')" :direction="$sortField === 'created_at' ? $sortDirection : null">{{ __('Added On') }}</x-ui.table.th>
             <x-ui.table.th align="right">{{ __('Actions') }}</x-ui.table.th>
         </x-slot>
@@ -91,20 +90,6 @@
                 </x-ui.table.td>
 
                 <x-ui.table.td>
-                    @if($category->booking_window_enabled && $category->delivery_day && $category->cutoff_day && $category->cutoff_time)
-                        <div class="flex flex-col gap-0.5">
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[11px] font-bold w-fit">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                {{ \App\Services\BookingWindowService::DAY_LABELS[$category->delivery_day] }}
-                            </span>
-                            <span class="text-[11px] text-base-content/40">cutoff {{ \App\Services\BookingWindowService::DAY_LABELS[$category->cutoff_day] }} {{ substr($category->cutoff_time, 0, 5) }}</span>
-                        </div>
-                    @else
-                        <span class="text-[12px] text-base-content/30 font-medium">—</span>
-                    @endif
-                </x-ui.table.td>
-
-                <x-ui.table.td>
                     <span class="text-[13px] text-base-content/60">{{ $category->created_at->format('M j, Y') }}</span>
                 </x-ui.table.td>
                 
@@ -122,7 +107,7 @@
                 </x-ui.table.td>
             </x-ui.table.row>
         @empty
-            <x-ui.table.empty colspan="6" />
+            <x-ui.table.empty colspan="5" />
         @endforelse
 
         <x-slot name="pagination">
@@ -144,61 +129,6 @@
                 <x-ui.input label="Collection Name" wire:model="name" placeholder="E.g. Breakfast, Wedding Packages..." required />
                 <p class="text-[11px] text-base-content/40 mt-1.5">{{ __('The name helps users find what they want easily.') }}</p>
                 @error('name') <span class="text-error text-[11px] font-bold mt-1 block">{{ $message }}</span> @enderror
-            </div>
-
-            {{-- Booking Window --}}
-            <div class="border border-base-content/10 rounded-xl p-5 space-y-5" x-data="{ open: $wire.entangle('booking_window_enabled') }">
-                <label class="flex items-start gap-3 cursor-pointer select-none">
-                    <div class="pt-0.5">
-                        <input type="checkbox" wire:model.live="booking_window_enabled" class="checkbox checkbox-primary checkbox-sm" />
-                    </div>
-                    <div>
-                        <p class="text-[13px] font-semibold text-base-content">Enable Booking Window</p>
-                        <p class="text-[11px] text-base-content/50 mt-0.5">Restrict orders to before a weekly cutoff. After the cutoff, orders are scheduled for the following week's delivery.</p>
-                    </div>
-                </label>
-
-                <div x-show="open" x-collapse class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="text-[12px] font-semibold text-base-content/70 block mb-1.5">Delivery Day</label>
-                            <select wire:model="delivery_day" class="select select-sm w-full border border-base-content/15 rounded-lg bg-base-100">
-                                <option value="">Select day…</option>
-                                @foreach(\App\Services\BookingWindowService::DAY_LABELS as $iso => $label)
-                                    <option value="{{ $iso }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
-                            @error('delivery_day') <span class="text-error text-[11px] font-bold mt-1 block">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div>
-                            <label class="text-[12px] font-semibold text-base-content/70 block mb-1.5">Order Cutoff Day</label>
-                            <select wire:model="cutoff_day" class="select select-sm w-full border border-base-content/15 rounded-lg bg-base-100">
-                                <option value="">Select day…</option>
-                                @foreach(\App\Services\BookingWindowService::DAY_LABELS as $iso => $label)
-                                    <option value="{{ $iso }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
-                            @error('cutoff_day') <span class="text-error text-[11px] font-bold mt-1 block">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="text-[12px] font-semibold text-base-content/70 block mb-1.5">Cutoff Time</label>
-                        <input type="time" wire:model="cutoff_time" class="input input-sm w-full border border-base-content/15 rounded-lg bg-base-100" />
-                        @error('cutoff_time') <span class="text-error text-[11px] font-bold mt-1 block">{{ $message }}</span> @enderror
-                    </div>
-
-                    @if($delivery_day && $cutoff_day && $cutoff_time)
-                        <div class="bg-primary/5 border border-primary/15 rounded-lg px-4 py-3">
-                            <p class="text-[12px] text-primary font-medium">
-                                Customers can order until
-                                <strong>{{ \App\Services\BookingWindowService::DAY_LABELS[$cutoff_day] ?? '?' }} at {{ $cutoff_time }}</strong>
-                                for <strong>{{ \App\Services\BookingWindowService::DAY_LABELS[$delivery_day] ?? '?' }}</strong> delivery.
-                            </p>
-                        </div>
-                    @endif
-                </div>
             </div>
 
             <x-slot name="footer">

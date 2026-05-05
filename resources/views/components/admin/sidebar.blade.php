@@ -13,6 +13,7 @@
             ['label' => 'Bookings', 'route' => 'admin.bookings.index', 'icon' => 'clipboard-document-list', 'badge' => auth()->user()->unreadBookingsCount() ?? 0, 'pattern' => 'admin.bookings.*', 'permission' => 'manage_bookings'],
             ['label' => 'Events', 'route' => 'admin.events.index', 'icon' => 'table-cells', 'pattern' => 'admin.events.*', 'permission' => 'manage_events'],
             ['label' => 'Packages', 'route' => 'admin.manage-packages.index', 'icon' => 'cake', 'pattern' => 'admin.manage-packages.*', 'permission' => 'manage_packages'],
+            ['label' => 'Booking Windows', 'route' => 'admin.booking-windows.index', 'icon' => 'calendar', 'pattern' => 'admin.booking-windows.*', 'permission' => 'manage_packages'],
             ['label' => 'Collections', 'route' => 'admin.categories.index', 'icon' => 'tag', 'pattern' => 'admin.categories.*', 'permission' => 'manage_categories'],
             ['label' => 'Payments', 'route' => 'admin.payments.index', 'icon' => 'credit-card', 'badge' => auth()->user()->pendingPaymentsCount() ?? 0, 'pattern' => 'admin.payments.*', 'permission' => 'manage_payments'],
             ['label' => 'Customers', 'route' => 'admin.customers.index', 'icon' => 'user-group', 'pattern' => 'admin.customers.*', 'permission' => 'manage_customers'],
@@ -23,6 +24,7 @@
             ['label' => 'Roles & Perms', 'route' => 'admin.roles.index', 'icon' => 'shield-check', 'pattern' => 'admin.roles.*', 'permission' => 'manage_roles'],
         ],
         'SYSTEM' => [
+            ['label' => 'Reviews', 'route' => 'admin.reviews.index', 'icon' => 'star', 'pattern' => 'admin.reviews.*', 'permission' => 'manage_bookings'],
             ['label' => 'Reports', 'route' => 'admin.reports.index', 'icon' => 'chart-bar-square', 'pattern' => 'admin.reports.*', 'permission' => 'manage_reports'],
             ['label' => 'System Logs', 'route' => 'admin.error-logs.index', 'icon' => 'exclamation-triangle-solid', 'pattern' => 'admin.error-logs.*', 'permission' => 'view_error_logs'],
             ['label' => 'Settings', 'route' => 'admin.settings.index', 'icon' => 'cog-6-tooth', 'pattern' => 'admin.settings.*', 'permission' => 'manage_settings'],

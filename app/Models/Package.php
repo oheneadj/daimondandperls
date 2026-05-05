@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\PackageFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Package extends Model
 {
-    /** @use HasFactory<\Database\Factories\PackageFactory> */
+    /** @use HasFactory<PackageFactory> */
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'category_id',
         'name',
         'slug',
         'description',
@@ -27,7 +28,6 @@ class Package extends Model
         'min_guests',
         'features',
         'is_popular',
-        'window_exempt',
     ];
 
     protected function casts(): array
@@ -39,7 +39,6 @@ class Package extends Model
             'min_guests' => 'integer',
             'features' => 'array',
             'is_popular' => 'boolean',
-            'window_exempt' => 'boolean',
         ];
     }
 
@@ -48,9 +47,14 @@ class Package extends Model
         return $this->hasMany(BookingItem::class);
     }
 
-    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function categories(): BelongsToMany
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsToMany(Category::class);
+    }
+
+    public function bookingWindows(): BelongsToMany
+    {
+        return $this->belongsToMany(BookingWindow::class);
     }
 
     public function scopeActive($query)

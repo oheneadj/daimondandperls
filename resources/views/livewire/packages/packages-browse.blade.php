@@ -142,14 +142,19 @@
         </div>
     </div>
 
-    {{-- Booking Window Banner (shown when filtered to a windowed category) --}}
-    @if($activeCategory && isset($windowStatuses[$activeCategory->id]) && $windowStatuses[$activeCategory->id]['enabled'])
-        @php $ws = $windowStatuses[$activeCategory->id]; @endphp
+    {{-- Booking Window Banner (shown when a package in filtered view has an active window) --}}
+    @php
+        $bannerWindow = $activeCategory
+            ? collect($activeWindows)->first(fn($w) => $w !== null)
+            : null;
+        $bannerWs = $bannerWindow ? app(\App\Services\BookingWindowService::class)->getStatus($bannerWindow) : null;
+    @endphp
+    @if($bannerWs)
         <div class="border-b border-base-content/5">
             <div class="container mx-auto px-4 lg:px-8 py-3">
-                @if($ws['open'])
+                @if($bannerWs['open'])
                     <div class="flex flex-wrap items-center gap-3 text-[12px]" x-data="{
-                                            deadline: {{ $ws['cutoff']->timestamp * 1000 }},
+                                            deadline: {{ $bannerWs['cutoff']->timestamp * 1000 }},
                                             label: '',
                                             tick() {
                                                 const diff = this.deadline - Date.now();
@@ -163,11 +168,11 @@
                         <span
                             class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/10 text-success font-bold">
                             <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
-                            Delivering {{ $ws['deliveryDayLabel'] }}
+                            Delivering {{ $bannerWs['deliveryDayLabel'] }}
                         </span>
                         <span class="text-base-content/50">Book before <strong
-                                class="text-base-content">{{ $ws['cutoffLabel'] }},
-                                {{ substr($ws['cutoff']->format('H:i'), 0, 5) }}</strong> to make this delivery</span>
+                                class="text-base-content">{{ $bannerWs['cutoffLabel'] }},
+                                {{ substr($bannerWs['cutoff']->format('H:i'), 0, 5) }}</strong> to make this delivery</span>
                         <span class="text-warning font-bold" x-text="label"></span>
                     </div>
                 @else
@@ -178,7 +183,7 @@
                             Cutoff passed
                         </span>
                         <span class="text-base-content/50">Orders placed now will be delivered on <strong
-                                class="text-base-content">{{ $ws['scheduledDelivery']->format('D, M j') }}</strong></span>
+                                class="text-base-content">{{ $bannerWs['scheduledDelivery']->format('D, M j') }}</strong></span>
                     </div>
                 @endif
             </div>
@@ -211,24 +216,23 @@
                 @foreach($packages as $package)
                     @php
                         $inCart = $cartItems->has($package->id);
-                        $pkgWs = $package->category_id ? ($windowStatuses[$package->category_id] ?? null) : null;
-                    @endphp
-                    @php
+                        $aw = $activeWindows[$package->id] ?? null;
                         $wi = null;
-                        if ($pkgWs && $pkgWs['enabled'] && !$package->window_exempt) {
+                        if ($aw) {
+                            $aws = app(\App\Services\BookingWindowService::class)->getStatus($aw);
                             $wi = [
-                                'open' => $pkgWs['open'],
-                                'cutoffTs' => $pkgWs['cutoff']->timestamp * 1000,
-                                'cutoffLabel' => $pkgWs['cutoffLabel'],
-                                'cutoffTime' => substr($pkgWs['cutoff']->format('H:i'), 0, 5),
-                                'deliveryLabel' => $pkgWs['deliveryDayLabel'],
-                                'deliveryDate' => $pkgWs['scheduledDelivery']->format('D, M j'),
+                                'open' => $aws['open'],
+                                'cutoffTs' => $aws['cutoff']->timestamp * 1000,
+                                'cutoffLabel' => $aws['cutoffLabel'],
+                                'cutoffTime' => substr($aws['cutoff']->format('H:i'), 0, 5),
+                                'deliveryLabel' => $aws['deliveryDayLabel'],
+                                'deliveryDate' => $aws['scheduledDelivery']->format('D, M j'),
                             ];
                         }
                     @endphp
                     <div x-data="{ pkg: @js($package), wi: @js($wi) }"
                         @click="openDetails(pkg, {{ $inCart ? 'true' : 'false' }}, wi)">
-                        <x-package-card :package="$package" :selected="$inCart" :windowStatus="$pkgWs" />
+                        <x-package-card :package="$package" :selected="$inCart" :activeWindow="$aw" />
                     </div>
                 @endforeach
             </div>

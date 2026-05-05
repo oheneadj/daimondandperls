@@ -112,7 +112,7 @@
             <th x-show="reordering" class="w-12"></th>
             <x-ui.table.th>{{ __('Image') }}</x-ui.table.th>
             <x-ui.table.th sortable="name" :direction="$sortField === 'name' ? $sortDirection : null">{{ __('Package Details') }}</x-ui.table.th>
-            <x-ui.table.th sortable="category_id" :direction="$sortField === 'category_id' ? $sortDirection : null">{{ __('Collection') }}</x-ui.table.th>
+            <x-ui.table.th>{{ __('Collection') }}</x-ui.table.th>
             <x-ui.table.th sortable="price" :direction="$sortField === 'price' ? $sortDirection : null">{{ __('Price') }}</x-ui.table.th>
             <x-ui.table.th sortable="is_active" :direction="$sortField === 'is_active' ? $sortDirection : null" align="center">{{ __('Status') }}</x-ui.table.th>
             <x-ui.table.th align="right">{{ __('Actions') }}</x-ui.table.th>
@@ -155,8 +155,8 @@
                     </x-ui.table.td>
                     
                     <x-ui.table.td>
-                        @if($package->category)
-                            <span class="text-[11px] text-base-content/40 uppercase tracking-widest font-bold">{{ $package->category->name }}</span>
+                        @if($package->categories->isNotEmpty())
+                            <span class="text-[11px] text-base-content/40 uppercase tracking-widest font-bold">{{ $package->categories->pluck('name')->join(', ') }}</span>
                         @else
                             <span class="text-[11px] text-base-content/30">{{ __('Uncategorized') }}</span>
                         @endif

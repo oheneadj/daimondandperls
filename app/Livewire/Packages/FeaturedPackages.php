@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire\Packages;
 
-use App\Models\Category;
 use App\Models\Package;
 use App\Services\BookingWindowService;
 use App\Services\CartService;
@@ -27,19 +26,19 @@ class FeaturedPackages extends Component
     public function render(CartService $cart, BookingWindowService $windowService): View
     {
         $packages = Package::query()
-            ->with('category')
+            ->with(['categories', 'bookingWindows'])
             ->where('is_active', true)
             ->ordered()
             ->take(3)
             ->get();
 
-        $categoryIds = $packages->pluck('category_id')->filter()->unique();
-        $categories = Category::whereIn('id', $categoryIds)->get();
-        $windowStatuses = $categories->keyBy('id')->map(fn (Category $category) => $windowService->getStatus($category));
+        $activeWindows = $packages->keyBy('id')->map(
+            fn (Package $p) => $windowService->getActiveWindow($p)
+        );
 
         return view('livewire.packages.featured-packages', [
             'packages' => $packages,
-            'windowStatuses' => $windowStatuses,
+            'activeWindows' => $activeWindows,
             'cartItems' => $cart->getCart(),
         ]);
     }

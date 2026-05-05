@@ -6,13 +6,23 @@ namespace App\Livewire\Admin\Bookings;
 
 use App\Enums\BookingStatus;
 use App\Enums\BookingType;
+use App\Enums\PaymentGateway;
+use App\Enums\PaymentGatewayStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Models\Booking;
+use App\Models\Review;
 use App\Notifications\BookingCompletedNotification;
 use App\Notifications\BookingConfirmedNotification;
 use App\Notifications\QuoteUpdatedNotification;
+use App\Notifications\ReviewRequestNotification;
+use App\Services\InvoiceService;
+use App\Services\LoyaltyService;
 use App\Traits\HasAdminAuthorization;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -106,13 +116,13 @@ class Show extends Component
     public function getCanBeVerifiedProperty(): bool
     {
         return $this->booking->status === BookingStatus::Confirmed
-            && $this->booking->payment_status !== \App\Enums\PaymentStatus::Paid;
+            && $this->booking->payment_status !== PaymentStatus::Paid;
     }
 
     public function getCanBePreparedProperty(): bool
     {
         return $this->booking->status === BookingStatus::Confirmed
-            && $this->booking->payment_status === \App\Enums\PaymentStatus::Paid;
+            && $this->booking->payment_status === PaymentStatus::Paid;
     }
 
     public function getCanBeDispatchedProperty(): bool
@@ -181,6 +191,36 @@ class Show extends Component
                 $this->booking->customer->notify(new BookingCompletedNotification($this->booking));
             }
 
+            try {
+                app(LoyaltyService::class)->creditForBooking($this->booking);
+            } catch (\Throwable $e) {
+                Log::error('LoyaltyService: creditForBooking failed', [
+                    'booking' => $this->booking->reference,
+                    'exception' => $e->getMessage(),
+                ]);
+            }
+
+            try {
+                if (dpc_setting('review_enabled', true)) {
+                    $review = Review::create([
+                        'booking_id' => $this->booking->id,
+                        'customer_id' => $this->booking->customer?->id,
+                        'token' => Str::random(60),
+                    ]);
+
+                    if ($this->booking->customer) {
+                        $this->booking->customer->notify(
+                            new ReviewRequestNotification($review)
+                        );
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::error('ReviewRequestNotification failed', [
+                    'booking' => $this->booking->reference,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
             $this->booking->refresh();
 
             $this->dispatch('banner', ['style' => 'success', 'message' => 'Booking completed successfully.']);
@@ -242,7 +282,7 @@ class Show extends Component
     {
         return $this->booking->booking_type === BookingType::Event
             && in_array($this->booking->status, [BookingStatus::Pending, BookingStatus::Confirmed])
-            && $this->booking->payment_status !== \App\Enums\PaymentStatus::Paid;
+            && $this->booking->payment_status !== PaymentStatus::Paid;
     }
 
     public function openQuoteModal(): void
@@ -286,7 +326,7 @@ class Show extends Component
     {
         return $this->booking->booking_type === BookingType::Event
             && in_array($this->booking->status, [BookingStatus::Pending, BookingStatus::Confirmed])
-            && $this->booking->payment_status !== \App\Enums\PaymentStatus::Paid;
+            && $this->booking->payment_status !== PaymentStatus::Paid;
     }
 
     public function openEventEditModal(): void
@@ -360,7 +400,7 @@ class Show extends Component
     {
         if ($this->canBeVerified) {
             $this->booking->update([
-                'payment_status' => \App\Enums\PaymentStatus::Paid,
+                'payment_status' => PaymentStatus::Paid,
             ]);
 
             // Create or update payment record
@@ -369,9 +409,9 @@ class Show extends Component
                 [
                     'amount' => $this->booking->total_amount,
                     'currency' => 'GHS',
-                    'status' => \App\Enums\PaymentGatewayStatus::Successful,
-                    'method' => \App\Enums\PaymentMethod::BankTransfer, // Default for manual
-                    'gateway' => \App\Enums\PaymentGateway::Manual,
+                    'status' => PaymentGatewayStatus::Successful,
+                    'method' => PaymentMethod::BankTransfer, // Default for manual
+                    'gateway' => PaymentGateway::Manual,
                     'paid_at' => now(),
                     'verified_by' => Auth::id(),
                     'verified_at' => now(),
@@ -385,7 +425,7 @@ class Show extends Component
             if ($this->booking->customer) {
                 $this->booking->customer->notify(new BookingConfirmedNotification(
                     $this->booking,
-                    app(\App\Services\InvoiceService::class)->getDownloadUrl($this->booking)
+                    app(InvoiceService::class)->getDownloadUrl($this->booking)
                 ));
             }
 

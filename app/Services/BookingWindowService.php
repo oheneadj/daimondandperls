@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\Category;
+use App\Models\BookingWindow;
 use App\Models\Package;
 use Carbon\Carbon;
 
@@ -26,7 +26,7 @@ class BookingWindowService
     ];
 
     /**
-     * Returns the full window status for a category.
+     * Returns the full window status for a BookingWindow.
      *
      * @return array{
      *     enabled: bool,
@@ -38,22 +38,10 @@ class BookingWindowService
      *     cutoffLabel: string|null,
      * }
      */
-    public function getStatus(Category $category): array
+    public function getStatus(BookingWindow $window): array
     {
-        if (! $category->hasBookingWindow()) {
-            return [
-                'enabled' => false,
-                'open' => true,
-                'cutoff' => null,
-                'nextDelivery' => null,
-                'scheduledDelivery' => null,
-                'deliveryDayLabel' => null,
-                'cutoffLabel' => null,
-            ];
-        }
-
         $now = Carbon::now();
-        [$cutoff, $delivery] = $this->computeWindow($category, $now);
+        [$cutoff, $delivery] = $this->computeWindow($window, $now);
         $open = $now->lt($cutoff);
 
         // Past cutoff → schedule for the following week's delivery
@@ -65,30 +53,52 @@ class BookingWindowService
             'cutoff' => $cutoff,
             'nextDelivery' => $delivery,
             'scheduledDelivery' => $scheduledDelivery,
-            'deliveryDayLabel' => self::DAY_LABELS[$category->delivery_day] ?? null,
-            'cutoffLabel' => self::DAY_LABELS[$category->cutoff_day] ?? null,
+            'deliveryDayLabel' => self::DAY_LABELS[$window->delivery_day] ?? null,
+            'cutoffLabel' => self::DAY_LABELS[$window->cutoff_day] ?? null,
         ];
     }
 
     /**
-     * Booking is always allowed. The cutoff only determines which delivery date is assigned.
-     * Packages with window_exempt=true (or no category) are also always bookable.
+     * Returns the active window for a package — the one whose next cutoff is soonest.
+     * Returns null if the package has no windows (always bookable, no delivery date).
      */
-    public function isOpenForPackage(): bool
+    public function getActiveWindow(Package $package): ?BookingWindow
     {
-        return true;
-    }
+        $windows = $package->relationLoaded('bookingWindows')
+            ? $package->bookingWindows
+            : $package->bookingWindows()->get();
 
-    /**
-     * Returns the scheduled delivery date for a windowed package, or null if exempt/no window.
-     */
-    public function getScheduledDeliveryForPackage(Package $package): ?Carbon
-    {
-        if ($package->window_exempt || ! $package->category) {
+        if ($windows->isEmpty()) {
             return null;
         }
 
-        return $this->getStatus($package->category)['scheduledDelivery'] ?? null;
+        $now = Carbon::now();
+
+        return $windows->sortBy(function (BookingWindow $window) use ($now) {
+            [$cutoff] = $this->computeWindow($window, $now);
+
+            // If cutoff is in the past, use next week's cutoff for ordering
+            if ($cutoff->lte($now)) {
+                $cutoff->addWeek();
+            }
+
+            return $cutoff->timestamp;
+        })->first();
+    }
+
+    /**
+     * Returns the scheduled delivery date for a package via its active window.
+     * Returns null if the package has no windows (always orderable, no date shown).
+     */
+    public function getScheduledDeliveryForPackage(Package $package): ?Carbon
+    {
+        $activeWindow = $this->getActiveWindow($package);
+
+        if ($activeWindow === null) {
+            return null;
+        }
+
+        return $this->getStatus($activeWindow)['scheduledDelivery'];
     }
 
     /**
@@ -96,19 +106,19 @@ class BookingWindowService
      *
      * @return array{Carbon, Carbon}
      */
-    public function computeWindow(Category $category, Carbon $now): array
+    public function computeWindow(BookingWindow $window, Carbon $now): array
     {
         $delivery = $now->copy()->startOfDay();
 
         // Advance to next occurrence of delivery_day (or stay if today is delivery day)
-        if ($delivery->isoWeekday() !== $category->delivery_day) {
-            $delivery->next(self::DAY_LABELS[$category->delivery_day]);
+        if ($delivery->isoWeekday() !== $window->delivery_day) {
+            $delivery->next(self::DAY_LABELS[$window->delivery_day]);
         }
 
         // Cutoff is on cutoff_day of the same ISO week as delivery, at cutoff_time
-        $cutoff = $delivery->copy()->isoWeekday($category->cutoff_day);
+        $cutoff = $delivery->copy()->isoWeekday($window->cutoff_day);
 
-        [$hour, $minute] = array_map('intval', explode(':', substr($category->cutoff_time, 0, 5)));
+        [$hour, $minute] = array_map('intval', explode(':', substr($window->cutoff_time, 0, 5)));
         $cutoff->setTime($hour, $minute, 0);
 
         // Cutoff must precede delivery — if same-week placement puts it after, roll it back a week

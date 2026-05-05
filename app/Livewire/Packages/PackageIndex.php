@@ -136,12 +136,12 @@ class PackageIndex extends Component
     protected function getPackages(): LengthAwarePaginator
     {
         return Package::query()
-            ->with('category')
+            ->with('categories')
             ->when($this->search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%");
             })
             ->when($this->categoryId, function ($query, $categoryId) {
-                $query->where('category_id', $categoryId);
+                $query->whereHas('categories', fn ($q) => $q->where('categories.id', $categoryId));
             })
             ->when($this->status !== 'all', function ($query) {
                 $query->where('is_active', $this->status === 'active');

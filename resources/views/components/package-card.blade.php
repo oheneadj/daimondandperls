@@ -1,7 +1,9 @@
-@props(['package', 'selected' => false, 'windowStatus' => null])
+@props(['package', 'selected' => false, 'activeWindow' => null, 'windowStatus' => null])
 
 @php
-    $bgClass = match($package->category?->slug) {
+    $firstCategorySlug = $package->categories->first()?->slug ?? null;
+
+    $bgClass = match($firstCategorySlug) {
         'rice' => 'bg-cat-rice',
         'banku' => 'bg-cat-banku',
         'grills' => 'bg-cat-grills',
@@ -9,7 +11,7 @@
         default => 'bg-base-200',
     };
 
-    $emoji = match($package->category?->slug) {
+    $emoji = match($firstCategorySlug) {
         'rice' => '🍚',
         'banku' => '🍲',
         'grills' => '🔥',
@@ -48,10 +50,13 @@
             </div>
         @endif
 
-        @if($windowStatus && $windowStatus['enabled'] && !($package->window_exempt ?? false))
-            @if($windowStatus['open'])
+        @if($activeWindow)
+            @php
+                $ws = app(\App\Services\BookingWindowService::class)->getStatus($activeWindow);
+            @endphp
+            @if($ws['open'])
                 @php
-                    $diffSeconds = $windowStatus['cutoff']->diffInSeconds(now());
+                    $diffSeconds = $ws['cutoff']->diffInSeconds(now());
                     $initH = floor($diffSeconds / 3600);
                     $initM = floor(($diffSeconds % 3600) / 60);
                     $initS = $diffSeconds % 60;
@@ -60,20 +65,20 @@
                 <div
                     class="absolute bottom-0 left-0 right-0 bg-[#121212]/90 backdrop-blur-sm text-white px-3 py-2 flex items-center justify-between gap-2"
                     x-data="{
-                        deadline: {{ $windowStatus['cutoff']->timestamp * 1000 }},
+                        deadline: {{ $ws['cutoff']->timestamp * 1000 }},
                         label: '{{ $initLabel }}',
                         tick() {
-                            const diff = this.deadline - Date.now();
-                            if (diff <= 0) { this.label = 'Window closed'; return; }
-                            const h = Math.floor(diff / 3600000);
-                            const m = Math.floor((diff % 3600000) / 60000);
-                            const s = Math.floor((diff % 60000) / 1000);
+                            const secs = Math.floor((this.deadline - Date.now()) / 1000);
+                            if (secs <= 0) { this.label = 'Window closed'; return; }
+                            const h = Math.floor(secs / 3600);
+                            const m = Math.floor((secs % 3600) / 60);
+                            const s = secs % 60;
                             this.label = h > 0 ? `${h}h ${m}m` : `${m}m ${s}s`;
                         }
                     }"
-                    x-init="setInterval(() => tick(), 1000)"
+                    x-init="tick(); setInterval(() => tick(), 1000)"
                 >
-                    <span class="text-[11px] font-bold text-white/60 uppercase tracking-widest leading-tight">Book by {{ $windowStatus['cutoffLabel'] }}, {{ substr($windowStatus['cutoff']->format('H:i'), 0, 5) }}</span>
+                    <span class="text-[11px] font-bold text-white/60 uppercase tracking-widest leading-tight">Book by {{ $ws['cutoffLabel'] }}, {{ substr($ws['cutoff']->format('H:i'), 0, 5) }}</span>
                     <span class="flex items-center gap-1.5 text-[12px] font-black text-white shrink-0">
                         <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0"></span>
                         <span x-text="label"></span>
@@ -82,7 +87,7 @@
             @else
                 <div class="absolute bottom-0 left-0 right-0 bg-error text-white px-3 py-2 flex items-center justify-between gap-2">
                     <span class="text-[11px] font-bold text-white/70 uppercase tracking-widest leading-tight">Next delivery</span>
-                    <span class="text-[12px] font-black text-white shrink-0">{{ $windowStatus['scheduledDelivery']->format('D, M j') }}</span>
+                    <span class="text-[12px] font-black text-white shrink-0">{{ $ws['scheduledDelivery']->format('D, M j') }}</span>
                 </div>
             @endif
         @endif

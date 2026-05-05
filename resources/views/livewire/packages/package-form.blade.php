@@ -47,14 +47,20 @@
                         </div>
 
                         <div class="space-y-2">
-                            <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Collection/Category') }}</label>
-                            <x-ui.select wire:model="category_id">
-                                <option value="">{{ __('No Collection') }}</option>
-                                @foreach($categories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                @endforeach
-                            </x-ui.select>
-                            @error('category_id') <p class="text-[11px] text-error font-bold mt-1">{{ $message }}</p> @enderror
+                            <label class="text-[11px] font-bold uppercase tracking-widest text-base-content/60">{{ __('Collections') }}</label>
+                            <div class="border border-base-content/10 rounded-xl divide-y divide-base-content/5 max-h-48 overflow-y-auto">
+                                @forelse($categories as $category)
+                                    <label class="flex items-center gap-3 px-4 py-2.5 hover:bg-base-200/50 cursor-pointer">
+                                        <input type="checkbox" wire:model="selectedCategoryIds" value="{{ $category->id }}"
+                                            class="checkbox checkbox-primary checkbox-sm shrink-0" />
+                                        <span class="text-[13px] text-base-content">{{ $category->name }}</span>
+                                    </label>
+                                @empty
+                                    <p class="px-4 py-3 text-[12px] text-base-content/40">No collections yet.</p>
+                                @endforelse
+                            </div>
+                            <p class="text-[11px] text-base-content/40">A package can belong to multiple collections.</p>
+                            @error('selectedCategoryIds') <p class="text-[11px] text-error font-bold mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
                 </div>
@@ -243,21 +249,37 @@
                         </label>
                     </div>
 
-                    {{-- Window Exempt --}}
-                    <div class="flex items-center justify-between py-4 border-t border-base-content/5">
+                    {{-- Booking Windows --}}
+                    <div class="py-4 border-t border-base-content/5 space-y-3">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
                             </div>
                             <div>
-                                <p class="text-[13px] font-bold text-base-content">{{ __('Always Bookable') }}</p>
-                                <p class="text-[11px] text-base-content/40">{{ __('This package can be ordered at any time, even after the collection\'s booking window closes.') }}</p>
+                                <p class="text-[13px] font-bold text-base-content">Booking Windows</p>
+                                <p class="text-[11px] text-base-content/40">Leave empty to make this package always bookable with no delivery schedule.</p>
                             </div>
                         </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input wire:model="window_exempt" type="checkbox" class="sr-only peer">
-                            <div class="w-14 h-7 bg-base-200 border border-warning/20 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-1 after:left-1 after:bg-base-100 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-warning shadow-sm"></div>
-                        </label>
+                        <div class="border border-base-content/10 rounded-xl divide-y divide-base-content/5 max-h-48 overflow-y-auto">
+                            @forelse($bookingWindows as $window)
+                                <label class="flex items-center gap-3 px-4 py-2.5 hover:bg-base-200/50 cursor-pointer">
+                                    <input type="checkbox" wire:model="selectedWindowIds" value="{{ $window->id }}"
+                                        class="checkbox checkbox-primary checkbox-sm shrink-0" />
+                                    <div>
+                                        <span class="text-[13px] text-base-content font-medium">{{ $window->name }}</span>
+                                        <span class="text-[11px] text-base-content/40 ml-2">
+                                            Delivers {{ \App\Services\BookingWindowService::DAY_LABELS[$window->delivery_day] ?? '' }},
+                                            cutoff {{ \App\Services\BookingWindowService::DAY_LABELS[$window->cutoff_day] ?? '' }} {{ substr($window->cutoff_time, 0, 5) }}
+                                        </span>
+                                    </div>
+                                </label>
+                            @empty
+                                <p class="px-4 py-3 text-[12px] text-base-content/40">No booking windows created yet. <a href="{{ route('admin.booking-windows.index') }}" wire:navigate class="text-primary font-semibold">Create one →</a></p>
+                            @endforelse
+                        </div>
+                        @error('selectedWindowIds') <p class="text-[11px] text-error font-bold mt-1">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </div>

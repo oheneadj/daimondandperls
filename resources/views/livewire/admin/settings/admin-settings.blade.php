@@ -705,6 +705,102 @@
             </div>
 
         </div>
+
+        {{-- Loyalty & Referrals --}}
+        <div class="bg-base-100 border border-base-content/10 rounded-2xl shadow-sm overflow-hidden">
+            <div class="px-6 py-5 border-b border-base-content/5">
+                <h3 class="text-[15px] font-semibold text-base-content">Loyalty & Referrals</h3>
+                <p class="text-[12px] text-base-content/50 mt-0.5">Configure how customers earn and redeem loyalty points.</p>
+            </div>
+            <form wire:submit="saveLoyaltySettings" class="p-6 space-y-6">
+                {{-- Master toggle --}}
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-[14px] font-semibold text-base-content">Enable Loyalty Programme</p>
+                        <p class="text-[12px] text-base-content/50 mt-0.5">When off, no points are earned or redeemed.</p>
+                    </div>
+                    <x-toggle wire:model="loyalty_enabled" />
+                </div>
+
+                <div @class(['space-y-5', 'opacity-50 pointer-events-none' => !$loyalty_enabled])>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        {{-- Points per GH₵ --}}
+                        <div>
+                            <label class="block text-[12px] font-semibold text-base-content/70 mb-1.5">Points Earned per GH₵1 Spent</label>
+                            <input type="number" min="1" wire:model="loyalty_points_per_ghc"
+                                   class="input input-bordered w-full text-[13px]">
+                            @error('loyalty_points_per_ghc') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        {{-- Referral bonus --}}
+                        <div>
+                            <label class="block text-[12px] font-semibold text-base-content/70 mb-1.5">Referral Bonus Points</label>
+                            <input type="number" min="0" wire:model="loyalty_referral_bonus"
+                                   class="input input-bordered w-full text-[13px]">
+                            <p class="text-[11px] text-base-content/40 mt-1">Awarded to referrer when their friend's first booking completes.</p>
+                            @error('loyalty_referral_bonus') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        {{-- Redemption rate --}}
+                        <div>
+                            <label class="block text-[12px] font-semibold text-base-content/70 mb-1.5">Points Required per GH₵1 Discount</label>
+                            <input type="number" min="1" wire:model="loyalty_redemption_rate"
+                                   class="input input-bordered w-full text-[13px]">
+                            @error('loyalty_redemption_rate') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        {{-- Max redemption % --}}
+                        <div>
+                            <label class="block text-[12px] font-semibold text-base-content/70 mb-1.5">Max Order % Payable with Points</label>
+                            <input type="number" min="1" max="100" wire:model="loyalty_max_redemption_pct"
+                                   class="input input-bordered w-full text-[13px]">
+                            <p class="text-[11px] text-base-content/40 mt-1">Customers see the GH₵ amount — this % is enforced silently.</p>
+                            @error('loyalty_max_redemption_pct') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <x-ui.button type="submit" variant="secondary" size="sm" wire:loading.attr="disabled" wire:target="saveLoyaltySettings">
+                        <span wire:loading.remove wire:target="saveLoyaltySettings">{{ __('Save Loyalty Settings') }}</span>
+                        <span wire:loading wire:target="saveLoyaltySettings">{{ __('Saving...') }}</span>
+                    </x-ui.button>
+                </div>
+            </form>
+        </div>
+
+        {{-- Reviews & Ratings --}}
+        <div class="bg-base-100 border border-base-content/10 rounded-2xl shadow-sm overflow-hidden">
+            <div class="px-6 py-5 border-b border-base-content/5">
+                <h3 class="text-[15px] font-semibold text-base-content">Reviews & Ratings</h3>
+                <p class="text-[12px] text-base-content/50 mt-0.5">Send customers a rating request SMS when their order is completed.</p>
+            </div>
+            <form wire:submit="saveReviewSettings" class="p-6 space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-[14px] font-semibold text-base-content">Enable Review System</p>
+                        <p class="text-[12px] text-base-content/50 mt-0.5">When off, no review SMS is sent on completion.</p>
+                    </div>
+                    <x-toggle wire:model="review_enabled" />
+                </div>
+
+                <div @class(['', 'opacity-50 pointer-events-none' => !$review_enabled])>
+                    <label class="block text-[12px] font-semibold text-base-content/70 mb-1.5">Points Awarded per Review</label>
+                    <input type="number" min="0" max="1000" wire:model="review_points_reward"
+                           class="input input-bordered w-full sm:w-48 text-[13px]">
+                    <p class="text-[11px] text-base-content/40 mt-1">Points credited to the customer when they submit a star rating.</p>
+                    @error('review_points_reward') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="flex justify-end">
+                    <x-ui.button type="submit" variant="secondary" size="sm" wire:loading.attr="disabled" wire:target="saveReviewSettings">
+                        <span wire:loading.remove wire:target="saveReviewSettings">{{ __('Save Review Settings') }}</span>
+                        <span wire:loading wire:target="saveReviewSettings">{{ __('Saving...') }}</span>
+                    </x-ui.button>
+                </div>
+            </form>
+        </div>
+
     @endif
 
     {{-- ── System Tab ───────────────────────────────────────────────────────── --}}

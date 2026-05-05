@@ -1,6 +1,7 @@
 @props([
     'cartItems' => [],
     'cartTotal' => 0,
+    'pointsDiscount' => 0,
     'isEvent' => false,
     'hideOnMobile' => false,
 ])
@@ -43,15 +44,21 @@
             @else
                 <div class="flex justify-between items-center text-[14px] text-base-content/60 font-medium">
                     <span>Subtotal</span>
-                    <span>GH₵ {{ number_format($cartTotal, 0) }}</span>
+                    <span>GH₵ {{ number_format($cartTotal, 2) }}</span>
                 </div>
                 <div class="flex justify-between items-center text-[14px] text-base-content/60 font-medium">
                     <span>Service Charge</span>
                     <span class="text-success">Complimentary</span>
                 </div>
+                @if($pointsDiscount > 0)
+                <div class="flex justify-between items-center text-[14px] font-medium text-success">
+                    <span>Loyalty Discount</span>
+                    <span>− GH₵ {{ number_format($pointsDiscount, 2) }}</span>
+                </div>
+                @endif
                 <div class="flex justify-between items-center pt-4">
                     <span class="text-lg font-semibold text-base-content">Total Amount</span>
-                    <span class="text-2xl font-bold text-primary">GH₵ {{ number_format($cartTotal, 0) }}</span>
+                    <span class="text-2xl font-bold text-primary">GH₵ {{ number_format(max(0, $cartTotal - $pointsDiscount), 2) }}</span>
                 </div>
             @endif
         </div>

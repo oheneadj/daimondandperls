@@ -80,6 +80,23 @@
         </div>
     </div>
 
+    {{-- Loyalty points banner --}}
+    @if($loyaltyEnabled)
+        <a href="{{ route('dashboard.loyalty') }}"
+           class="flex items-center justify-between gap-4 bg-gradient-to-r from-primary to-primary/80 text-white rounded-2xl px-5 py-4 mb-8 shadow-md shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-200">
+            <div class="flex items-center gap-3">
+                <div class="size-9 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.006z" clip-rule="evenodd"/></svg>
+                </div>
+                <div>
+                    <p class="text-[13px] font-bold">{{ number_format($loyaltyPoints) }} loyalty points</p>
+                    <p class="text-[11px] text-white/70">≈ GH₵{{ number_format($loyaltyGhc, 2) }} in discounts · Tap to view</p>
+                </div>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-white/60 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        </a>
+    @endif
+
     {{-- Recent Meal Orders --}}
     <div class="flex items-center justify-between mb-4 sm:mb-6">
         <h2 class="text-lg sm:text-xl font-semibold text-base-content">Recent Meal Orders</h2>

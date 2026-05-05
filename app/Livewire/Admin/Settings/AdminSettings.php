@@ -93,6 +93,24 @@ class AdminSettings extends Component
 
     public string $notification_preference = 'email';
 
+    // ── Loyalty ───────────────────────────────────────────────────────────────
+
+    public bool $loyalty_enabled = true;
+
+    public int $loyalty_points_per_ghc = 1;
+
+    public int $loyalty_referral_bonus = 50;
+
+    public int $loyalty_redemption_rate = 100;
+
+    public int $loyalty_max_redemption_pct = 20;
+
+    // ── Reviews ───────────────────────────────────────────────────────────────
+
+    public bool $review_enabled = true;
+
+    public int $review_points_reward = 25;
+
     // ── Booking / Delivery ────────────────────────────────────────────────────
 
     /** @var array<int, string> */
@@ -142,6 +160,15 @@ class AdminSettings extends Component
 
         $this->delivery_locations = $settings->get('delivery_locations')?->value ?? [];
         $this->event_lead_days = (int) ($settings->get('event_lead_days')?->value ?? 0);
+
+        $this->review_enabled = (bool) ($settings->get('review_enabled')?->value ?? true);
+        $this->review_points_reward = (int) ($settings->get('review_points_reward')?->value ?? 25);
+
+        $this->loyalty_enabled = (bool) ($settings->get('loyalty_enabled')?->value ?? true);
+        $this->loyalty_points_per_ghc = (int) ($settings->get('loyalty_points_per_ghc')?->value ?? 1);
+        $this->loyalty_referral_bonus = (int) ($settings->get('loyalty_referral_bonus')?->value ?? 50);
+        $this->loyalty_redemption_rate = (int) ($settings->get('loyalty_redemption_rate')?->value ?? 100);
+        $this->loyalty_max_redemption_pct = (int) ($settings->get('loyalty_max_redemption_pct')?->value ?? 20);
     }
 
     public function setTab(string $tab): void
@@ -370,6 +397,40 @@ class AdminSettings extends Component
         $this->updateSetting('event_lead_days', $this->event_lead_days, SettingType::Integer, 'event');
 
         $this->dispatch('banner', style: 'success', message: 'Event booking settings updated.');
+    }
+
+    // ── Loyalty ───────────────────────────────────────────────────────────────
+
+    public function saveLoyaltySettings(): void
+    {
+        $this->validate([
+            'loyalty_points_per_ghc' => ['required', 'integer', 'min:1'],
+            'loyalty_referral_bonus' => ['required', 'integer', 'min:0'],
+            'loyalty_redemption_rate' => ['required', 'integer', 'min:1'],
+            'loyalty_max_redemption_pct' => ['required', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        $this->updateSetting('loyalty_enabled', $this->loyalty_enabled, SettingType::Boolean, 'loyalty');
+        $this->updateSetting('loyalty_points_per_ghc', $this->loyalty_points_per_ghc, SettingType::Integer, 'loyalty');
+        $this->updateSetting('loyalty_referral_bonus', $this->loyalty_referral_bonus, SettingType::Integer, 'loyalty');
+        $this->updateSetting('loyalty_redemption_rate', $this->loyalty_redemption_rate, SettingType::Integer, 'loyalty');
+        $this->updateSetting('loyalty_max_redemption_pct', $this->loyalty_max_redemption_pct, SettingType::Integer, 'loyalty');
+
+        $this->dispatch('banner', style: 'success', message: 'Loyalty settings updated.');
+    }
+
+    // ── Reviews ───────────────────────────────────────────────────────────────
+
+    public function saveReviewSettings(): void
+    {
+        $this->validate([
+            'review_points_reward' => ['required', 'integer', 'min:0', 'max:1000'],
+        ]);
+
+        $this->updateSetting('review_enabled', $this->review_enabled ? '1' : '0', SettingType::Boolean, 'reviews');
+        $this->updateSetting('review_points_reward', (string) $this->review_points_reward, SettingType::Integer, 'reviews');
+
+        $this->dispatch('banner', style: 'success', message: 'Review settings saved.');
     }
 
     // ── Notification Toggles ──────────────────────────────────────────────────

@@ -90,11 +90,11 @@
                                 x-data="{
                                     label: '',
                                     tick() {
-                                        const diff = selectedWindowInfo.cutoffTs - Date.now();
-                                        if (diff <= 0) { this.label = 'Closed'; return; }
-                                        const h = Math.floor(diff / 3600000);
-                                        const m = Math.floor((diff % 3600000) / 60000);
-                                        const s = Math.floor((diff % 60000) / 1000);
+                                        const secs = Math.floor((selectedWindowInfo.cutoffTs - Date.now()) / 1000);
+                                        if (secs <= 0) { this.label = 'Closed'; return; }
+                                        const h = Math.floor(secs / 3600);
+                                        const m = Math.floor((secs % 3600) / 60);
+                                        const s = secs % 60;
                                         this.label = h > 0 ? `${h}h ${m}m left` : `${m}m ${s}s left`;
                                     }
                                 }"

@@ -7,6 +7,7 @@ namespace App\Livewire\Packages;
 use App\Models\Category;
 use App\Models\Package;
 use App\Services\BookingWindowService;
+use App\Services\CartService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Layout;
@@ -24,64 +25,69 @@ class PackagesBrowse extends Component
     #[Url(history: true, as: 'category')]
     public string $categorySlug = '';
 
-    public function toggleSelection(int $packageId, \App\Services\CartService $cart, BookingWindowService $windowService): void
+    public function toggleSelection(int $packageId, CartService $cart, BookingWindowService $windowService): void
     {
         if ($this->isInCart($packageId, $cart)) {
             $cart->remove($packageId);
         } else {
-            $package = Package::with('category')->findOrFail($packageId);
+            $package = Package::with('bookingWindows')->findOrFail($packageId);
             $scheduledDate = $windowService->getScheduledDeliveryForPackage($package);
             $cart->add($packageId, scheduledDate: $scheduledDate);
 
-            // Always notify customer of their scheduled delivery date for windowed packages
             if ($scheduledDate !== null) {
-                $status = $windowService->getStatus($package->category);
+                $activeWindow = $windowService->getActiveWindow($package);
+                $status = $activeWindow ? $windowService->getStatus($activeWindow) : null;
                 $this->dispatch('window-booking-info',
                     date: $scheduledDate->format('D, M j, Y'),
-                    isNextWeek: ! $status['open'],
+                    isNextWeek: $status ? ! $status['open'] : false,
                 );
             }
         }
         $this->dispatch('cart-updated');
     }
 
-    public function orderNow(int $packageId, \App\Services\CartService $cart, BookingWindowService $windowService): void
+    public function orderNow(int $packageId, CartService $cart, BookingWindowService $windowService): void
     {
         if (! $this->isInCart($packageId, $cart)) {
-            $package = Package::with('category')->findOrFail($packageId);
+            $package = Package::with('bookingWindows')->findOrFail($packageId);
             $scheduledDate = $windowService->getScheduledDeliveryForPackage($package);
             $cart->add($packageId, scheduledDate: $scheduledDate);
         }
         $this->redirect(route('checkout'));
     }
 
-    public function isInCart(int $packageId, \App\Services\CartService $cart): bool
+    public function isInCart(int $packageId, CartService $cart): bool
     {
         return $cart->getCart()->has($packageId);
     }
 
-    public function getCartProperty(\App\Services\CartService $cart): \Illuminate\Support\Collection
+    public function getCartProperty(CartService $cart): \Illuminate\Support\Collection
     {
         return $cart->getCart();
     }
 
-    public function render(\App\Services\CartService $cart, BookingWindowService $windowService): View
+    public function render(CartService $cart, BookingWindowService $windowService): View
     {
-        $categories = Category::whereHas('packages', function ($query) {
-            $query->where('is_active', true);
-        })->orderBy('name')->get();
+        $categories = Category::whereHas('packages', fn ($q) => $q->where('is_active', true))
+            ->orderBy('name')
+            ->get();
 
         $activeCategory = $this->categorySlug
             ? $categories->firstWhere('slug', $this->categorySlug)
             : null;
 
-        $windowStatuses = $categories->keyBy('id')->map(fn (Category $category) => $windowService->getStatus($category));
+        $packages = $this->getPackages();
+
+        // Build active window map keyed by package ID
+        $activeWindows = $packages->keyBy('id')->map(
+            fn (Package $p) => $windowService->getActiveWindow($p)
+        );
 
         return view('livewire.packages.packages-browse', [
-            'packages' => $this->getPackages(),
+            'packages' => $packages,
             'categories' => $categories,
             'activeCategory' => $activeCategory,
-            'windowStatuses' => $windowStatuses,
+            'activeWindows' => $activeWindows,
             'cartItems' => $cart->getCart(),
             'cartCount' => $cart->count(),
         ]);
@@ -90,14 +96,14 @@ class PackagesBrowse extends Component
     protected function getPackages(): Collection
     {
         return Package::query()
-            ->with(['category'])
+            ->with(['categories', 'bookingWindows'])
             ->where('is_active', true)
             ->when($this->search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
             })
             ->when($this->categorySlug, function ($query) {
-                $query->whereHas('category', fn ($q) => $q->where('slug', $this->categorySlug));
+                $query->whereHas('categories', fn ($q) => $q->where('slug', $this->categorySlug));
             })
             ->orderBy('sort_order', 'asc')
             ->get();

@@ -15,6 +15,7 @@
             ['label' => 'Payments', 'route' => 'dashboard.payments.index', 'icon' => 'banknotes', 'pattern' => 'dashboard.payments.*'],
         ],
         'ACCOUNT' => [
+            ['label' => 'Loyalty & Points', 'route' => 'dashboard.loyalty', 'icon' => 'star'],
             ['label' => 'Payment Methods', 'route' => 'dashboard.payment-methods', 'icon' => 'credit-card'],
             ['label' => 'Profile', 'route' => 'dashboard.profile', 'icon' => 'user-circle'],
         ],

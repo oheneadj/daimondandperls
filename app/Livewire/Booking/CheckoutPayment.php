@@ -37,6 +37,9 @@ class CheckoutPayment extends Component
     /** Non-retryable error the customer cannot resolve themselves (e.g. merchant config). */
     public ?string $fatalError = null;
 
+    /** Neutral status message shown in the awaiting step (not an error). */
+    public ?string $statusMessage = null;
+
     public ?string $loading = null;
 
     // Payment method selection
@@ -374,6 +377,8 @@ class CheckoutPayment extends Component
         TransflowGateway $gateway,
         PaymentConfirmationService $confirmationService,
     ): void {
+        $this->statusMessage = null;
+        $this->errorMessage = null;
         $this->booking->refresh();
 
         if ($this->booking->payment_status === PaymentStatus::Paid) {
@@ -420,6 +425,14 @@ class CheckoutPayment extends Component
             );
 
             $this->redirect(route('booking.confirmation', ['booking' => $this->booking->reference]));
+
+            return;
+        }
+
+        if (! empty($result->failureReason)) {
+            $this->errorMessage = $result->failureReason;
+        } else {
+            $this->statusMessage = 'Payment not yet confirmed. Please wait a moment — we\'ll detect it automatically.';
         }
     }
 
@@ -469,6 +482,7 @@ class CheckoutPayment extends Component
         $this->momoNetwork = '';
         $this->momoNumber = '';
         $this->errorMessage = null;
+        $this->statusMessage = null;
 
         $this->booking->update([
             'payment_status' => PaymentStatus::Unpaid,

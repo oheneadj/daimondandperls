@@ -1,4 +1,9 @@
 <x-layouts::auth :title="__('Register')" :maxWidth="'max-w-[460px]'">
+    @php
+        if (request()->has('ref')) {
+            session(['referral_code' => request()->query('ref')]);
+        }
+    @endphp
     <div class="space-y-8">
         <!-- Header -->
         <div class="text-center space-y-2">

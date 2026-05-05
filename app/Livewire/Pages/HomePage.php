@@ -50,12 +50,16 @@ class HomePage extends Component
             $query->where('is_active', true);
         })->orderBy('name')->get();
 
-        $windowStatuses = $categories->keyBy('id')->map(fn (Category $category) => $windowService->getStatus($category));
+        $packages = $this->getPackages();
+
+        $activeWindows = $packages->keyBy('id')->map(
+            fn (Package $p) => $windowService->getActiveWindow($p)
+        );
 
         return view('livewire.pages.home-page', [
-            'packages' => $this->getPackages(),
+            'packages' => $packages,
             'categories' => $categories,
-            'windowStatuses' => $windowStatuses,
+            'activeWindows' => $activeWindows,
             'cartItems' => $cart->getCart(),
         ]);
     }
@@ -63,10 +67,10 @@ class HomePage extends Component
     protected function getPackages(): Collection
     {
         return Package::query()
-            ->with(['category'])
+            ->with(['categories', 'bookingWindows'])
             ->where('is_active', true)
             ->when($this->selectedCategory, function ($query, $categoryId) {
-                $query->where('category_id', $categoryId);
+                $query->whereHas('categories', fn ($q) => $q->where('categories.id', $categoryId));
             })
             ->ordered()
             ->take(6)

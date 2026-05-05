@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Packages;
 
 use App\Jobs\OptimiseImage;
+use App\Models\BookingWindow;
 use App\Models\Category;
 use App\Models\Package;
 use App\Traits\HasAdminAuthorization;
@@ -30,15 +31,17 @@ class PackageForm extends Component
 
     public string $price = '';
 
-    public ?int $category_id = null;
-
     public bool $is_active = true;
 
     public array $features = [];
 
     public bool $is_popular = false;
 
-    public bool $window_exempt = false;
+    /** @var array<int> */
+    public array $selectedCategoryIds = [];
+
+    /** @var array<int> */
+    public array $selectedWindowIds = [];
 
     public $image;
 
@@ -49,6 +52,7 @@ class PackageForm extends Component
     public function mount(?Package $package = null): void
     {
         $this->authorizePermission('manage_packages');
+
         if ($package && $package->exists) {
             $this->package = $package;
             $this->name = $this->package->name;
@@ -56,10 +60,10 @@ class PackageForm extends Component
             $this->price = (string) $this->package->price;
             $this->features = $this->package->features ?? [];
             $this->is_popular = (bool) $this->package->is_popular;
-            $this->window_exempt = (bool) $this->package->window_exempt;
-            $this->category_id = $this->package->category_id;
             $this->is_active = $this->package->is_active;
             $this->existing_image = $this->package->image_path;
+            $this->selectedCategoryIds = $this->package->categories()->pluck('categories.id')->toArray();
+            $this->selectedWindowIds = $this->package->bookingWindows()->pluck('booking_windows.id')->toArray();
         }
     }
 
@@ -74,7 +78,7 @@ class PackageForm extends Component
         $this->features = array_values($this->features);
     }
 
-    public function save()
+    public function save(): mixed
     {
         $this->validate([
             'name' => ['required', 'string', 'min:2', 'max:150'],
@@ -83,15 +87,16 @@ class PackageForm extends Component
             'features' => ['nullable', 'array'],
             'features.*' => ['nullable', 'string', 'max:150'],
             'is_popular' => ['boolean'],
-            'category_id' => ['nullable', 'exists:categories,id'],
             'is_active' => ['boolean'],
-            'window_exempt' => ['boolean'],
-            'image' => ['nullable', 'image', 'max:2048'], // 2MB Max
+            'selectedCategoryIds' => ['nullable', 'array'],
+            'selectedCategoryIds.*' => ['integer', 'exists:categories,id'],
+            'selectedWindowIds' => ['nullable', 'array'],
+            'selectedWindowIds.*' => ['integer', 'exists:booking_windows,id'],
+            'image' => ['nullable', 'image', 'max:2048'],
         ]);
 
         $slug = Str::slug($this->name);
 
-        // Ensure unique slug
         $query = Package::where('slug', $slug);
         if ($this->package) {
             $query->where('id', '!=', $this->package->id);
@@ -100,7 +105,7 @@ class PackageForm extends Component
         if ($query->exists()) {
             $this->addError('name', 'A package with a similar name already exists.');
 
-            return;
+            return null;
         }
 
         $imagePath = $this->existing_image;
@@ -116,8 +121,6 @@ class PackageForm extends Component
             'price' => $this->price,
             'features' => array_filter($this->features),
             'is_popular' => $this->is_popular,
-            'window_exempt' => $this->window_exempt,
-            'category_id' => $this->category_id,
             'is_active' => $this->is_active,
             'image_path' => $imagePath,
         ];
@@ -132,7 +135,9 @@ class PackageForm extends Component
             session()->flash('success', 'Package created successfully.');
         }
 
-        // I dispatch the optimisation job only when a new image was uploaded
+        $savedPackage->categories()->sync($this->selectedCategoryIds);
+        $savedPackage->bookingWindows()->sync($this->selectedWindowIds);
+
         if ($this->image && $imagePath) {
             OptimiseImage::dispatch(
                 disk: 'public',
@@ -146,17 +151,17 @@ class PackageForm extends Component
         return $this->redirect(route('admin.manage-packages.index'));
     }
 
-    public function deletePackage()
+    public function deletePackage(): mixed
     {
         if (! $this->package) {
-            return;
+            return null;
         }
 
         if ($this->package->bookingItems()->count() > 0) {
             $this->showDeleteModal = false;
             $this->addError('delete', "Cannot delete '{$this->package->name}' because it has existing bookings.");
 
-            return;
+            return null;
         }
 
         $this->package->delete();
@@ -169,6 +174,7 @@ class PackageForm extends Component
     {
         return view('livewire.packages.package-form', [
             'categories' => Category::orderBy('name')->get(),
+            'bookingWindows' => BookingWindow::orderBy('name')->get(),
         ]);
     }
 }

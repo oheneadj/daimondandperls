@@ -7,10 +7,12 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\Webhooks\MoolreWebhookController;
 use App\Http\Controllers\Webhooks\TransflowWebhookController;
 use App\Livewire\Admin\Bookings\EventIndex;
+use App\Livewire\Admin\BookingWindows\BookingWindowIndex;
 use App\Livewire\Admin\DesignSystem;
 use App\Livewire\Admin\ErrorLogs\ErrorLogIndex;
 use App\Livewire\Admin\Payments\PaymentsOverview;
 use App\Livewire\Admin\Reports\ReportsView;
+use App\Livewire\Admin\Reviews\ReviewIndex;
 use App\Livewire\Admin\Settings\AdminSettings;
 use App\Livewire\Admin\Users\RoleIndex;
 use App\Livewire\Admin\Users\UserForm;
@@ -23,6 +25,7 @@ use App\Livewire\Booking\EventInquiryWizard;
 use App\Livewire\Booking\OfflineWaiting;
 use App\Livewire\Booking\TrackBooking;
 use App\Livewire\Categories\CategoryIndex;
+use App\Livewire\Customer\Loyalty;
 use App\Livewire\Customer\Meals\Index;
 use App\Livewire\Customer\Meals\Show;
 use App\Livewire\Customer\PaymentMethods;
@@ -35,6 +38,8 @@ use App\Livewire\Packages\PackageForm;
 use App\Livewire\Packages\PackageIndex;
 use App\Livewire\Packages\PackagesBrowse;
 use App\Livewire\Pages\HomePage;
+use App\Livewire\Review\ReviewForm;
+use App\Livewire\Review\ReviewShare;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -86,6 +91,7 @@ Route::middleware(['auth', 'customer'])
 
         Route::get('/payments', App\Livewire\Customer\Payments\Index::class)->name('payments.index');
         Route::get('/payment-methods', PaymentMethods::class)->name('payment-methods');
+        Route::get('/loyalty', Loyalty::class)->name('loyalty');
         Route::get('/profile', Profile::class)->name('profile');
     });
 
@@ -105,6 +111,9 @@ Route::get('/booking/confirmation/{booking:reference}', function (Booking $booki
 Route::get('/booking/offline-waiting/{booking:reference}', OfflineWaiting::class)
     ->name('bookings.offline-waiting');
 
+Route::get('/review/{token}', ReviewForm::class)->name('review.form');
+Route::get('/reviews/{token}/share', ReviewShare::class)->name('review.share');
+
 Route::middleware(['auth', 'verified', 'admin'])
     ->prefix('admin')
     ->name('admin.')
@@ -117,6 +126,9 @@ Route::middleware(['auth', 'verified', 'admin'])
 
         // Admin Events
         Route::get('events', EventIndex::class)->name('events.index');
+
+        // Admin Booking Windows
+        Route::get('booking-windows', BookingWindowIndex::class)->name('booking-windows.index');
 
         // Admin Packages
         Route::get('manage-packages', PackageIndex::class)->name('manage-packages.index');
@@ -140,6 +152,9 @@ Route::middleware(['auth', 'verified', 'admin'])
 
         // Contact Messages
         Route::get('contact-messages', App\Livewire\Admin\ContactMessages\Index::class)->name('contact-messages');
+
+        // Reviews
+        Route::get('reviews', ReviewIndex::class)->name('reviews.index');
 
         // Admin Settings
         Route::get('settings', AdminSettings::class)->name('settings.index');

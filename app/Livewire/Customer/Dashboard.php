@@ -7,6 +7,7 @@ namespace App\Livewire\Customer;
 use App\Enums\BookingStatus;
 use App\Enums\BookingType;
 use App\Enums\PaymentStatus;
+use App\Services\LoyaltyService;
 use App\Traits\ResolvesCustomer;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
@@ -60,6 +61,9 @@ class Dashboard extends Component
                 ->get();
         }
 
+        $loyalty = app(LoyaltyService::class);
+        $loyaltyPoints = $customer?->loyalty_points ?? 0;
+
         return view('livewire.customer.dashboard', [
             'totalBookings' => $totalBookings,
             'upcomingBookings' => $upcomingBookings,
@@ -67,6 +71,9 @@ class Dashboard extends Component
             'pendingPayments' => $pendingPayments,
             'recentMeals' => $recentMeals,
             'recentEvents' => $recentEvents,
+            'loyaltyEnabled' => $loyalty->isEnabled() && $customer?->user_id,
+            'loyaltyPoints' => $loyaltyPoints,
+            'loyaltyGhc' => $loyalty->pointsToGhc($loyaltyPoints),
         ]);
     }
 }

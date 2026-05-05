@@ -8,6 +8,7 @@ use App\Enums\BookingStatus;
 use App\Enums\BookingType;
 use App\Enums\EventType;
 use App\Enums\PaymentStatus;
+use Database\Factories\BookingFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Booking extends Model
 {
-    /** @use HasFactory<\Database\Factories\BookingFactory> */
+    /** @use HasFactory<BookingFactory> */
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
@@ -47,6 +48,8 @@ class Booking extends Model
         'payment_channel',
         'payer_number',
         'payment_details',
+        'points_earned',
+        'discount_amount',
     ];
 
     protected function casts(): array
@@ -89,5 +92,10 @@ class Booking extends Model
     public function bookingNotificationLogs(): HasMany
     {
         return $this->hasMany(BookingNotificationLog::class);
+    }
+
+    public function review(): HasOne
+    {
+        return $this->hasOne(Review::class);
     }
 }
