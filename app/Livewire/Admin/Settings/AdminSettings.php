@@ -124,6 +124,12 @@ class AdminSettings extends Component
 
     public int $event_lead_days = 0;
 
+    // ── Monitoring ────────────────────────────────────────────────────────────
+
+    public string $uptime_status_url = '';
+
+    public string $sentry_project_url = '';
+
     public function mount(): void
     {
         $this->authorizePermission('manage_settings');
@@ -169,6 +175,9 @@ class AdminSettings extends Component
         $this->loyalty_referral_bonus = (int) ($settings->get('loyalty_referral_bonus')?->value ?? 50);
         $this->loyalty_redemption_rate = (int) ($settings->get('loyalty_redemption_rate')?->value ?? 100);
         $this->loyalty_max_redemption_pct = (int) ($settings->get('loyalty_max_redemption_pct')?->value ?? 20);
+
+        $this->uptime_status_url = $settings->get('uptime_status_url')?->value ?? '';
+        $this->sentry_project_url = $settings->get('sentry_project_url')?->value ?? '';
     }
 
     public function setTab(string $tab): void
@@ -431,6 +440,28 @@ class AdminSettings extends Component
         $this->updateSetting('review_points_reward', (string) $this->review_points_reward, SettingType::Integer, 'reviews');
 
         $this->dispatch('banner', style: 'success', message: 'Review settings saved.');
+    }
+
+    public function saveUptimeStatusUrl(): void
+    {
+        $this->validate([
+            'uptime_status_url' => ['nullable', 'url', 'max:500'],
+        ]);
+
+        $this->updateSetting('uptime_status_url', $this->uptime_status_url, SettingType::String, 'system');
+
+        $this->dispatch('banner', style: 'success', message: 'Status page URL saved.');
+    }
+
+    public function saveSentryProjectUrl(): void
+    {
+        $this->validate([
+            'sentry_project_url' => ['nullable', 'url', 'max:500'],
+        ]);
+
+        $this->updateSetting('sentry_project_url', $this->sentry_project_url, SettingType::String, 'system');
+
+        $this->dispatch('banner', style: 'success', message: 'Sentry project URL saved.');
     }
 
     // ── Notification Toggles ──────────────────────────────────────────────────

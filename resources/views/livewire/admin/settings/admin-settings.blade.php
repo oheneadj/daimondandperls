@@ -898,6 +898,73 @@
 
             </div>
 
+            {{-- Uptime Monitoring --}}
+            <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
+                <div class="px-6 py-5 border-b border-base-content/5 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-base-content">{{ __('Uptime Monitoring') }}</h3>
+                        <p class="text-[11px] text-base-content/40 mt-0.5">{{ __('Save your UptimeRobot status page URL for quick access.') }}</p>
+                    </div>
+                    @if(filled($uptime_status_url))
+                        <a href="{{ $uptime_status_url }}" target="_blank" rel="noopener"
+                            class="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-success hover:text-success/80 transition-colors">
+                            <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
+                            View Status
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        </a>
+                    @endif
+                </div>
+                <div class="p-6">
+                    <div class="flex gap-3">
+                        <input
+                            wire:model="uptime_status_url"
+                            type="url"
+                            placeholder="https://status.uptimerobot.com/your-page"
+                            class="flex-1 bg-base-200/60 border border-base-content/10 rounded-xl px-4 py-2.5 text-[13px] text-base-content placeholder:text-base-content/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
+                        >
+                        <x-ui.button type="button" variant="primary" size="md" wire:click="saveUptimeStatusUrl" wire:loading.attr="disabled">
+                            Save
+                        </x-ui.button>
+                    </div>
+                    @error('uptime_status_url')
+                        <p class="text-[11px] text-error mt-2">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            {{-- Sentry Error Tracking --}}
+            <div class="bg-white rounded-2xl border border-base-content/5 shadow-sm overflow-hidden">
+                <div class="px-6 py-5 border-b border-base-content/5 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-base-content">{{ __('Error Tracking (Sentry)') }}</h3>
+                        <p class="text-[11px] text-base-content/40 mt-0.5">{{ __('Save your Sentry project URL for quick access to error reports.') }}</p>
+                    </div>
+                    @if(filled($sentry_project_url))
+                        <a href="{{ $sentry_project_url }}" target="_blank" rel="noopener"
+                            class="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-primary hover:text-primary/80 transition-colors">
+                            Open Sentry
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        </a>
+                    @endif
+                </div>
+                <div class="p-6">
+                    <div class="flex gap-3">
+                        <input
+                            wire:model="sentry_project_url"
+                            type="url"
+                            placeholder="https://sentry.io/organizations/your-org/projects/your-project/"
+                            class="flex-1 bg-base-200/60 border border-base-content/10 rounded-xl px-4 py-2.5 text-[13px] text-base-content placeholder:text-base-content/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
+                        >
+                        <x-ui.button type="button" variant="primary" size="md" wire:click="saveSentryProjectUrl" wire:loading.attr="disabled">
+                            Save
+                        </x-ui.button>
+                    </div>
+                    @error('sentry_project_url')
+                        <p class="text-[11px] text-error mt-2">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
             {{-- Production Readiness --}}
             @php
                 $checklist   = collect($this->productionChecklist);
