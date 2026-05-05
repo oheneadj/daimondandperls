@@ -589,12 +589,12 @@
 
     {{-- Payment Log Detail Modal --}}
     @if($viewingPayment)
-        <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+        <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 overflow-hidden"
             x-data x-init="$nextTick(() => $el.scrollIntoView({ behavior: 'smooth' }))">
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="closePaymentLog"></div>
-            <div class="relative bg-base-100 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto z-10">
+            <div class="relative bg-base-100 rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[85vh] z-10">
 
-                <div class="flex items-center justify-between p-6 border-b border-base-content/10">
+                <div class="flex items-center justify-between p-6 border-b border-base-content/10 shrink-0">
                     <div>
                         <h2 class="text-[17px] font-semibold text-base-content">Payment Log Detail</h2>
                         <p class="text-[12px] text-base-content/40 mt-0.5">
@@ -608,7 +608,7 @@
                     </button>
                 </div>
 
-                <div class="p-6 space-y-5">
+                <div class="p-6 space-y-5 overflow-y-auto">
 
                     {{-- Meta grid --}}
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -721,12 +721,12 @@
 
     {{-- SMS Log Detail Modal --}}
     @if($viewingSms)
-        <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+        <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 overflow-hidden"
             x-data x-init="$nextTick(() => $el.scrollIntoView({ behavior: 'smooth' }))">
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="closeSmsLog"></div>
-            <div class="relative bg-base-100 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto z-10">
+            <div class="relative bg-base-100 rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[85vh] z-10">
 
-                <div class="flex items-center justify-between p-6 border-b border-base-content/10">
+                <div class="flex items-center justify-between p-6 border-b border-base-content/10 shrink-0">
                     <div>
                         <h2 class="text-[17px] font-semibold text-base-content">SMS Log Detail</h2>
                         <p class="text-[12px] text-base-content/40 mt-0.5">
@@ -740,7 +740,7 @@
                     </button>
                 </div>
 
-                <div class="p-6 space-y-5">
+                <div class="p-6 space-y-5 overflow-y-auto">
 
                     {{-- Meta grid --}}
                     <div class="grid grid-cols-2 gap-4">
@@ -806,12 +806,12 @@
 
     {{-- Error Detail Modal --}}
     @if($viewing)
-        <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+        <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 overflow-hidden"
             x-data x-init="$nextTick(() => $el.scrollIntoView({ behavior: 'smooth' }))">
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="closeLog"></div>
-            <div class="relative bg-base-100 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto z-10">
+            <div class="relative bg-base-100 rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[85vh] z-10">
 
-                <div class="flex items-center justify-between p-6 border-b border-base-content/10">
+                <div class="flex items-center justify-between p-6 border-b border-base-content/10 shrink-0">
                     <div>
                         <h2 class="text-[17px] font-semibold text-base-content">Error Detail</h2>
                         <p class="text-[12px] text-base-content/40 mt-0.5">ID #{{ $viewing->id }} · {{ $viewing->created_at->diffForHumans() }}</p>
@@ -823,7 +823,7 @@
                     </button>
                 </div>
 
-                <div class="p-6 space-y-5">
+                <div class="p-6 space-y-5 overflow-y-auto">
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
                         <div>
                             <p class="text-[10px] font-bold uppercase tracking-widest text-base-content/40 mb-1">Level</p>

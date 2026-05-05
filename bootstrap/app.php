@@ -8,6 +8,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Sentry\Laravel\Integration;
 use Symfony\Component\Mailer\Exception\TransportException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -30,6 +31,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        Integration::handles($exceptions);
+
         $exceptions->render(function (TransportException $e, Request $request) {
             Log::error('Mail transport failure', [
                 'message' => $e->getMessage(),
