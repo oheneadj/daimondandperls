@@ -337,6 +337,7 @@
 
                     {{-- Copyright --}}
                     <p class="text-[11px] text-white/25 font-medium pt-2">© {{ date('Y') }} Diamonds & Pearls Catering Services. All rights reserved.</p>
+                    <p class="text-[11px] text-white/50 font-medium pt-1">Powered by <a href="https://diamondtechgh.com" target="_blank" rel="noopener" class="text-white/70 hover:text-white transition-colors font-semibold">Diamond Tech</a></p>
                 </div>
             </div>
         </footer>
@@ -466,10 +467,7 @@
                 <div class="mt-14 pt-8 border-t border-white/[0.06]">
                     <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-[12px] text-white/30">
                         <p>© {{ date('Y') }} Diamonds & Pearls Catering Services. All rights reserved.</p>
-                        <div class="flex items-center gap-1.5">
-                            <span class="size-1.5 rounded-full bg-success animate-pulse"></span>
-                            <span class="text-[10px] font-bold uppercase tracking-widest text-white/25">Premium Ghanaian Catering</span>
-                        </div>
+                        <p class="text-[11px] text-white/50 font-medium">Powered by <a href="https://diamondtechgh.com" target="_blank" rel="noopener" class="text-white/70 hover:text-white transition-colors font-semibold">Diamond Tech</a></p>
                     </div>
                 </div>
             </div>

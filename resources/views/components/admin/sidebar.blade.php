@@ -119,5 +119,6 @@
                 </button>
             </form>
         </div>
+        <p class="mt-3 text-center text-[11px] text-white/40 font-medium">Powered by <a href="https://diamondtechgh.com" target="_blank" rel="noopener" class="text-white/60 hover:text-white transition-colors font-semibold">Diamond Tech</a></p>
     </div>
 </aside>
