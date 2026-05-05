@@ -19,6 +19,7 @@
         "laravel/tinker": "^2.10.1",
         "livewire/blaze": "^1.0",
         "livewire/livewire": "^4.0",
+        "sentry/sentry-laravel": "^4.25",
         "spatie/laravel-sitemap": "^7.4|^8.1",
         "symfony/brevo-mailer": "^7.4",
         "symfony/http-client": "^7.4"

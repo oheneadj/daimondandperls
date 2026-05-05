@@ -470,89 +470,142 @@ class AdminSettings extends Component
         $sessionDriver = config('session.driver', '');
         $queueDriver = config('queue.default', '');
         $logLevel = config('logging.channels.'.config('logging.default').'.level', config('logging.level', 'debug'));
-        $sitemapExists = file_exists(public_path('sitemap.xml'));
-        $opcacheEnabled = function_exists('opcache_get_status') && (opcache_get_status(false)['opcache_enabled'] ?? false);
         $dbDriver = DB::connection()->getDriverName();
         $failedJobs = DB::table('failed_jobs')->count();
         $secureCookie = config('session.secure', false);
+        $opcacheEnabled = function_exists('opcache_get_status') && (opcache_get_status(false)['opcache_enabled'] ?? false);
+        $sitemapExists = file_exists(public_path('sitemap.xml'));
+        $sentryDsn = config('sentry.dsn', '');
+        $gaId = config('services.google.analytics_id', '');
+        $mailFrom = config('mail.from.address', '');
+        $businessName = dpc_setting('business_name', '');
 
         return [
+            // ── Environment ───────────────────────────────────────────
             [
+                'group' => 'Environment',
                 'label' => 'Production environment',
                 'detail' => 'APP_ENV = '.config('app.env'),
                 'pass' => App::isProduction(),
                 'warn' => false,
             ],
             [
+                'group' => 'Environment',
                 'label' => 'Debug mode disabled',
                 'detail' => 'APP_DEBUG = '.(config('app.debug') ? 'true' : 'false'),
                 'pass' => ! config('app.debug'),
                 'warn' => false,
             ],
             [
+                'group' => 'Environment',
                 'label' => 'HTTPS app URL',
                 'detail' => $appUrl,
                 'pass' => str_starts_with($appUrl, 'https://'),
                 'warn' => false,
             ],
             [
-                'label' => 'Production database (MySQL/PostgreSQL)',
+                'group' => 'Environment',
+                'label' => 'Log level (warning or above)',
+                'detail' => 'LOG_LEVEL = '.$logLevel,
+                'pass' => in_array($logLevel, ['warning', 'error', 'critical', 'alert', 'emergency']),
+                'warn' => $logLevel === 'notice',
+            ],
+            // ── Database & Sessions ───────────────────────────────────
+            [
+                'group' => 'Database & Sessions',
+                'label' => 'Production database (MySQL / PostgreSQL)',
                 'detail' => 'Driver: '.strtoupper($dbDriver),
                 'pass' => in_array($dbDriver, ['mysql', 'pgsql', 'mariadb']),
                 'warn' => false,
             ],
             [
-                'label' => 'Secure session cookie',
-                'detail' => 'SESSION_SECURE_COOKIE = '.($secureCookie ? 'true' : 'false'),
-                'pass' => (bool) $secureCookie,
-                'warn' => false,
-            ],
-            [
-                'label' => 'Cache driver (file or redis)',
-                'detail' => 'CACHE_STORE = '.$cacheDriver,
-                'pass' => in_array($cacheDriver, ['file', 'redis']),
-                'warn' => $cacheDriver === 'database',
-            ],
-            [
+                'group' => 'Database & Sessions',
                 'label' => 'Session driver (file or redis)',
                 'detail' => 'SESSION_DRIVER = '.$sessionDriver,
                 'pass' => in_array($sessionDriver, ['file', 'redis']),
                 'warn' => $sessionDriver === 'database',
             ],
             [
+                'group' => 'Database & Sessions',
+                'label' => 'Cache driver (file or redis)',
+                'detail' => 'CACHE_STORE = '.$cacheDriver,
+                'pass' => in_array($cacheDriver, ['file', 'redis']),
+                'warn' => $cacheDriver === 'database',
+            ],
+            [
+                'group' => 'Database & Sessions',
+                'label' => 'Secure session cookie',
+                'detail' => 'SESSION_SECURE_COOKIE = '.($secureCookie ? 'true' : 'false'),
+                'pass' => (bool) $secureCookie,
+                'warn' => false,
+            ],
+            // ── Queue ─────────────────────────────────────────────────
+            [
+                'group' => 'Queue',
                 'label' => 'Queue driver configured',
                 'detail' => 'QUEUE_CONNECTION = '.$queueDriver,
                 'pass' => $queueDriver !== 'sync',
                 'warn' => false,
             ],
             [
+                'group' => 'Queue',
                 'label' => 'No failed queue jobs',
                 'detail' => $failedJobs.' failed job'.($failedJobs !== 1 ? 's' : ''),
                 'pass' => $failedJobs === 0,
                 'warn' => false,
             ],
+            // ── Server ────────────────────────────────────────────────
             [
-                'label' => 'Log level (warning or error)',
-                'detail' => 'LOG_LEVEL = '.$logLevel,
-                'pass' => in_array($logLevel, ['warning', 'error', 'critical', 'alert', 'emergency']),
-                'warn' => $logLevel === 'notice',
-            ],
-            [
+                'group' => 'Server',
                 'label' => 'PHP OPcache enabled',
                 'detail' => $opcacheEnabled ? 'Enabled' : 'Disabled',
                 'pass' => $opcacheEnabled,
                 'warn' => false,
             ],
+            // ── Security ──────────────────────────────────────────────
             [
+                'group' => 'Security',
+                'label' => 'Security headers middleware',
+                'detail' => 'X-Frame-Options, X-Content-Type-Options, Referrer-Policy',
+                'pass' => true,
+                'warn' => false,
+            ],
+            // ── SEO & Marketing ───────────────────────────────────────
+            [
+                'group' => 'SEO & Marketing',
                 'label' => 'Sitemap generated',
-                'detail' => $sitemapExists ? 'sitemap.xml exists' : 'sitemap.xml not found',
+                'detail' => $sitemapExists ? 'sitemap.xml exists' : 'Run: php artisan sitemap:generate',
                 'pass' => $sitemapExists,
                 'warn' => false,
             ],
             [
-                'label' => 'Security headers middleware',
-                'detail' => 'SecurityHeaders registered',
-                'pass' => true,
+                'group' => 'SEO & Marketing',
+                'label' => 'Google Analytics configured',
+                'detail' => $gaId ? 'ID: '.$gaId : 'GOOGLE_ANALYTICS_ID not set',
+                'pass' => filled($gaId),
+                'warn' => false,
+            ],
+            // ── Monitoring ────────────────────────────────────────────
+            [
+                'group' => 'Monitoring',
+                'label' => 'Error tracking (Sentry)',
+                'detail' => filled($sentryDsn) ? 'DSN configured' : 'Set SENTRY_LARAVEL_DSN in .env',
+                'pass' => filled($sentryDsn),
+                'warn' => false,
+            ],
+            // ── Business Setup ────────────────────────────────────────
+            [
+                'group' => 'Business Setup',
+                'label' => 'Business name configured',
+                'detail' => filled($businessName) ? $businessName : 'Set in Settings → Company',
+                'pass' => filled($businessName),
+                'warn' => false,
+            ],
+            [
+                'group' => 'Business Setup',
+                'label' => 'Mail from address configured',
+                'detail' => filled($mailFrom) ? $mailFrom : 'MAIL_FROM_ADDRESS not set',
+                'pass' => filled($mailFrom),
                 'warn' => false,
             ],
         ];
