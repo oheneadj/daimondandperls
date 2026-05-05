@@ -81,7 +81,7 @@ class Show extends Component
         $this->authorizePermission('manage_bookings');
         $this->booking = $booking->load([
             'customer',
-            'items.package.category',
+            'items.package.categories',
             'payment.verifiedBy',
             'bookingNotificationLogs' => fn ($q) => $q->latest()->limit(15),
         ]);

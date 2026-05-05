@@ -87,11 +87,20 @@
                                     {{ $review->friend_sms_sent_at ? '✓' : '—' }}
                                 </td>
                                 <td class="py-3.5 px-6">
-                                    <button wire:click="delete({{ $review->id }})"
-                                        wire:confirm="Delete this review?"
-                                        class="text-[11px] font-semibold text-error hover:text-error/70 transition-colors">
-                                        Delete
-                                    </button>
+                                    <div class="flex items-center gap-2">
+                                        <button wire:click="viewReview({{ $review->id }})"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-[12px] font-bold hover:bg-primary/20 transition-colors">
+                                            @include('layouts.partials.icons.eye', ['class' => 'w-3.5 h-3.5'])
+                                            View
+                                        </button>
+                                        <button wire:click="delete({{ $review->id }})"
+                                            wire:confirm="Delete this review?"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-error/10 text-error hover:bg-error/20 transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
@@ -106,4 +115,95 @@
             @endif
         @endif
     </div>
+
+    {{-- View Review Modal --}}
+    <x-ui.modal wire:model="showViewModal" title="Review Details" maxWidth="lg">
+        @if($selectedReview)
+            <div class="space-y-5">
+                {{-- Customer & Meta --}}
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <p class="text-[15px] font-bold text-base-content">{{ $selectedReview->author_name }}</p>
+                        <p class="text-[12px] text-base-content/50 mt-0.5">{{ $selectedReview->reviewer_phone }}</p>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <div class="flex items-center gap-0.5 justify-end">
+                            @for ($i = 1; $i <= 5; $i++)
+                                <span class="{{ $i <= ($selectedReview->stars ?? 0) ? 'text-yellow-400' : 'text-base-content/20' }} text-lg leading-none">★</span>
+                            @endfor
+                        </div>
+                        <p class="text-[11px] text-base-content/40 mt-1">{{ $selectedReview->submitted_at->format('d M Y, g:ia') }}</p>
+                    </div>
+                </div>
+
+                {{-- Status badges --}}
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span @class([
+                        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide',
+                        'bg-success/10 text-success' => $selectedReview->is_approved,
+                        'bg-base-200 text-base-content/50' => !$selectedReview->is_approved,
+                    ])>
+                        <span class="w-1.5 h-1.5 rounded-full {{ $selectedReview->is_approved ? 'bg-success' : 'bg-base-content/30' }}"></span>
+                        {{ $selectedReview->is_approved ? 'Approved' : 'Pending Approval' }}
+                    </span>
+                    @if($selectedReview->points_awarded)
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide bg-[#FFC926]/10 text-[#b38a00]">
+                            +{{ $selectedReview->points_awarded }} pts awarded
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Booking reference --}}
+                <div class="bg-base-200/60 rounded-xl px-4 py-3 flex items-center justify-between gap-4">
+                    <span class="text-[11px] font-bold uppercase tracking-widest text-base-content/40">Booking</span>
+                    <span class="font-mono text-[13px] font-semibold text-base-content">{{ $selectedReview->booking->reference }}</span>
+                </div>
+
+                {{-- Review message --}}
+                @if($selectedReview->message)
+                    <div>
+                        <p class="text-[11px] font-bold uppercase tracking-widest text-base-content/40 mb-2">Message</p>
+                        <div class="bg-base-200/60 rounded-xl px-4 py-3">
+                            <p class="text-[14px] text-base-content leading-relaxed">{{ $selectedReview->message }}</p>
+                        </div>
+                    </div>
+                @else
+                    <div class="bg-base-200/40 rounded-xl px-4 py-3 text-center">
+                        <p class="text-[13px] text-base-content/40 italic">No message left.</p>
+                    </div>
+                @endif
+
+                {{-- Friend referral --}}
+                @if($selectedReview->friend_name || $selectedReview->friend_phone)
+                    <div>
+                        <p class="text-[11px] font-bold uppercase tracking-widest text-base-content/40 mb-2">Friend Referral</p>
+                        <div class="bg-base-200/60 rounded-xl px-4 py-3 flex items-center justify-between gap-4">
+                            <div>
+                                <p class="text-[13px] font-semibold text-base-content">{{ $selectedReview->friend_name ?? '—' }}</p>
+                                <p class="text-[12px] text-base-content/50">{{ $selectedReview->friend_phone ?? '—' }}</p>
+                            </div>
+                            @if($selectedReview->friend_sms_sent_at)
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-success/10 text-success">
+                                    SMS sent {{ $selectedReview->friend_sms_sent_at->format('d M') }}
+                                </span>
+                            @else
+                                <span class="text-[11px] text-base-content/30 font-medium">SMS not sent</span>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+            </div>
+
+            <x-slot:footer>
+                <x-ui.button variant="ghost" wire:click="$set('showViewModal', false)">Close</x-ui.button>
+                <x-ui.button
+                    variant="primary"
+                    wire:click="approve({{ $selectedReview->id }})"
+                    class="{{ $selectedReview->is_approved ? 'opacity-60' : '' }}"
+                >
+                    {{ $selectedReview->is_approved ? 'Revoke Approval' : 'Approve Review' }}
+                </x-ui.button>
+            </x-slot:footer>
+        @endif
+    </x-ui.modal>
 </div>

@@ -189,8 +189,8 @@
                     <td>{{ $index + 1 }}</td>
                     <td>
                         <div class="item-name">{{ $item->package_name ?? $item->package?->name ?? 'Package' }}</div>
-                        @if($item->package?->category?->name)
-                            <div class="item-desc">{{ $item->package->category->name }}</div>
+                        @if($item->package?->categories->isNotEmpty())
+                            <div class="item-desc">{{ $item->package->categories->pluck('name')->join(', ') }}</div>
                         @endif
                         @if($item->package?->serving_size)
                             <div class="item-desc">Serves: {{ $item->package->serving_size }}</div>

@@ -23,9 +23,9 @@ class ProductionSeeder extends Seeder
         // Super admin — only create if no super_admin exists yet
         if (! User::where('role', UserRole::SuperAdmin)->exists()) {
             User::create([
-                'name' => 'Grace Ayesu',
-                'email' => 'graceayesu@yahoo.com',
-                'password' => Hash::make(env('ADMIN_PASSWORD', 'change-me-now')),
+                'name' => 'Super Admin',
+                'email' => 'admin@diamondsandpearlsgh.com',
+                'password' => Hash::make(env('ADMIN_PASSWORD', '@password@')),
                 'role' => UserRole::SuperAdmin,
                 'email_verified_at' => now(),
             ]);

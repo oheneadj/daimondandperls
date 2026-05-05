@@ -79,11 +79,15 @@
                                         });
                                         const logoUrl = $el.dataset.logoUrl;
                                         if (logoUrl) {
-                                            fetch(logoUrl).then(res => res.blob()).then(blob => {
+                                            fetch(logoUrl).then(res => {
+                                                if (!res.ok) return null;
+                                                return res.blob();
+                                            }).then(blob => {
+                                                if (!blob) return;
                                                 const parts = logoUrl.split('/');
                                                 const file = new File([blob], parts[parts.length - 1], { type: blob.type });
                                                 this.pond.addFile(file, { index: 0 });
-                                            }).catch(err => console.warn('Logo preview failed:', err));
+                                            }).catch(() => {});
                                         }
                                     }
                                 }"

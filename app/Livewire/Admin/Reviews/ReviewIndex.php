@@ -34,6 +34,12 @@ class ReviewIndex extends Component
         $this->resetPage();
     }
 
+    public function viewReview(int $id): void
+    {
+        $this->selectedReview = Review::with(['booking', 'customer'])->findOrFail($id);
+        $this->showViewModal = true;
+    }
+
     public function approve(int $id): void
     {
         $review = Review::findOrFail($id);

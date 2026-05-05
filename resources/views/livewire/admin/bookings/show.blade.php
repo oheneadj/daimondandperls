@@ -370,8 +370,8 @@
                             <x-ui.table.row @class(['bg-error/5' => $isOverdue])>
                                 <x-ui.table.cell>
                                     <div class="text-[13px] sm:text-[14px] font-bold text-base-content">{{ $item->package_name ?? $item->package?->name ?? 'Custom Package' }}</div>
-                                    @if($item->package?->category)
-                                        <span class="text-[10px] text-base-content/40 font-medium">{{ $item->package->category->name }}</span>
+                                    @if($item->package?->categories->isNotEmpty())
+                                        <span class="text-[10px] text-base-content/40 font-medium">{{ $item->package->categories->pluck('name')->join(', ') }}</span>
                                     @endif
                                     @if($item->scheduled_date && $booking->booking_type === \App\Enums\BookingType::Meal)
                                         <div class="flex items-center gap-1 mt-1">
