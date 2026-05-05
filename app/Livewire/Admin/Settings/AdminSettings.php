@@ -510,6 +510,10 @@ class AdminSettings extends Component
         $gaId = config('services.google.analytics_id', '');
         $mailFrom = config('mail.from.address', '');
         $businessName = dpc_setting('business_name', '');
+        $uptimeUrl = dpc_setting('uptime_status_url', '');
+        $sentryUrl = dpc_setting('sentry_project_url', '');
+        $storageLinked = file_exists(public_path('storage'));
+        $deliveryLocations = dpc_setting('delivery_locations', []);
 
         return [
             // ── Environment ───────────────────────────────────────────
@@ -589,8 +593,15 @@ class AdminSettings extends Component
             [
                 'group' => 'Server',
                 'label' => 'PHP OPcache enabled',
-                'detail' => $opcacheEnabled ? 'Enabled' : 'Disabled',
+                'detail' => $opcacheEnabled ? 'Enabled' : 'Disabled — ask host to enable in php.ini',
                 'pass' => $opcacheEnabled,
+                'warn' => false,
+            ],
+            [
+                'group' => 'Server',
+                'label' => 'Storage symlink created',
+                'detail' => $storageLinked ? 'public/storage exists' : 'Run: php artisan storage:link',
+                'pass' => $storageLinked,
                 'warn' => false,
             ],
             // ── Security ──────────────────────────────────────────────
@@ -619,9 +630,23 @@ class AdminSettings extends Component
             // ── Monitoring ────────────────────────────────────────────
             [
                 'group' => 'Monitoring',
-                'label' => 'Error tracking (Sentry)',
+                'label' => 'Error tracking (Sentry DSN)',
                 'detail' => filled($sentryDsn) ? 'DSN configured' : 'Set SENTRY_LARAVEL_DSN in .env',
                 'pass' => filled($sentryDsn),
+                'warn' => false,
+            ],
+            [
+                'group' => 'Monitoring',
+                'label' => 'Sentry project URL saved',
+                'detail' => filled($sentryUrl) ? $sentryUrl : 'Save URL in Settings → System',
+                'pass' => filled($sentryUrl),
+                'warn' => false,
+            ],
+            [
+                'group' => 'Monitoring',
+                'label' => 'Uptime monitoring configured',
+                'detail' => filled($uptimeUrl) ? $uptimeUrl : 'Save UptimeRobot status URL in Settings → System',
+                'pass' => filled($uptimeUrl),
                 'warn' => false,
             ],
             // ── Business Setup ────────────────────────────────────────
@@ -637,6 +662,13 @@ class AdminSettings extends Component
                 'label' => 'Mail from address configured',
                 'detail' => filled($mailFrom) ? $mailFrom : 'MAIL_FROM_ADDRESS not set',
                 'pass' => filled($mailFrom),
+                'warn' => false,
+            ],
+            [
+                'group' => 'Business Setup',
+                'label' => 'Delivery locations configured',
+                'detail' => ! empty($deliveryLocations) ? count($deliveryLocations).' location(s) set' : 'Add locations in Settings → App',
+                'pass' => ! empty($deliveryLocations),
                 'warn' => false,
             ],
         ];
