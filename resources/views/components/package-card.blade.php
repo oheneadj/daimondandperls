@@ -35,7 +35,7 @@
     @class($containerClasses)
 >
     <!-- Card Image Area -->
-    <div class="relative flex items-center justify-center overflow-hidden border border-base-content/5 aspect-square {{ $bgClass }}">
+    <div class="relative flex items-center justify-center overflow-hidden border border-base-content/5 aspect-[3/2] {{ $bgClass }}">
         @if($package->image_path)
             <img src="{{ Storage::url($package->image_path) }}" alt="{{ $package->name }} catering package — Diamonds &amp; Pearls Catering Accra" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" decoding="async">
         @elseif(isset($package->image_url))
